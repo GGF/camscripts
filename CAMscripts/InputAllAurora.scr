@@ -1,0 +1,222 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 PRO V6.0 Date:  Tue Dec 25 13:56:16 2001
+util_camed@
+setsnap@ 0
+setdcode@ 10
+setlayer@ 0
+setsectorize@ 0,1000
+textfullheight@ 2.5400
+textangle@ 0
+textmirror@ 0
+textjust@ 17
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfont@ "SIMPLE.EFN"
+
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+s$=mid$(filename$,n%,1)
+if s$="\" then goto path
+next
+path:
+path$ = left$(filename$,n%)
+
+'запрос имени файла
+OpenForm #1,70,7,"Sch'arapoff", character, okcancel
+AddForm #1, 0, 3, "Имя (для сверловки)",input,name$
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto 550
+
+mc=0
+comp=1
+i1=2
+i2=3
+i3=4
+i4=5
+solder=6
+ms=7
+drill=8
+mill=9
+
+
+'ввод пик файлов
+setup_fmtype@ 0,1
+edit_layer@ mc,3,3,11,0,"mc.gbr"
+importgbrfile@ mc,0.0000,0.0000,path$+"mcomp.gbr"
+edit_layer@ comp,2,2,0,0,"comp.gbr"
+importgbrfile@ comp,0.0000,0.0000,path$+"comp.gbr"
+edit_layer@ i1,2,2,1,0,"i2.gbr"
+importgbrfile@ i1,0.0000,0.0000,path$+"i2.gbr"
+edit_layer@ i2,2,2,1,0,"i3.gbr"
+importgbrfile@ i2,0.0000,0.0000,path$+"i3.gbr"
+edit_layer@ i3,2,2,1,0,"i4.gbr"
+importgbrfile@ i3,0.0000,0.0000,path$+"i4.gbr"
+edit_layer@ i4,2,2,1,0,"i5.gbr"
+importgbrfile@ i4,0.0000,0.0000,path$+"i5.gbr"
+edit_layer@ solder,3,3,3,0,"solder.gbr"
+importgbrfile@ solder,0.0000,0.0000,path$+"solder.gbr"
+edit_layer@ ms,3,3,12,0,"ms.gbr"
+importgbrfile@ ms,0.0000,0.0000,path$+"msolder.gbr"
+update_dcodebar@ 
+view_all@
+
+
+'mirror COMP MASKCOMP I1
+setlayer@ comp
+layer_alloff@ 1
+setlayer@ mc
+setlayer@ i1
+setlayer@ i3
+edit_mirv@
+setmirroraxis@ 2
+edit_selectall2@ 
+view_all@
+axy@ 137.5000,131.2500
+back@
+
+'перемещение 
+setlayer@ comp
+layer_alloff@ 1
+setlayer@ mc
+setlayer@ i1
+setlayer@ i3
+edit_move@
+edit_selectall2@
+' edit_group@
+' axy@ visminx!-10,visminy!-10
+' axy@ vismaxx!+10,vismaxy!+10
+' back@
+axy@ visminx!,visminy!
+axy@ 0,0
+back@
+end@
+
+'перемещение SOLDER
+setlayer@ solder
+layer_alloff@ 1
+setlayer@ ms
+setlayer@ i2
+setlayer@ i4
+edit_move@
+edit_selectall2@
+' edit_group@
+' axy@ visminx!-10,visminy!-10
+' axy@ vismaxx!+10,vismaxy!+10
+' back@
+axy@ visminx!,visminy!
+axy@ 0,0
+back@
+end@
+
+
+MACRO_PLAY "createcoppers.scr"
+
+'правка файлов сверловки
+open path$+name$+".mkr" for input as #1
+open path$+name$+"1.mkr" for output as #2
+first=0
+
+'меняем первые строки
+print #2,"%%3000"
+input #1,s$
+input #1,s$
+input #1,s$
+
+do
+line input #1,s$
+
+if left$(s$,1)="$" and first=0 then 
+print #2,"X0.0Y0.0T0"
+print #2,"$"
+print #2,right$(s$,len(s$)-1)
+s$=""
+first = 1
+end if
+
+if s$<>"" then print #2,s$
+loop until EOF(1) = 1
+close #1
+close #2
+
+'правка файлов фрезеровки
+open path$+name$+".frz" for input as #1
+open path$+name$+"1.frz" for output as #2
+first=0
+
+'меняем первые строки
+print #2,"%%3000"
+input #1,s$
+input #1,s$
+input #1,s$
+
+do
+line input #1,s$
+
+if left$(s$,1)="$" and first=0 then 
+print #2,"X0.0Y0.0T0"
+print #2,"$"
+print #2,right$(s$,len(s$)-1)
+s$=""
+first = 1
+end if
+
+if s$<>"" then print #2,s$
+loop until EOF(1) = 1
+close #1
+close #2
+
+'возврат старых
+open path$+name$+"1.frz" for input as #1
+open path$+name$+".frz" for output as #2
+do
+line input #1,s$
+print #2,s$
+loop until EOF(1) = 1
+close #1
+close #2
+open path$+name$+"1.mkr" for input as #1
+open path$+name$+".mkr" for output as #2
+do
+line input #1,s$
+print #2,s$
+loop until EOF(1) = 1
+close #1
+close #2
+
+
+nc_add_table@ 3
+nc_import_drill_pl@ drill,1,path$+name$+".mkr"
+nc_add_table@ 2
+nc_import_mill@ mill,2,path$+name$+".frz"
+
+
+'удаление лишних файлов
+kill path$+name$+"1.frz"
+kill path$+name$+"1.mkr"
+' и импортированые чтоб не мешались
+kill path$+name$+".mkr"
+kill path$+name$+".frz"
+kill path$+"comp"+".gbr"
+kill path$+"solder"+".gbr"
+kill path$+"mcomp"+".gbr"
+kill path$+"msolder"+".gbr"
+kill path$+"i2"+".gbr"
+kill path$+"i3"+".gbr"
+kill path$+"i4"+".gbr"
+kill path$+"i5"+".gbr"
+
+MACRO_PLAY "color.scr"
+
+layer_alloff@ 0
+view_all@
+
+550
+end

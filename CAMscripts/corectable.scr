@@ -1,0 +1,66 @@
+lines%=0
+
+OPEN "x:\tool\CAMscripts\tables4.lst" FOR INPUT as #1
+DO WHILE NOT EOF (1) =1
+lines% = lines% + 1;
+LINE INPUT #1, REC$
+LOOP
+CLOSE #1
+
+dim d#(lines%)'diametr
+dim if#(lines%)'in feed
+dim of#(lines%)'out feed
+dim r#(lines%)'rpms
+
+lines%=0
+
+OPEN "x:\tool\CAMscripts\tables4.lst" FOR INPUT as #1
+DO WHILE NOT EOF (1) =1
+lines% = lines% + 1;
+INPUT #1, d#(lines%), if#(lines%), of#(lines%), r#(lines%)
+LOOP
+CLOSE #1
+
+for lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	' если слой не сверловка фрезеровка идем к следующему
+	if layertype! <> 21 then goto 50
+	' опеределим таблицу привязанную к слою
+	table = tooltable!
+	' пройдем по инструментам
+	for i=1 to Highesttoolref! 
+		set_current_toolref@ i
+		' если фреза - ставим параметры для фрезы
+		if tooltype! = 2 then goto 30
+		' для сверла ищем размер в таблице
+		for index=1 to lines%
+			' нашли - вываливаемся
+			if d#(index)=toolsize! then exit for
+		next
+		' не нашли - игнорируем
+		if index>lines% then goto 40
+		' в зависимости от единиц измерения устанавливаем параметры
+		if units! = 1 then
+			nc_set_tool_infeed@ table,i,if#(index)*10/6
+			nc_set_tool_outfeed@ table,i,of#(index)*10/6
+		else
+			nc_set_tool_infeed@ table,i,if#(index)*10/6
+			nc_set_tool_outfeed@ table,i,of#(index)*10/6
+		end if
+		' этот не зависит от текущих единиц измерения
+		nc_set_tool_rpms@ table,i,r#(index)*1000
+		goto 40
+30
+		nc_set_tool_infeed@ table,i,8.3333
+		nc_set_tool_outfeed@ table,i,75
+		nc_set_tool_rpms@ table,i,30000
+		ts# = toolsize!
+		if ts# < 1 then
+			ts# = 1 ' проверка на маленькие фрезы'
+		end if
+		feedrate# = ts#*10/6
+		nc_set_tool_feedrate@ table,i,feedrate# 'преобразование
+40
+	next
+50
+next

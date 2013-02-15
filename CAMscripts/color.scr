@@ -1,0 +1,75 @@
+layer_renumber@
+For lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if Layerblank! then edit_removelyr@ lay
+next
+layer_renumber@
+
+drill=drilllayer!
+mill=milllayer!
+if mill = (-1) then mill = drilllayer_unplated!
+
+For lay = Nextlay to Highestlayer!
+setlayer@ lay
+if layertype! = 0 then 
+	comp = lay
+	edit_layer@ comp,2,0,-2,-2
+elseif layertype! = 3 then 
+	solder = lay
+	edit_layer@ solder,8,10,-2,-2
+elseif layertype!=11 then 
+	mc = lay
+	edit_layer@ mc,12,14,-2,-2
+	emc=1
+elseif layertype!=12 then 
+	ms = lay
+	edit_layer@ ms,13,15,-2,-2
+	ems=1
+elseif layertype!=7 then 
+	rc = lay
+	erc=1
+	edit_layer@ lay,5,5,-2,-2
+elseif layertype!=16 then 
+	rcn = lay
+	erc=1
+	edit_layer@ lay,5,5,-2,-2
+elseif layertype!=8 then 
+	rs = lay
+	ers=1
+	edit_layer@ lay,11,11,-2,-2
+elseif layertype!=17 then 
+	rsn = lay
+	ers=1
+	edit_layer@ lay,11,11,-2,-2
+else
+	if lay>14 then 
+		color=lay-15
+	else
+		color=lay
+	end if	
+	edit_layer@ lay,color,color+1,-2,-2
+	if layertype! = 21 then 
+		if instr(layername!,"mkr") > 0 OR instr(layername!,"MKR") > 0 OR instr(layername!,"drill")>0 OR instr(layername!,"drl")>0 then
+			drill = lay
+		end if
+		if instr(layername!,"frz") > 0 OR instr(layername!,"FRZ") > 0 OR instr(layername!,"mill")>0 then
+			mill = lay
+		end if
+	 'AND mill = -1 AND  lay <> drill then mill = lay
+	end if
+		
+end if
+next
+
+'set color for comp
+'edit_layer@ comp,2,0,-2,-2
+'set color for solder
+'edit_layer@ solder,8,10,-2,-2
+'set color for mask comp
+'if emc=1 then edit_layer@ mc,12,14,-2,-2
+'set color for mask solder
+'if ems=1 then edit_layer@ ms,13,15,-2,-2
+'set color for drill
+edit_layer@ drill,6,6,-2,-2
+'set color for mill
+edit_layer@ mill,4,4,-2,-2

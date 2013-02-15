@@ -1,0 +1,41 @@
+layer_renumber@
+setlayer@ 0
+dim sel(Numlayers!+1)
+OpenForm #1,40,Numlayers!,"—жатие слоев из русских дюймов (с) Sch'arapoff", character, okcancel
+for lay=netxlay to highestlayer!
+	setlayer@ lay
+	AddForm #1, 0, lay, layername!,check,sel(lay+1)
+next
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto 550
+
+for lay=netxlay to highestlayer!
+	if sel(lay+1) = 1 then
+		setlayer@ lay
+		nlay = blanklayer!
+		edit_scale@ lay,nlay,98425193,98425193
+' удаление
+		setlayer@ lay
+		layer_alloff@ 1
+		edit_delete@
+		setsnap@ 1
+		edit_selectall2@ 
+		delete_edits@ 4,1
+' копирование
+		setlayer@ nlay
+		layer_alloff@ 1
+		edit_copy@
+		edit_selectall2@
+		setcoplayer@ lay,nlay
+		copy_to_layer@
+		back@
+' удаление доп сло€
+		edit_removelyr@ nlay	
+	end if
+next
+
+550
+end

@@ -1,0 +1,239 @@
+' скрипт для сливания в одно нескольких ДВУСТОРОННИХ плат в блоке'
+
+' Для слоёв место'
+dim comp(10)
+dim sold(10)
+dim masc(10)
+dim mass(10)
+dim silc(10)
+dim sils(10)
+dim viac(10)
+dim vias(10)
+dim dril(10)
+dim mill(10)
+dim brd(10)
+
+' номера по порядку '
+'layer_renumber@
+
+' Пустые слои убрать'
+'For lay = Nextlay to Highestlayer!
+'	setlayer@ lay
+'	if Layerblank! then 
+'		edit_removelyr@ lay
+'	end if
+'next
+
+' и опять по порядку
+'layer_renumber@
+
+For lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	' верхние слои'
+	if layertype! = 0 then 
+		comp(icomp) = lay
+		icomp = icomp + 1
+	elseif layertype! = 3 then 
+		sold(isold) = lay
+		isold = isold +1
+	elseif layertype!=11 then 
+		masc(imasc) = lay
+		imasc = imasc + 1
+	elseif layertype!=12 then 
+		mass(imass) = lay
+		imass = imass + 1
+'	elseif layertype!=7 then 
+'		rc = lay
+'	elseif layertype!=8 then 
+'		rs = lay
+	elseif layertype!=6 then 
+		brd(ibrd) = lay
+		ibrd = ibrd + 1
+	elseif layertype!=16 then 
+		if layername! = "mcv" then
+			viac(iviac)=lay
+			iviac=iviac+1
+		else 
+			silc(isilc)=lay
+			isilc=isilc+1
+		end if
+	elseif layertype!=17 then 
+		if layername! = "msv" then
+			vias(ivias)=lay
+			ivias=ivias+1
+		else 
+			sils(isils)=lay
+			isils=isils+1
+		end if
+	elseif layertype! = 21 then 
+			if instr(layername!,"mk4") > 0 then
+				dril(idril) = lay
+				idril = idril + 1
+			end if
+			if instr(layername!,"frz") > 0 then
+				mill(imill) = lay
+				imill = imill + 1
+			end if
+	end if
+next
+
+' и опять по порядку'
+layer_renumber@
+
+' теперь сливаем comp'
+if icomp > 0 then
+	setlayer@ comp(0)
+	layer_alloff@ 1
+	for lay=1 to icomp-1
+		setlayer@ comp(lay)
+	next
+	lay = blanklayer!
+	edit_layer@ lay,12,12,0,0,"c" ' номер,цвет,цвет,тип,onoff,name '
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "comp"
+end if
+
+' теперь сливаем sold'
+if isold > 0 then
+	setlayer@ sold(0)
+	layer_alloff@ 1
+	for lay=1 to isold-1
+		setlayer@ sold(lay)
+	next
+	lay = blanklayer!
+	edit_layer@ lay,12,12,3,0,"s" ' номер,цвет,цвет,тип,onoff,name '
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "sold"
+end if
+
+' теперь сливаем masc'
+if imasc > 0 then
+	setlayer@ masc(0)
+	layer_alloff@ 1
+	for lay=1 to imasc-1
+		setlayer@ masc(lay)
+	next
+	lay = blanklayer!
+	edit_layer@ lay,12,12,11,0,"mc" ' номер,цвет,цвет,тип,onoff,name '
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "masc"
+end if
+
+' теперь сливаем mass'
+if imass > 0 then
+	setlayer@ mass(0)
+	layer_alloff@ 1
+	for lay=1 to imass-1
+		setlayer@ mass(lay)
+	next
+	lay = blanklayer!
+	edit_layer@ lay,12,12,12,0,"ms" ' номер,цвет,цвет,тип,onoff,name '
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "mass"
+end if
+
+' теперь сливаем drill'
+if idril > 0 then
+	setlayer@ dril(0)
+	layer_alloff@ 1
+	for lay=1 to idril-1
+		setlayer@ dril(lay)
+	next
+	lay = dril(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "drill"
+end if
+
+' теперь сливаем mill'
+if imill > 0 then
+	setlayer@ mill(0)
+	layer_alloff@ 1
+	for lay=1 to imill-1
+		setlayer@ mill(lay)
+	next
+	lay = mill(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "mill"
+end if
+
+' теперь сливаем brd'
+if ibrd > 0 then
+	setlayer@ brd(0)
+	layer_alloff@ 1
+	for lay=1 to ibrd-1
+		setlayer@ brd(lay)
+	next
+	lay = brd(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "brd"
+end if
+
+' теперь сливаем silc'
+if isilc > 0 then
+	setlayer@ silc(0)
+	layer_alloff@ 1
+	for lay=1 to isilc-1
+		setlayer@ silc(lay)
+	next
+	lay = silc(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "silc"
+end if
+
+' теперь сливаем sils'
+if isils > 0 then
+	setlayer@ sils(0)
+	layer_alloff@ 1
+	for lay=1 to isils-1
+		setlayer@ sils(lay)
+	next
+	lay = sils(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "sils"
+end if
+
+' теперь сливаем viac'
+if iviac > 0 then
+	setlayer@ viac(0)
+	layer_alloff@ 1
+	for lay=1 to iviac-1
+		setlayer@ viac(lay)
+	next
+	lay = viac(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "viac"
+end if
+
+' теперь сливаем vias'
+if ivias > 0 then
+	setlayer@ vias(0)
+	layer_alloff@ 1
+	for lay=1 to ivias-1
+		setlayer@ vias(lay)
+	next
+	lay = vias(0)
+	edit_move@
+	edit_selectall2@ 
+	movetolayer@ lay
+	MessageBox "vias"
+end if

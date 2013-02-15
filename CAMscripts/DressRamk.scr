@@ -1,0 +1,1022 @@
+10
+util_camed@
+textfont@ "arial.ttf"
+setgridsnap@ 0
+setsnap@ 0
+view_close@
+layer_renumber@
+
+!INCLUDE "getpathandname.scr"
+
+path:
+'path$ = left$(filename$,n%)
+rusboard$=board$
+ruscustomer$ = customer$
+translit$ = board$
+gosub translit
+board$ = translit1$
+translit$ = customer$
+gosub translit
+customer$ = translit1$
+
+
+tablepath$="x:\tool\camscripts"
+
+!include "layersset.scr"
+
+if mpp <> -1 then 
+	macro_play "DRMPP.scr"
+	goto 550
+end if
+
+
+if comp > -1 then
+	setlayer@ comp
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+elseif solder > -1 then
+	setlayer@ solder
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+else
+	MessageBox "Нет слоев comp и solder"
+	goto 550
+end if
+
+if brd > -1 then
+	setlayer@ brd
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif mc > -1 then
+	setlayer@ mc
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif ms > -1 then
+	setlayer@ ms
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+end if
+
+!include "getdate.scr"
+
+mr%=0 ' минимальная рамка
+mrr%=0 ' заданная рамка
+orient%=0' Стандартная ориентация
+techfield#=17.5
+bigtechfield#=25
+xmin# = 0 ' visminx!+0.25
+ymin# = 0 ' visminx!+0.25
+step# = 5
+XX% = 1
+YY% = 1
+ger%=0
+mins%=1
+
+25
+OpenForm #1,70,9,"Рамка на ДПП (с) Sch'arapoff 2005", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос Делает рамку для ДПП! Поставь плату в точку (0,0)!!!",Print
+AddForm #1, 0, 1, "Путь к другим файлам",input,tablepath$
+AddForm #1, 0, 2, "Вычислять wide'n'gaps? (Долго для сложных)",check,mins%
+
+'AddForm #1, 0, 3, "Gerber-ы выводить?",check,ger%
+'AddForm #1, 25, 3, "Minimum?",check,mr%
+'AddForm #1, 40, 3, "Ориентация?",check,orient%
+AddForm #1, 0, 3, "Minimum?",check,mr%
+AddForm #1, 30, 3, "230х305?",check,mrr%
+
+AddForm #1, 0, 4, "Габарит",print
+AddForm #1, 10, 4, "x:",input,xpl#
+AddForm #1, 35, 4, "y:",input,ypl#
+AddForm #1, 0, 5, "Шаг :",input,step#
+AddForm #1, 35, 5, "Техн. поля:",input,techfield#
+AddForm #1, 0, 6, "Имя (для сверловки)",input,name$
+AddForm #1, 0, 7, "Дата (месяц.год)",input,date$
+AddForm #1, 0, 8, "Штук по Х:",input,xX%
+AddForm #1, 35, 8, "Штук по y:",input,YY%
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto 550
+
+layer_alloff@ 1
+view_SuppressGrphcs@ 1
+'MessageBox "Внимание минимальная точка ("+str$(xmin#)+","+str$(ymin#)+")!"
+
+' wide and gap
+if mins% = 1 then
+	!include "wideandgaps.scr"
+end if
+
+filename$ = dbname!
+
+X# = xpl#*xx%+step#*(xx%-1)
+Y# = ypl#*yy%+step#*(yy%-1)
+
+
+if mr%=1 then
+	mX# = X#
+	mY# = Y#
+	if mY# > 127.5 or mX# > 145 then 
+		MessageBox "Не влезает в минимальную рамку. Может разветнуть?"
+		goto 550
+	end if
+	X# = 180
+	Y# = 170
+elseif mrr%=1 then
+	mX# = X#
+	mY# = Y#
+	X# = 305
+	Y# = 230
+else
+	if orient% = 0 then
+		if X#<Y# then
+			txx# = X#
+			X# = Y#
+			Y# = txx#
+			vert%=1
+		else
+			vert%=0
+		end if
+	else
+		if X#>Y# then
+			txx# = X#
+			X# = Y#
+			Y# = txx#
+			vert%=1
+		else
+			vert%=0
+		end if
+	end if
+	X#=X#+techfield#*2
+	Y#=Y#+techfield#+bigtechfield#
+end if
+
+'запись текущего файла
+setsaveasfile@ filename$
+setsaveasfile@ path$+"dpp.pcb"
+
+if XX%<>1 or YY%<>1 then
+	'панелизация
+	copx=XX%
+	copy=YY%
+	sx#= xpl#+step#
+	sy#= ypl#+step#
+	layer_alloff@ 0
+	edit_copy@
+	setcopies@ XX%-1
+	edit_selectall2@
+	axy@ 0,0
+	axy@ sx#,0
+	back@
+	edit_copy@
+	setcopies@ YY%-1
+	edit_selectall2@
+	axy@ 0,0
+	axy@ 0,sy#
+	back@
+	'view_all@
+	'view_redraw@
+end if
+
+'запись текущего файла
+setsaveasfile@ path$+"dpp.pcb"
+
+'вычисление площадей
+if comp > -1 then
+	setlayer@ comp
+	layer_alloff@ 1
+	util_copper@
+	copper@ 0.1,161,1,0.75
+	sc#=copperarea!
+	auarea# = sc#
+end if
+
+if solder > -1 then
+	setlayer@ solder
+	layer_alloff@ 1
+	util_copper@
+	copper@ 0.1,161,1,0.75
+	ss#=copperarea!
+	auarea# = auarea# + ss#
+end if
+
+
+'new file
+setnewfile@
+setsnap@ 0
+setunit@ 1
+
+'delete blank layers
+For lay = Nextlay to Highestlayer!
+edit_removelyr@ lay
+next
+
+'create reper
+util_caped@
+
+view_SuppressGrphcs@ 1
+
+setdcode@ 10
+setlayer@ 0
+setsectorize@ 0,1000
+
+setwidth@ 0.1000
+
+add_line@
+axy@ -2.5000,0.0000
+axy@ -0.4000,0.0000
+back@
+axy@ -0.4000,-0.4000
+axy@ 0.4000,-0.4000
+axy@ 0.4000,0.4000
+axy@ -0.4000,0.4000
+axy@ -0.4000,-0.4000
+back@
+axy@ 0.4000,0.0000
+axy@ 2.5000,0.0000
+back@
+axy@ 0.0000,2.5000
+axy@ 0.0000,0.4000
+back@
+axy@ 0.0000,-2.5000
+axy@ 0.0000,-0.4000
+back@
+axy@ -2.0000,-2.0000
+axy@ 2.0000,-2.0000
+axy@ 2.0000,2.0000
+axy@ -2.0000,2.0000
+axy@ -2.0000,-2.0000
+back@
+end@
+saveaslibitem@ "RZM"
+
+'update dcodes
+util_camed@
+
+view_SuppressGrphcs@ 1
+
+openlibitem@ 1,"RZM"
+edit_aperture@ 37,6,5.1000,5.1000,0,"RZM" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
+edit_aperture@ 88,1,5.0000,5.0000,88,""
+edit_aperture@ 73,1,2.6000,2.6000,73,""
+edit_aperture@ 19,1,0.8000,0.8000,19,""
+edit_aperture@ 14,1,0.3000,0.3000,14,""
+edit_aperture@ 21,1,1.2000,1.2000,21,""
+set_aperture@ 97,"Donut Rnd od:1.800 id:1.400" ' donut for repper'
+edit_aperture@ 98,1,1.4000,1.2000,98,""
+update_dcodebar@ 
+
+update_dcodebar@ 
+
+Textfullheight@ 4
+textangle@ 0
+textmirror@ 0
+textjust@ 33
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+Textfont@ "simple.efn"
+
+50
+
+100
+'define layers
+r_rcn = 0
+r_rc = 1
+r_mc = 2
+r_c = 3
+r_s = 4
+r_ms = 5
+r_rs = 6
+r_rsn = 7
+r_mcv = 8
+r_msv = 9
+r_drill = 10 ' обязательно последний !!!
+
+Setlayer@ r_rcn
+edit_layer@ r_rcn,-2,-2,16,0,"rcn.gbr"
+Setlayer@ r_rc
+edit_layer@ r_rc,-2,-2,7,0,"rc.gbr"
+Setlayer@ r_mc
+edit_layer@ r_mc,-2,-2,11,0,"mc.gbr"
+Setlayer@ r_c
+edit_layer@ r_c,-2,-2,0,0,"c.gbr"
+Setlayer@ r_s
+edit_layer@ r_s,-2,-2,3,0,"s.gbr"
+Setlayer@ r_ms
+edit_layer@ r_ms,-2,-2,12,0,"ms.gbr"
+Setlayer@ r_rs
+edit_layer@ r_rs,-2,-2,8,0,"rs.gbr"
+Setlayer@ r_rsn
+edit_layer@ r_rsn,-2,-2,17,0,"rsn.gbr"
+Setlayer@ r_mcv
+edit_layer@ r_mcv,-2,-2,16,0,"mcv"
+Setlayer@ r_msv
+edit_layer@ r_msv,-2,-2,17,0,"msv"
+Setlayer@ r_drill
+edit_layer@ r_drill,-2,-2,21,0,"drll.mkr"
+Setlayer@ r_c
+update_layerbar@
+
+'Zoom out to allow user to see where to place chart
+'view_all@
+'view_redraw@
+
+'
+' Draw 
+'
+200
+Setdcode@ 88
+Add_rectangle@
+axy@ 0,0
+axy@ X#,Y#
+Back@
+'добавить линию наверху (6-12-02)
+Add_line@
+axy@ 0,Y#-5
+axy@ X#,Y#-5
+Back@
+
+
+Setdcode@ 73
+Add_rectangle@
+axy@ techfield#+1.75,3.75
+axy@ (X#-(techfield#+1.75)),(techfield#-3.75)
+Back@
+Add_rectangle@
+axy@ 3.75,(techfield#+5)
+axy@ (techfield#-3.75),(Y#-bigtechfield#-1.25)
+Back@
+Add_rectangle@
+axy@ (X#-3.75),(techfield#+5)
+axy@ (X#-techfield#+3.75),(Y#-bigtechfield#-1.25)
+Back@
+
+
+view_all@
+'view_redraw@
+
+' заливка прямоугольников
+polylayer@ -1
+polyfilldcode@ 10
+polyclearance@ 0.0000
+polyfillpattern@ "SOLID"
+polyfillmethod@ "RASTER"
+polyaddtype@ "AREAFILL"
+polyfilltoborder@ "Yes"
+polydeleteislands@ "No"
+add_poly_pouring@
+axy@ techfield#+1.75+2.6,3.75+2.6
+axy@ 3.75+2.6,(techfield#+5)+2.6
+axy@ (X#-3.75-2.6),(techfield#+5+2.6)
+
+Back@
+
+
+'view_all@
+'view_redraw@
+
+
+'add reper
+Setdcode@ 37
+Add_flash@
+axy@ techfield#-5,techfield#-5
+axy@ techfield#-5,Y#-bigtechfield#+5
+axy@ X#-(techfield#-5),Y#-bigtechfield#+5
+Back@
+
+'Сохранение файла для расчета смещений
+open path$+"dpp.s32" for output as #1
+print #1,"*Расчет сжатия"
+print #1,"A4"
+print #1,"A4"
+print #1,"A4"
+print #1,""
+print #1,"1 ,2"
+print #1,"3 ,2"
+print #1,"5 ,2"
+if vert%=1 then
+	zsizex# = Y#-(techfield#-5+20)
+	zsizey# = X#-(techfield#-5)*2
+	print #1,"A1 , "Y#-(techfield#-5+20)
+	print #1,"B1 , "X#-(techfield#-5)*2
+	print #1,"A2 , "Y#-(techfield#-5+20)
+	print #1,"B2 , "X#-(techfield#-5)*2
+	print #1,"A3 , "Y#-(techfield#-5+20)
+	print #1,"B3 , "X#-(techfield#-5)*2
+else
+	zsizex# = X#-(techfield#-5)*2
+	zsizey# = Y#-(techfield#-5+20)
+	print #1,"A1 , "X#-(techfield#-5)*2
+	print #1,"B1 , "Y#-(techfield#-5+20)
+	print #1,"A2 , "X#-(techfield#-5)*2
+	print #1,"B2 , "Y#-(techfield#-5+20)
+	print #1,"A3 , "X#-(techfield#-5)*2
+	print #1,"B3 , "Y#-(techfield#-5+20)
+end if
+print #1,"A4 , a3+a2"
+print #1,"B4 , B3+B2"
+print #1,"A5 , a4/2"
+print #1,"B5 , B4/2"
+print #1,"A6 , a5/a1"
+print #1,"B6 , B5/B1"
+close #1
+
+
+
+
+'add over reper
+Setdcode@ 97
+Add_flash@
+axy@ techfield#-5,techfield#
+axy@ techfield#-5,Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),techfield#
+Back@
+
+'view_all@
+'view_redraw@
+
+
+'eplode reper
+explode_custom@
+edit_group@
+axy@ 0,0
+axy@ X#,Y#
+explode@
+Back@
+
+'copying layers
+edit_copy@
+edit_group@
+axy@ -10,-10
+axy@ (X#+10),(Y#+10)
+setcoplayer@ r_mc,1
+setcoplayer@ r_s,1
+copy_to_layer@
+back@
+
+'view_all@
+'view_redraw@
+
+
+setlayer@ r_mc
+layer_alloff@ 1
+edit_delete@
+axy@ 5,Y#-5 'удаление линии наверху (6-12-02)
+axy@ techfield#+1.75,3.75 ' первый квадрат
+axy@ 3.75,(techfield#+5) ' второй 
+axy@ (X#-3.75),(techfield#+5) ' третий
+axy@ techfield#+1.75+2.6,3.75+2.6 ' первый полигон
+axy@ 3.75+2.6,(techfield#+5)+2.6 ' второй 
+axy@ (X#-3.75-2.6),(techfield#+5+2.6) ' третий
+back@
+
+'layer_alloff@ 1
+edit_copy@
+edit_group@
+axy@ -10,-10
+axy@ (X#+10),(Y#+10)
+setcoplayer@ r_rcn,1
+setcoplayer@ r_rc,1
+setcoplayer@ r_ms,1
+setcoplayer@ r_rs,1
+copy_to_layer@
+back@
+layer_alloff@ 0
+
+' замена реперов на негативном слое
+setlayer@ r_rcn
+layer_alloff@ 1
+'add rectangles
+setdcode@ 10
+update_dcodebar@ 
+' 1
+add_rectangle@
+axy@ (techfield#-5)-3.75,(techfield#-5)-3.75
+axy@ (techfield#-5)+3.75,(techfield#-5)+6.25
+end@
+' 2
+add_rectangle@
+axy@ (techfield#-5)-3.75,(Y#-bigtechfield#+5)-3.75
+axy@ (techfield#-5)+3.75,(Y#-bigtechfield#+5)+6.25
+end@
+' 3
+add_rectangle@
+axy@ (X#-(techfield#-5))-3.75,(Y#-bigtechfield#+5)-3.75
+axy@ (X#-(techfield#-5))+3.75,(Y#-bigtechfield#+5)+6.25
+end@
+' add poly
+setsnap@ 1
+polylayer@ -1
+polyfilldcode@ 10
+polyclearance@ 0.0000
+polyfillpattern@ "SOLID"
+polyfillmethod@ "RASTER"
+polyaddtype@ "AREAFILL"
+polyfilltoborder@ "No"
+polydeleteislands@ "No"
+add_poly_pouring@
+axy@ (techfield#-5)-3,(techfield#-5)-3
+axy@ (techfield#-5)-3,(Y#-bigtechfield#+5)-3
+axy@ (X#-(techfield#-5))-3,(Y#-bigtechfield#+5)-3
+end@
+' delete repers
+edit_delete@
+setsnap@ 1
+setbydcode@ ""
+setbytoolref@ ""
+setbytabid@ ""
+set_polyraster_filter@ 0
+edit_group@
+axy@ (techfield#-5)-3.75,(techfield#-5)-3.75
+axy@ (techfield#-5)+3.75,(techfield#-5)+6.25
+axy@ (techfield#-5)-3.75,(Y#-bigtechfield#+5)-3.75
+axy@ (techfield#-5)+3.75,(Y#-bigtechfield#+5)+6.25
+axy@ (X#-(techfield#-5))-3.75,(Y#-bigtechfield#+5)-3.75
+axy@ (X#-(techfield#-5))+3.75,(Y#-bigtechfield#+5)+6.25
+back@
+delete_edits@ 4,1
+'add over reper
+Setdcode@ 98
+Add_flash@
+axy@ techfield#-5,techfield#
+axy@ techfield#-5,Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),techfield#
+Back@
+
+'copy
+'layer_alloff@ 1
+edit_copy@
+edit_group@
+axy@ -10,-10
+axy@ (X#+10),(Y#+10)
+setcoplayer@ r_rsn,1
+setcoplayer@ r_mcv,1
+setcoplayer@ r_msv,1
+copy_to_layer@
+back@
+layer_alloff@ 0
+
+
+'layer_alloff@ 0
+'view_all@
+'view_redraw@
+
+
+'Вычисление площадей
+
+'comp
+setlayer@ r_c
+layer_alloff@ 1
+util_copper@
+copper@ 0.1,161,1,0.75
+sc#=sc#+copperarea!
+' удаление лишней площади
+lc#=(2*X#+2*Y#)*2.5 ' периметр на 2.5 мм
+sc#=sc#-lc#
+
+'solder
+setlayer@ r_s
+layer_alloff@ 1
+util_copper@
+copper@ 0.1,161,1,0.75
+ss#=ss#+copperarea!
+ss#=ss#-lc# ' лишняя площадь
+
+'Сохранение площадей в текстовом файле
+'open path$+"copper.rpt" for output as #1
+'print #1,name$
+'print #1,"COMP - ",sc#
+'print #1,"SOLDER - ",ss#
+'print #1,X#
+'print #1,Y#
+'close #1
+' закоментировал потому что это сделает скрипты вывода сверловок который вызовет скрипт создания файла и запишет данные в базу
+
+sc%=sc#/100
+sc$=str$(sc%)
+n%=len(sc$)+1
+if sc%<100 then n%=n%+1
+sc#=sc%/100.0
+sc$=left$(str$(sc#),n%)
+
+ss%=ss#/100
+ss$=str$(ss%)
+n%=len(ss$)+1
+if ss%<100 then n%=n%+1
+ss#=ss%/100.0
+ss$=left$(str$(ss#),n%)
+
+'add text
+setdcode@ 14
+setlayer@ r_rc
+addtext@ techfield#,(Y#-bigtechfield#+3),,, "MARK COMP "+ date$+" " + customer$ +" " + board$
+back@
+setlayer@ r_rcn
+addtext@ techfield#,(Y#-bigtechfield#+3),,, "MARK COMP "+ date$+" " + customer$ +" " + board$
+back@
+
+setlayer@ r_mc
+addtext@ techfield#,(Y#-bigtechfield#+3),,, "MASKA COMP "+ date$+" " + customer$ +" " + board$
+back@
+
+setlayer@ r_mcv
+addtext@ techfield#,(Y#-bigtechfield#+3),,, "MASKA COMP VIA "+ date$+" " + customer$ +" " + board$
+back@
+
+setlayer@ r_c
+addtext@ techfield#,(Y#-bigtechfield#+3),,, "COMP  "+date$+ " " + customer$ +" " + board$
+back@
+
+addtext@ (X#-techfield#-40),(Y#-bigtechfield#+3),,, "S = "+sc$
+back@
+
+textmirror@ 1
+setlayer@ r_s
+addtext@ (X#-techfield#),(Y#-bigtechfield#+3),,, "SOLDER  "+date$ + " " + customer$ +" " + board$
+back@
+addtext@ (techfield#+40),(Y#-bigtechfield#+3),,, "S = "+ss$
+back@
+setlayer@ r_ms
+addtext@ X#-techfield#,(Y#-bigtechfield#+3),,, "MASKA SOLDER "+ date$+" " + customer$ +" " + board$
+back@
+setlayer@ r_msv
+addtext@ X#-techfield#,(Y#-bigtechfield#+3),,, "MASKA SOLDER VIA "+ date$+ " " + customer$ +" " + board$
+back@
+setlayer@ r_rs
+addtext@ X#-techfield#,(Y#-bigtechfield#+3),,, "MARK SOLDER "+ date$+ " " + customer$ +" " + board$
+back@
+setlayer@ r_rsn
+addtext@ X#-techfield#,(Y#-bigtechfield#+3),,, "MARK SOLDER "+ date$+ " " + customer$ +" " + board$
+back@
+
+'view_all@
+'view_redraw@
+
+'create drill
+for i=1 to 100
+nc_delete_table@ i
+next
+nc_add_table@ 1
+nc_assign_tool_table_to_layer@ r_drill,1
+setlayer@ r_drill
+dt = tooltable!
+
+for i=1 to Highesttoolref!
+nc_delete_tool@ 1,i
+next
+
+nc_add_tool@ 1,1
+nc_set_tool_id@ 1,1,1
+nc_set_tool_type@ 1,1,3
+nc_set_tool_size@ 1,1,0.8000
+nc_set_tool_infeed@ 1,1,25.0*10/6
+nc_set_tool_outfeed@ 1,1,45.0*10/6
+nc_set_tool_rpms@ 1,1,45.0*1000
+nc_add_tool@ 1,2
+nc_set_tool_id@ 1,2,2
+nc_set_tool_type@ 1,2,3
+nc_set_tool_size@ 1,2,1.2000
+nc_set_tool_infeed@ 1,2,26.0*10/6
+nc_set_tool_outfeed@ 1,2,45.0*10/6
+nc_set_tool_rpms@ 1,2,43.0*1000
+
+
+setlayer@ r_drill
+layer_alloff@ 1
+
+'add reper drill
+set_current_toolref@ 2
+nc_add_drill_hit@
+axy@ techfield#-5,techfield#-5
+axy@ techfield#-5,Y#-bigtechfield#+5
+axy@ X#-(techfield#-5),Y#-bigtechfield#+5
+axy@ techfield#-5,techfield#
+axy@ techfield#-5,Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
+axy@ X#-(techfield#-5),techfield#
+back@
+
+'name drill
+view_close@
+nc_add_drilled_text@ (X#/2-LEN(name$)/2*10),(Y#-bigtechfield#+6),r_drill,1,0,name$ ' bigtechfield#+6-чтобы не задеть шляпки штифтов и не наехать на текст (COMP,SOLDER etc.)
+back@
+
+'копировать отверстия на основные слои
+edit_copy@
+axy@ (X#/2-LEN(name$)/2*10),(Y#-19)
+setcoplayer@ r_rcn,1
+setcoplayer@ r_rc,1
+setcoplayer@ r_mc,1
+setcoplayer@ r_c,1
+setcoplayer@ r_s,1
+setcoplayer@ r_ms,1
+setcoplayer@ r_rs,1
+setcoplayer@ r_rsn,1
+setcoplayer@ r_mcv,1
+setcoplayer@ r_msv,1
+copy_to_layer@
+back@
+
+'view_all@
+'view_redraw@
+
+
+
+'explode drill text
+layer_alloff@ 1
+edit_copy@
+edit_group@
+axy@ -10,-10
+axy@ (X#+10),(Y#+10)
+r_tmplay = blanklayer!
+setcoplayer@ r_tmplay ,1
+copy_to_layer@
+back@
+nc_gerber_to_drill@ r_tmplay ,-1,1,1,1,""
+edit_layer@ r_tmplay+1,-2,-2,21,0,"drll.mkr"
+edit_removelyr@ r_drill
+edit_removelyr@ r_tmplay
+layer_renumber@
+
+layer_alloff@ 0
+'view_all@
+'view_redraw@
+
+
+'разворот
+if vert%=1 then
+	edit_rotate@
+	setrot100angle@ 9000
+	edit_group@
+	axy@ -10,-10
+	axy@ X#+10,Y#+10
+	back@
+	axy@ 0,0
+	back@
+	'перемещение
+	edit_move@
+	edit_group@
+	axy@ -Y#-10,-10
+	axy@ 10,X#+10
+	back@
+	axy@ -Y#,0
+	axy@ 0,0
+	back@
+	end@
+end if
+
+'view_all@
+'view_redraw@
+
+setsaveasfile@ path$+"dppramk.pcb"
+
+'Открытие основного файла
+setopenfile@ path$+"dpp.pcb"
+
+view_SuppressGrphcs@ 1
+
+'перемещение
+layer_alloff@ 0
+edit_move@
+edit_selectall2@
+axy@ xmin#,ymin#
+if mr%=1 then
+	axy@ (145-mX#)/2+techfield#,(127.5-mY#)/2+techfield#
+elseif mrr%=1 then
+	axy@ (270-mX#)/2+techfield#,(187.5-mY#)/2+techfield#
+else
+	if vert%=1 then 
+		axy@ bigtechfield#,techfield# 
+	else 
+		axy@ techfield#,techfield#
+	end if
+end if	
+back@
+end@
+
+'view_all@
+'view_redraw@
+
+
+'наложение рамки
+external_map_layer_start@ path$+"dppramk.pcb"
+
+if comp > -1 then 
+	external_map_layer2layer@ r_c,comp
+else
+	external_map_layer2none@ r_c,0
+end if
+
+if solder > -1 then
+	external_map_layer2layer@ r_s,solder
+else
+	external_map_layer2none@ r_s,0
+end if
+
+if drill > -1 then
+	external_map_layer2layer@ r_drill,drill
+else 
+	external_map_layer2new@ r_drill,21,0 
+	' 21 - это тип
+end if 
+
+if mc >-1 then 
+	external_map_layer2layer@ r_mc,mc 
+else 
+	external_map_layer2none@ r_mc,0
+end if
+
+if ms > -1 then 
+	external_map_layer2layer@ r_ms,ms 
+else 
+	external_map_layer2none@ r_ms,0
+end if
+
+if rc >-1 then 
+	external_map_layer2layer@ r_rc,rc 
+else 
+	external_map_layer2none@ r_rc,0
+end if
+
+if rcn >-1 then 
+	external_map_layer2layer@ r_rcn,rcn 
+else 
+	external_map_layer2none@ r_rcn,0
+end if
+
+if rs >-1 then 
+	external_map_layer2layer@ r_rs,rs 
+else 
+	external_map_layer2none@ r_rs,0
+end if
+
+if rsn >-1 then 
+	external_map_layer2layer@ r_rsn,rsn
+else 
+	external_map_layer2none@ r_rsn,0
+end if
+
+if mcv > -1 then 
+	external_map_layer2layer@ r_mcv,mcv 
+else 
+	external_map_layer2none@ r_mcv,0
+end if
+
+if msv > -1 then 
+	external_map_layer2layer@ r_msv,msv 
+else 
+	external_map_layer2none@ r_msv,0
+end if
+
+file_merge_refresh@ X,Y,path$+"dppramk.pcb"
+
+back@
+
+layer_renumber@
+
+explode_part@
+axy@ 0,0
+explode@
+
+'view_all@
+'view_redraw@
+
+
+'Добавление контрольных сверловок
+if drill > -1 then
+	setlayer@ drill
+	nc_add_drill_hit@
+	set_nc_plated_add_drill@ 1
+	offset#=0
+	off#=0
+	' Для координат контрольных отверстий
+	numtol = Highesttoolref!
+	dim xc#(Highesttoolref!)
+	dim yc#(Highesttoolref!)
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if Toolused! then
+
+			oldoff# = off#
+			off#=drillsize!/2
+			offset#=offset#+oldoff#+off#+1
+			if vert%=1 then
+				yc#(i)=X#-bigtechfield#/2-offset#
+				xc#(i)=Y#-techfield#/2
+				axy@ xc#(i),yc#(i)
+			else
+				yc#(i)=Y#-bigtechfield#/2-offset#
+				xc#(i)=X#-techfield#/2
+				axy@ xc#(i),yc#(i)
+			end if
+		end if
+	next
+	back@
+' Сортировка отверстий
+	setlayer@ drill
+	layer_alloff@ 1
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if Toolused! then
+			' Добавить отверстие в нуле
+			nc_add_drill_hit@
+			set_nc_plated_add_drill@ 1
+			axy@ 0,0
+			end@
+			' Отсортировать
+			drill_firstlast@ 1
+			drill_sort_set@ 2,0,1.2700,drill
+			drill_sort@ 0,0,xc#(i),yc#(i)
+			end@
+			' Удалить отверстие в нуле 			
+			edit_delete@
+			axy@ 0,0
+			back@
+		end if
+	next
+	layer_alloff@ 0
+end if ' есть сверловка
+
+if mill > -1 then
+' Сортировка отверстий немет
+	setlayer@ mill
+	layer_alloff@ 1
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if Toolused! and tooltype! <> 2 then
+			' Добавить отверстие в нуле
+			nc_add_drill_hit@
+			set_nc_plated_add_drill@ 1
+			axy@ 0,0
+			end@
+			' Добавить отверстие за платой
+			nc_add_drill_hit@
+			set_nc_plated_add_drill@ 1
+			xcm# = dbmaxx!+10
+			ycm# = dbmaxy!+10
+			axy@ xcm#,ycm#
+			end@
+			' Отсортировать
+			drill_firstlast@ 1
+			drill_sort_set@ 2,0,1.2700,mill
+			drill_sort@ 0,0,xcm#,ycm#
+			end@
+			' Удалить отверстие в нуле и за платой
+			edit_delete@
+			axy@ 0,0
+			axy@ xcm#,ycm#
+			back@
+		end if
+	next
+	layer_alloff@ 0
+
+end if ' есть фрезеровка
+
+' создание copper файла '
+kill path$+"copper.rpt"
+drillname$ = name$
+customer$ = ruscustomer$
+board$=rusboard$
+count = XX%*YY%
+auarea% = auarea# / 100
+auarea# = auarea% / 100
+
+!INCLUDE tablepath$+"createcoppers.scr"
+' это для обязательного создания
+
+' Вывод сверловок
+drillname$ = name$
+'!INCLUDE tablepath$+"mkrfrz.SCR"
+
+' Сохранение gerber
+if ger%=1 then
+	!INCLUDE tablepath$+"creategbx.SCR"
+end if
+
+layer_alloff@ 0
+view_SuppressGrphcs@ 0
+view_all@ 
+
+'запись текущего файла
+setsaveasfile@ path$+"dpp.pcb"
+
+view_redraw@
+end@
+
+
+550
+end
+
+!include "translit.sub" 

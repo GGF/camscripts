@@ -1,0 +1,67 @@
+!INCLUDE "getpathandname.scr"
+!include "layersset.scr"
+
+layerset_setThruDrill@ drill
+netextract4@ 0,0,0,2,0
+
+open path$+"wideandgap.rpt" for output as #1
+
+print #1,board$
+print #1,customer$
+
+
+for lay=comp to Highestlayer!
+	setlayer@ lay
+	layer_alloff@ 1
+	
+	ln$=Layername!
+	if (customer$="Импульс" or customer$="Impuls") and (instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"а")>0 or instr(1,ln$,"А")>0) then
+	else 
+		analyze_data@
+		setdcode@ min_trace_dcode!
+		'axy@ min_spacing_loc1_x!,min_spacing_loc1_y!
+		'view_close@
+		wide$ = str$(Dcodesizex!)
+		gap$ = str$(min_spacing_size!)
+		' coord$ = "("+str$(min_spacing_loc1_x!)+","+str$(min_spacing_loc1_y!)+")-("+str$(min_spacing_loc2_x!)+","+str$(min_spacing_loc2_y!)+")"
+		if lay=comp then
+			num$ = "1"
+			i = 1
+		elseif instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"а")>0 or instr(1,ln$,"А")>0 then
+			num$ = ln$
+		else
+			i = i+1
+			num$ = str$(i)
+		end if
+		print #1,wide$
+		print #1,gap$
+		print #1,num$
+		if lay=solder then goto closefiles
+	end if
+next
+
+closefiles:
+print #1,"end"
+print #1,"end"
+print #1,"end"
+close #1
+
+newname$=path$+"Паспорт_на_фотошаблон.xls"
+if mpp <> -1 then
+	if customer$="Импульс" or customer$="Impuls" then
+		newname$=path$+"Паспорт_на_фотошаблон_импульс.xls"
+		passport$="pasportmppi.xls"
+	else
+		passport$="pasportmpp.xls"
+	end if
+else
+	passport$="pasportdpp.xls"
+end if
+Command$="copy /Y X:\TOOL\CAMscripts\"+passport$+" "+ chr$(34)+ path$ +chr$(34)
+Command$="cmd /C "+  chr$(34) + Command$ +  chr$(34)
+'messagebox Command$
+wincall Command$
+oldname$=path$+passport$
+kill newname$
+name oldname$ as newname$
+

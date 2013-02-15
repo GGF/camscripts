@@ -1,0 +1,103 @@
+!INCLUDE "layersset.scr"
+
+BREAK
+
+' color
+edit_layer@ comp,2,0,-2,-2
+edit_layer@ solder,8,10,-2,-2
+edit_layer@ mc,12,14,-2,-2
+edit_layer@ ms,13,15,-2,-2
+edit_layer@ rc,5,5,-2,-2
+edit_layer@ rcn,5,5,-2,-2
+edit_layer@ rs,11,11,-2,-2
+edit_layer@ rsn,11,11,-2,-2
+edit_layer@ mcv,15,15,-2,-2
+edit_layer@ msv,13,13,-2,-2
+edit_layer@ brd,0,0,-2,-2
+if mpp <> -1 then
+	for i=1 to mpp
+		color=int(i)
+		if color>14 then 
+			color=color-14
+			'do 
+			'color=int(i)-15
+			'loop until color >14
+		end if
+		edit_layer@ int(i),color,color+1,-2,-2
+	next
+end if
+
+edit_layer@ drill,6,6,-2,-2
+edit_layer@ mill,4,4,-2,-2
+
+BREAK
+
+
+'reodrer layer
+pos = 0
+init_layer_reorder@
+if rc<>-1 then
+	change_layer_position@ pos,rc,pos
+	pos=pos+1
+end if
+if rcn<>-1 then
+	change_layer_position@ pos,rcn,pos
+	pos=pos+1
+end if
+if mc<>-1 then
+	change_layer_position@ pos,mc,pos
+	pos=pos+1
+end if
+if mcv<>-1 then
+	change_layer_position@ pos,mcv,pos
+	pos=pos+1
+end if
+if comp<>-1 then
+	change_layer_position@ pos,comp,pos
+	pos=pos+1
+end if
+
+if mpp>0 then
+	for i=1 to mpp
+		change_layer_position@ pos,int(i),pos
+		pos = pos+1
+	next
+end if
+
+if solder<>-1 then
+	change_layer_position@ pos,solder,pos
+	pos=pos+1
+end if
+if msv<>-1 then
+	change_layer_position@ pos,msv,pos
+	pos=pos+1
+end if
+if ms<>-1 then
+	change_layer_position@ pos,ms,pos
+	pos=pos+1
+end if
+if rsn<>-1 then
+	change_layer_position@ pos,rsn,pos
+	pos=pos+1
+end if
+if rs<>-1 then
+	change_layer_position@ pos,rs,pos
+	pos=pos+1
+end if
+if brd<>-1 then
+	change_layer_position@ pos,brd,pos
+	pos=pos+1
+end if
+if drill<>-1 then
+	change_layer_position@ pos,drill,pos
+	pos=pos+1
+end if
+if mill<>-1 then
+	change_layer_position@ pos,mill,pos
+	pos=pos+1
+end if
+
+apply_layer_order@
+layer_renumber@
+close_msg
+

@@ -1,0 +1,442 @@
+' скрипт расстановки шаблонов на лист пленки 20"х24"
+' 1.0 - версия черновая
+' 24-10-05 исправлен подсчет количества шаблонов на лист
+'  учтены реальные размеры
+' 1.01
+' 1-03-06 исправлена ошибка поворота падстеков вместе сос слоем (просто ломаются)
+' добавлен взлом пользовательских площадок
+' взлом в полигоны
+' explode_custom@ edit_selectall2@ explode_FillCustPoly@ -1  back@
+' If you are exploding the custom to a vector-filled polygon, the parameter for explode_FillCustPoly@ is a Dcode. If it is being converted to a raster polygon, the parameter is always -1.
+' explode_padstack@ edit_selectall2@ explode@ back@
+' 1.02
+' 30-08-06 для изменения стандартного расстояния в 10 мм параметр вынесен вверх
+' 10-02-2011 - попытка вписать заготовки до 299'
+' 29-03-2011 - Пленка AGFA 29'x23'
+' 29-11-2012 - правильный порядок вывода негативов'
+
+' Расстояние между шаблонами в мм
+' иметь в виду, кроме того что оно ставится между шаблонами еще и от краев такое же расстояние
+spacing# = 10
+
+plenka% = 1 ' 1 - AGFA 2-KODAK
+
+layer_alloff@ 0
+view_close@
+sizex=(vismaxx!-visminx!)
+sizey=(vismaxy!-visminy!)
+
+if sizex=280 and sizey=395 then
+	spacing# = 15
+elseif  sizex=230 and sizey=395 then
+	spacing# = 20
+end if
+
+sizex=(vismaxx_tshape!-visminx_tshape!)
+sizey=(vismaxy_tshape!-visminy_tshape!)
+
+OpenForm #1,45,5,"вывод герберов на всю пленку (с) Sch'arapoff 2011", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос вывод герберы на всю пленку!",Print
+AddForm #1, 0, 1, "Пленка",choice,plenka%,"AGFA 20x26", "KODAK 20x24"
+AddForm #1, 0, 4, "Промежуток",input,spacing#
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then end
+
+if plenka% = 2 then
+	' пленка KODAK 20 на 24 дюйма (508 на 609.6 мм)
+	fsizex# = 508.0
+	fsizey# = 609.6
+	prefix$ = "_KODAK"
+else
+'	' пленка AGFA 23 на 29 дюйма (584.2 на 736.6 мм)
+'	fsizex# = 584.2
+'	fsizey# = 736.6
+'	prefix$ = "_AGFA"
+	' пленка AGFA 20 на 26 дюйма (508 на 660.4 мм)
+	fsizex# = 508.0
+	fsizey# = 660.4
+	prefix$ = "_AGFA"
+end if
+
+'messagebox str$(fsizex#)
+
+util_camed@
+setgridsnap@ 0
+setsnap@ 0
+
+!include "getpathandname.scr"
+
+pathgbx$ = path$+"gerber"
+mkdir pathgbx$
+pathgbx$ = pathgbx$+"\" 
+
+' взломы
+explode_padstack@ 
+edit_selectall2@ 
+explode@ 
+back@
+
+explode_custom@ 
+edit_selectall2@ 
+explode_FillCustPoly@ -1 
+back@
+
+
+'9. Вывод герберов
+print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
+setup_fmtype@ 0,1
+setup_fmtunit@ 0,0
+setup_fmtdigits@ 0,2,4
+setup_fmtmode@ 0,0
+setup_fmtzero@ 0,0
+internal = 1;
+neg = -1
+
+nx1# = (fsizex#-2*spacing#)/sizex
+nx1 = val(left$(str$(nx1#),instr(1,str$(nx1#),".")))
+if nx1>1 then 
+	nx1# = (fsizex#-(2*spacing#+(nx1-1)*spacing#))/sizex
+	nx1 = val(left$(str$(nx1#),instr(1,str$(nx1#),".")))
+end if
+
+nx2# = (fsizey#-2*spacing#)/sizex
+nx2 = val(left$(str$(nx2#),instr(1,str$(nx2#),".")))
+if nx2>1 then 
+	nx2# = (fsizey#-(2*spacing#+(nx2-1)*spacing#))/sizex
+	nx2 = val(left$(str$(nx2#),instr(1,str$(nx2#),".")))
+end if
+
+ny1# = (fsizey#-2*spacing#)/sizey
+ny1 = val(left$(str$(ny1#),instr(1,str$(ny1#),".")))
+if ny1>1 then 
+	ny1# = (fsizey#-(2*spacing#+(ny1-1)*spacing#))/sizey
+	ny1 = val(left$(str$(ny1#),instr(1,str$(ny1#),".")))
+end if
+
+ny2# = (fsizex#-2*spacing#)/sizey
+ny2 = val(left$(str$(ny2#),instr(1,str$(ny2#),".")))
+if ny2>1 then 
+	ny2# = (fsizex#-(2*spacing#+(ny2-1)*spacing#))/sizey
+	ny2 = val(left$(str$(ny2#),instr(1,str$(ny2#),".")))
+end if
+
+'~ messagebox str$(nx1)+" "+str$(nx2)+" "+str$(ny1)+" "+str$(ny2)+" "+str$(nx1#)+" "+str$(nx2#)+" "+str$(ny1#)+" "+str$(ny2#)+" "+str$(spacing#)+" "+str$(sizex)+" "+str$(sizey)+" "+str$(ggg#)
+'~ exit 
+
+n1 = nx1*ny1
+n2 = nx2*ny2
+
+if n1<1 then n1=1
+if n2<1 then n2=1
+
+if n1<n2 then
+	' поворот
+	layer_alloff@ 0
+	edit_rotate@
+	setrot100angle@ 9000
+	setsnap@ 0
+	edit_selectall2@ 
+	' view_all@
+	axy@ centerx,centery
+	back@
+	nx = nx2
+	ny = ny2
+	num = n2
+else 
+	nx = nx1
+	ny = ny1
+	num = n1
+end if
+
+'messagebox str$(nx1)+" "+str$(nx2)+" "+str$(ny1)+" "+str$(ny2)+" "+str$(num)
+
+
+'if num<2 then
+'	MACRO_LINK "x:\tool\camscripts\creategbx.scr"
+'' сюда уже не вернется	
+'end if
+
+
+centerx = (Dbmaxx!-Dbminx!)/2+Dbminx!
+centery = (Dbmaxy!-Dbminy!)/2+Dbminy!
+
+dim play(Highestlayer!+3) ' 3 для дополнительных comp solder
+dim playtype(Highestlayer!+3)' для типа (сортировка)
+dim nlay(Highestlayer!+3) ' 3 для дополнительных comp solder
+dim nlaytype(Highestlayer!+3)' для типа (сортировка)
+
+hlay = Highestlayer!
+i=1
+j=1
+mpp = -1
+
+for lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if layertype! = 0 then 
+		comp = lay ' top
+		play(i)=lay
+		playtype(i) = 1
+		i=i+1
+	elseif layertype! = 3 then 'solder
+		play(i)=lay
+		playtype(i) = 1
+		i=i+1
+		solder = lay
+		gosub mirror
+	elseif layertype! = 11 then 'mask top
+		play(i)=lay
+		playtype(i) = 2
+		i=i+1
+		mc = lay
+	elseif layertype! = 12 then 'mask bottom
+		play(i)=lay
+		playtype(i) = 2
+		i=i+1
+		ms = lay
+		gosub mirror
+	elseif layertype! = 7 then 'slk top
+		play(i)=lay
+		playtype(i) = 3
+		i=i+1
+		rc = lay
+		gosub mirror
+	elseif layertype! = 8 then 'slk BOT
+		play(i)=lay
+		playtype(i) = 3
+		i=i+1
+		rs = lay
+	elseif layertype! = 16 then 'refdes top
+		if layername! = "mcv" then
+			nlaytype(j) = 1
+			mcv=lay
+		else
+			nlaytype(j) = 4
+			rcn=lay
+		end if
+		neg = 1
+		nlay(j)=lay
+		j=j+1
+	elseif layertype! = 17 then 'reefdes BOT
+		if layername! = "msv" then
+			msv=lay
+			nlaytype(j) = 1 ' вторые по приоритету и всегда парные, о! будут первыми, так как внутренние могут быть непарными '
+		else
+			rsn=lay
+			nlaytype(j) = 4
+		end if
+		neg = 1
+		nlay(j)=lay
+		j=j+1
+		gosub mirror
+	elseif layertype! = 19 then 'PASTE TOP
+		play(i)=lay
+		playtypre(i) = 5
+		i=i+1
+		c1=lay
+	elseif layertype! = 20 then 'PASTE TOP
+		play(i)=lay
+		playtypre(i) = 5
+		i=i+1
+		gosub mirror
+		s1=lay
+	elseif layertype! = 1 then 'internal
+		ln$=Layername!
+		mpp = 1 ' есть внутренние слои
+		neg = 1
+		nlay(j)=lay
+		nlaytype(j) = 2 ' самое важное вывести внутренние слои вместе, но они могут быть непарными '
+		if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"а")>0 or instr(1,ln$,"А")>0 then
+			nlaytype(j) = 3 ' 'то другие, они по приоритету последние, наряду с маркировками, которые могут быть непарными
+		end if
+		j=j+1
+		delta = internal - (internal / 2)*2)
+		if delta = 0 then
+			'none
+		else
+			gosub mirror
+		end if
+		internal = internal+1
+	elseif layertype! = 2 then 'neg plane
+		mpp = 1 ' есть внутренние слои
+		play(i)=lay
+		playtypre(i) = 4
+		i=i+1
+		delta = internal - (internal / 2)*2)
+		if delta = 0 then
+			'set_layermirrorstate@ lay,0 '0-not 1-yes
+		else
+			gosub mirror
+		end if
+		internal = internal+1
+	end if
+next
+
+'~ if mpp <> -1 then
+	'~ ' скопировать наружные слои
+	'~ cd = Highestlayer!
+	'~ ccd = Highestlayer!+1
+	'~ cd = cd+1
+	'~ edit_scale@ comp,cd,100000000,100000000
+	'~ play(i)=cd
+	'~ playtype(i) = 3
+	'~ i=i+1
+	'~ sd = Highestlayer!
+	'~ sd = sd+1
+	'~ edit_scale@ solder,sd,100000000,100000000
+	'~ play(i)=sd
+	'~ playtype(i) = 4
+	'~ i=i+1
+'~ end if
+
+i=i-1
+j=j-1
+lay = 1
+
+BREAK
+' сортировка двух массивов по массиву типов'
+' positiv
+' i - количество элементов '
+' быстрая сортировка'
+ii = 1 ' начальный '
+jj = i ' конечный'
+xx = playtype((ii+jj)/2) ' серединный эелемент
+startsortp:
+	wp1:
+		if playtype(ii) < xx then
+			ii=ii+1
+			goto wp1
+		end if
+	wp2:
+		if playtype(jj) > xx then
+			jj=jj-1
+			goto wp2
+		end if
+	if ii <= jj then
+		' поменять '
+		temp = play(ii)
+		ttemp = playtype(ii)
+		play(ii) = play (jj)
+		playtype(ii) = playtype(jj)
+		play(jj) = temp
+		playtype(jj) = ttemp
+		' указатели '
+		ii = ii + 1
+		jj = jj - 1
+	end if
+	if ii < jj then goto startsortp
+	
+' сортировка двух массивов по массиву типов'
+' negative
+' j - количество элементов '
+' быстрая сортировка'
+ii = 1 ' начальный '
+jj = j ' конечный'
+xx = nlaytype((ii+jj)/2) ' серединный эелемент
+startsortn:
+	wn1:
+		if nlaytype(ii) < xx then
+			ii=ii+1
+			goto wn1
+		end if
+	wn2:
+		if nlaytype(jj) > xx then
+			jj=jj-1
+			goto wn2
+		end if
+	if ii <= jj then
+		' поменять '
+		temp = nlay(ii)
+		ttemp = nlaytype(ii)
+		nlay(ii) = nlay (jj)
+		nlaytype(ii) = nlaytype(jj)
+		nlay(jj) = temp
+		nlaytype(jj) = ttemp
+		' указатели '
+		ii = ii + 1
+		jj = jj - 1
+	end if
+	if ii < jj then goto startsortn
+	
+
+for ii=1 to i step num
+	setlayer@ play(ii) 
+	layer_alloff@ 1
+	for iii=1 to num
+		if (ii+iii-1)<=i then setlayer@ play(ii+iii-1)	
+	next
+	panlay = blanklayer!
+	gosub panel
+	set_layermirrorstate@ panlay,0 '0-not 1-yes
+	layer_setimagepolarity@ panlay,0 'positiv
+	exportgbrfile@ panlay,-1,pathgbx$+"pos_"+str$(lay)+prefix$+".gbx"
+' 18-07-2012 - Перестали рисоать негативы наружных слоев'
+'	if lay=1 and mpp<>-1 then
+'		set_layermirrorstate@ panlay,0 '0-not 1-yes
+'		layer_setimagepolarity@ panlay,0 'positiv
+'		exportgbrfile@ panlay,-1,pathgbx$+"neg"+prefix$+".gbx"
+'	end if
+	lay = lay+1
+next
+
+if neg <> -1 then 
+	for ii=1 to j step num
+		setlayer@ nlay(ii) 
+		layer_alloff@ 1
+		for iii=1 to num
+			if (ii+iii-1)<=j then setlayer@ nlay(ii+iii-1)	
+		next
+		panlay = blanklayer!
+		gosub panel
+		set_layermirrorstate@ panlay,0 '0-not 1-yes
+		layer_setimagepolarity@ panlay,0 'negative исправлено на позитив для нормального рисования
+		exportgbrfile@ panlay,-1,pathgbx$+"neg_"+str$(lay)+prefix$+".gbx"
+		lay = lay+1
+	next
+end if
+
+close_msg
+end
+
+mirror:
+layer_alloff@ 1
+edit_mirv@
+setsnap@ 0
+edit_selectall2@ 
+'view_all@
+axy@ centerx,centery
+back@
+return
+
+' panel_spread@ 0,3
+' Spread (0 =OFF, 1 = ON), Panelize to layer #.
+' panel_spacing@ bx, by, sx, sy, 0
+' Border X spacing, Border Y spacing, Image spacing X, Image spacing Y, 
+' Spacing type (0=space between, 1=spacing offset). 
+' If you turn ON panel_centerimg@ below, the Image spacing and 
+' Spacing type parameters are ignored 
+' (but a value must still be specified for the macro to play properly)
+' panel_dimension@ 24000.0000,20000.0000
+' Maximum X and Y
+' panel_outline@ 0,10,15,15.0000
+' Generate border (0=no, 1=yes), generate Dcode, target layer, step off distance. 
+' The step off distance is only used if generate border is set to 1.
+' panel_centerimg@ 1
+' 1 = center images in their quadrant area, 0=do not center images 
+' (use layout specified in panel_spacing@)
+' setfilmbox@ 0.0000,20000.0000,24000.0000,0.0000
+' The size of the Film Box. Lower left X coordinate, 
+' upper right X coordinate, upper right Y coordinate, lower left Y coordinate.
+' panelization@
+' Generates the panel.
+panel:
+panel_spread@ 1,panlay
+panel_spacing@ 0,0,spacing#,spacing#,0
+panel_dimension@ fsizex#,fsizey#
+panel_outline@ 0,10,panlay,0.0000
+panel_centerimg@ 0
+setfilmbox@ 0.0000,fsizey#,fsizex#,0.0000 
+panelization@ 
+return

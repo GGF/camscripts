@@ -1,0 +1,762 @@
+'23-04-2012 Попытка сделать макрос надевания рамки на многослойную плату'
+' Плата должны быть полностью готова, количество внутренних слоев четное'
+
+10
+util_camed@
+textfont@ "arial.ttf"
+setgridsnap@ 0
+setsnap@ 0
+layer_renumber@
+
+!INCLUDE "getpathandname.scr"
+
+path:
+'path$ = left$(filename$,n%)
+rusboard$=board$
+ruscustomer$ = customer$
+translit$ = board$
+gosub translit
+board$ = translit1$
+translit$ = customer$
+gosub translit
+customer$ = translit1$
+
+
+tablepath$="x:\tool\camscripts"
+
+!include "layersset.scr"
+!include "layersset.scr"
+
+if comp > -1 then
+	setlayer@ comp
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+elseif solder > -1 then
+	setlayer@ solder
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+else
+	MessageBox "Нет слоев comp и solder"
+	goto 550
+end if
+
+if brd > -1 then
+	setlayer@ brd
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif mc > -1 then
+	setlayer@ mc
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif ms > -1 then
+	setlayer@ ms
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+end if
+
+!include "getdate.scr"
+
+techfield#=22
+step# = 10
+XX% = 1
+YY% = 1
+widezag% = 1
+mins%=1
+spx% = 0
+spy% = 0
+
+OpenForm #1,70,7,"Рамка на МПП (с) Sch'arapoff 2012", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос Делает рамку для МПП!",Print
+AddForm #1, 0, 1, "Габарит",print
+AddForm #1, 10, 1, "x:",input,xpl#
+AddForm #1, 35, 1, "y:",input,ypl#
+AddForm #1, 0, 2, "Шаг :",input,step#
+AddForm #1, 35, 2, "Техн. поля:",input,techfield#
+AddForm #1, 0, 3, "штук по x:",input,spx%
+AddForm #1, 35, 3, "штук по y:",input,spy%
+AddForm #1, 0, 4, "Имя ",input,name$
+AddForm #1, 0, 5, "Дата (месяц.год)",input,date$
+AddForm #1, 50, 4, "Ширина заготовки:",Choice,widezag%,"230","280","485"
+AddForm #1, 0, 6, "Считать минимальные размеры (долго)",check,mins%
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto 550
+
+'уберем графику'
+view_SuppressGrphcs@ 1
+view_close@
+
+if widezag% = 1 then
+	widezag%=230
+	heightzag% = 395
+elseif widezag% = 2 then
+	widezag%=280
+	heightzag% = 395
+else
+	widezag%=485
+	heightzag% = 585
+end if
+
+' посчитаем количество на заготовке'
+BREAK
+if spx% = 0 or spy% = 0 then
+	spx% = (widezag%-techfield#*2.0) / xpl#
+	if spx% > 1 then
+xbn:
+		bn% = (widezag%-techfield#*2.0) - xpl#*spx% - step#*(spx%-1)
+		if bn% < 0 then
+			spx% = spx%-1
+			goto xbn
+		end if
+	end if
+	spy% = (heightzag%-techfield#*2.0) / ypl#
+	if spy% > 1 then
+ybn:
+		bn% = (heightzag%-techfield#*2.0) - ypl#*spy% - step#*(spy%-1)
+		if bn% < 0 then
+			spy% = spy%-1
+			goto ybn
+		end if
+	end if
+end if
+
+count = spx%*spy%
+
+' wide and gap
+if mins% = 1 then
+	!include "wideandgaps.scr"
+end if
+
+filename$ = path$ + name$ + "_cam_full.pcb"
+'запись текущего файла
+setsaveasfile@ filename$
+
+
+'------------------------------------------------------
+layer_alloff@ 0
+util_paneled@
+setdcode@ 88
+setlayer@ 2
+setsectorize@ 0,1000
+textfullheight@ 2.5400
+textangle@ 0
+textmirror@ 0
+textjust@ 17
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfontface@ 2
+view_close@
+openlibitem@ 3,str$(widezag%)+"x"+str$(heightzag%)
+'if widezag% >280 then
+'	openlibitem@ 3,"485x585"
+'elseif widezag% >230 then
+'	openlibitem@ 3,"280x395"
+'else 
+'	openlibitem@ 3,"230x395"
+'end if
+set_panel_dimensions@ widezag%,heightzag%
+BREAK
+'techfieldl# = (widezag%*1.0 - spx%*xpl# - (step#*(spx%-1)))*0.5 - 1.0 
+techfieldl# = (widezag%*1.0 - spx%*(xpl# + step#))*0.5 - 1.0 
+' 1 мм в конце на всякий пожарный '
+techfieldt# = (heightzag%*1.0 - spy%*(ypl# + step#))*0.5 - 1.0 
+' 1 мм в конце на всякий пожарный '
+techfieldr# = techfieldl#
+techfieldb# = techfieldt#
+'MessageBox str$(techfieldl#)
+'MessageBox str$(techfieldt#)
+set_panel_border_spacing@ techfieldl#,techfieldt#,techfieldr#,techfieldb#
+set_minimum_image_spacing@ 0.0000,0.0000
+add_panel_symbol@ 1,str$(widezag%)+"x"+str$(heightzag%)
+'if widezag% >230 then
+'	add_panel_symbol@ 1,"280x395"
+'else 
+'	add_panel_symbol@ 1,"230x395"
+'end if
+set_panel_symbol_loc@ 0.0000,0.0000,0,0
+set_panel_coupoon_angle@ 0
+set_panel_symbol_ncrank@ 0
+set_panel_use_autocalc@ 1
+set_panel_image_rotation@ 0
+set_panel_compute_copies@ 1
+set_panel_use_spacebetween@ 0
+set_panel_image_spacing@ xpl#+step#,ypl#+step#
+del_all_panel_images@ 
+do_panel_autocalc@ 
+place_panel_symbols@ 
+'view_all@
+explode_flattenpanel@
+util_camed@
+setsnap@ 0
+'view_all@
+
+'запись текущего файла
+setsaveasfile@ filename$
+
+' замена платы и даты'
+' то что ниже должно было работать в редакторе панелей, но не работет'
+' потому придется делать другими средствами '
+
+'edit_variabletext_tab@ "DATA"
+'change_variabletext_tab@ "111"
+'chr$(34) + date$ + chr$(34)
+'edit_variabletext_tab@ "PLATA"
+'change_variabletext_tab@ "222"
+'chr$(34) + board$ + chr$(34)
+
+' установки шрифтов'
+setsnap@ 1
+
+setsectorize@ 0,1000
+textfullheight@ 4.0000
+textangle@ 9000
+textjust@ 36
+
+'33 = Left Baseline
+'36 = Center Baseline
+'34 = Right Baseline
+'17 = Left Bottom
+'20 = Center Bottom
+'18 = Right Bottom
+'5 = Left Center
+'4 = Center Center
+'6 = Right Center
+'9 = Left Top
+'12 = Center Top
+'10 = Right Top
+
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+
+setlayer@ comp
+layer_alloff@ 1
+
+change_text@
+textmirror@ 0
+textjust@ 34
+axy@ (widezag%-17.5),heightzag%-36.25
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ "COMP "+date$
+textmirror@ 0
+textjust@ 33
+axy@ (widezag%-17.5),heightzag%-133.75
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ board$
+
+if rc <> -1 then
+	setlayer@ rc
+	layer_alloff@ 1
+	change_text@
+	textmirror@ 0
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-36.25
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MARK COMP "+date$
+	
+	change_text@
+	textmirror@ 0
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-133.75
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if rcn <> -1 then
+	setlayer@ rcn
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 0
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-36.25
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MARK COMP "+date$
+	
+	change_text@
+	textmirror@ 0
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-133.75
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if mc <> -1 then
+	setlayer@ mc
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 0
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-36.25
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MASK COMP "+date$
+	
+	change_text@
+	textmirror@ 0
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-133.75
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if mcv <> -1 then
+	setlayer@ mcv
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 0
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-36.25
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MASK COMP VIA "+date$
+	
+	change_text@
+	textmirror@ 0
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-133.75
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+setlayer@ solder
+layer_alloff@ 1
+
+change_text@
+textmirror@ 1
+textjust@ 34
+axy@ (widezag%-17.5),heightzag%-133.750
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ "SOLDER "+date$
+textmirror@ 1
+textjust@ 33
+axy@ (widezag%-17.5),heightzag%-36.250
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ board$
+
+if rs <> -1 then
+	setlayer@ rs
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 1
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-133.750
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MARK SOLDER "+date$
+
+	change_text@
+	textmirror@ 1
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-36.250
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if rsn <> -1 then
+	setlayer@ rsn
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 1
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-133.750
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MARK SOLDER "+date$
+
+	change_text@
+	textmirror@ 1
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-36.250
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if ms <> -1 then
+	setlayer@ ms
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 1
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-133.750
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MASK SOLDER "+date$
+
+	change_text@
+	textmirror@ 1
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-36.250
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+if msv <> -1 then
+	setlayer@ msv
+	layer_alloff@ 1
+
+	change_text@
+	textmirror@ 1
+	textjust@ 34
+	axy@ (widezag%-17.5),heightzag%-133.750
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ "MASK SOLDER VIA " + date$ 
+
+	change_text@
+	textmirror@ 1
+	textjust@ 33
+	axy@ (widezag%-17.5),heightzag%-36.250
+	textfont@ "SIMPLE.EFN"
+	edit_chgtext@ board$
+end if
+
+for i=1 to mpp
+BREAK
+	chet = i mod 2
+	if  chet > 0 then
+		setlayer@ int(i)
+		layer_alloff@ 1
+		' удалить'
+		change_text@
+		axy@ (widezag%-17.5),heightzag%-133.750
+		textfont@ "SIMPLE.EFN"
+		textmirror@ 1
+		textjust@ 34
+		edit_chgtext@ date$
+		back@
+		' поменять'
+		change_text@
+		axy@ (widezag%-17.5),heightzag%-36.250
+		textfont@ "SIMPLE.EFN"
+		textmirror@ 1
+		textjust@ 33
+		edit_chgtext@ board$
+		back@
+	else
+		setlayer@ int(i)
+		layer_alloff@ 1
+		' удалить'
+		change_text@
+		axy@ (widezag%-17.5),heightzag%-36.25
+		textfont@ "SIMPLE.EFN"
+		textmirror@ 0
+		textjust@ 34
+		edit_chgtext@ date$
+		back@
+		' поменять'
+		change_text@
+		axy@ (widezag%-17.5),heightzag%-133.75
+		textfont@ "SIMPLE.EFN"
+		textmirror@ 0
+		textjust@ 33
+		edit_chgtext@ board$
+		back@
+	end if
+next
+'setopenfile@ filename$
+
+' add drill text'
+' name drill
+setlayer@ drill
+layer_alloff@ 1
+drilltable = Tooltable!
+drillref = Highesttoolref!+1
+drilnum = Highestuseddrillnum!+1
+view_close@
+nc_add_tool@ drilltable,drillref
+nc_set_tool_id@ drilltable,drillref,drillnum
+nc_set_tool_type@ drilltable,drillref,3
+nc_set_tool_size@ drilltable,drillref,1.2000
+set_current_toolref@ drillref
+if widezag%>280 then
+	dtx# = 260
+	dty# = 555.0000
+elseif widezag%>230 then
+	dtx# = 180
+	dty# = 365.0000
+else 
+	dtx# = 130.00
+	dty# = 365.0000
+end if
+nc_add_drilled_text@ dtx#,dty#,drill,drillref,0,name$ ' bigtechfield#+6-чтобы не задеть шляпки штифтов и не наехать на текст (COMP,SOLDER etc.)
+back@
+
+'копировать отверстия на основные слои
+edit_copy@
+axy@ dtx#,dty#
+setcoplayer@ rcn,1
+setcoplayer@ rc,1
+setcoplayer@ mc,1
+setcoplayer@ comp,1
+for i=1 to mpp
+setcoplayer@ int(i),1
+next
+setcoplayer@ solder,1
+setcoplayer@ ms,1
+setcoplayer@ rs,1
+setcoplayer@ rsn,1
+setcoplayer@ mcv,1
+setcoplayer@ msv,1
+copy_to_layer@
+back@
+
+'explode drill text
+setlayer@ drill
+layer_alloff@ 1
+drilltable = Tooltable!
+edit_move@
+axy@ dtx#,dty#
+
+r_tmplay = blanklayer!
+movetolayer@ r_tmplay
+back@
+setlayer@ r_tmplay
+layer_alloff@ 1
+newapr = Blankdcode!
+set_aperture@ newapr,"Round d:0.800"
+update_dcodebar@ 
+change_dcode@
+setsnap@ 1
+edit_selectall2@ 
+edit_chgdcode@ newapr
+nc_gerber_to_drill@ r_tmplay ,drill,drilltable,1,1,""
+edit_removelyr@ r_tmplay
+layer_renumber@
+
+layer_alloff@ 0
+
+' delete лишние отверстия с фрезеровки'
+'setlayer@ mill
+'layer_alloff@ 1
+'edit_delete@
+'setsnap@ 1
+'edit_group@
+'edit_outside@
+'axy@ (techfield#),(techfield#)
+'axy@ (widezag%*1.0-techfield#),(heightzag%*1.0-techfield#)
+'back@
+'delete_edits@ 4,1
+'back@
+' реперы
+setlayer@ mill
+layer_alloff@ 1
+edit_delete@
+axy@ 25.0,25.0
+axy@ 25.0,370.0
+axy@ widezag%-25,25
+axy@ widezag%-25.0,heightzag%*1.0-25.0
+if widezag%>280 then
+
+elseif widezag%>230 then
+	axy@ 50.0,370.0
+	axy@ 50.0,25.0
+	axy@ 230.0,370.0
+	axy@ 230.0,25.0
+	' тесткупон'
+	axy@ 12.5000,21.2500
+	axy@ 12.5000,26.2500
+	
+	axy@ 42.5000,11.2500
+	axy@ 47.5000,11.2500
+
+	axy@ 12.5000,368.7500
+	axy@ 12.5000,373.7500
+
+	axy@ 42.5000,383.7500
+	axy@ 47.5000,383.7500
+
+	axy@ 232.5000,383.7500
+	axy@ 237.5000,383.7500
+
+	axy@ 267.5000,368.7500
+	axy@ 267.5000,373.7500
+
+	axy@ 267.5000,21.2500
+	axy@ 267.5000,26.2500
+
+	axy@ 232.5000,11.2500
+	axy@ 237.5000,11.2500
+else
+	' тесткупон'
+	axy@ 10.0000,20.0000
+	axy@ 10.0000,25.0000
+	
+	axy@ 10.0000,368.7500
+	axy@ 10.0000,373.7500
+	
+	axy@ 40.0000,383.7500
+	axy@ 45.0000,383.7500
+	
+	axy@ 42.5000,11.2500
+	axy@ 47.5000,11.2500
+	
+	axy@ 220.0000,20.0000
+	axy@ 220.0000,25.0000
+	
+	axy@ 220.0000,368.7500
+	axy@ 220.0000,373.7500
+	
+	axy@ 182.5000,383.7500
+	axy@ 187.5000,383.7500
+
+	axy@ 182.5000,11.2500
+	axy@ 187.5000,11.2500
+end if
+' фрезеровочные'
+axy@ 10,107.5
+axy@ 10,152.5
+axy@ 10,242.5
+axy@ 10,287.5
+
+back@
+
+setsnap@ 1
+'------------------------------------------------------
+
+drillname$ = name$
+customer$ = ruscustomer$
+board$=rusboard$
+!include "createcoppers.scr"
+'sc#ss#
+setlayer@ comp
+layer_alloff@ 0
+sc% = sc#/100
+sc# = sc%/100.0
+
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfont@ "SIMPLE.EFN"
+
+change_text@
+setsnap@ 1
+textangle@ 0
+textmirror@ 0
+textjust@ 33
+if widezag%>280 then
+	axy@ 52.5,558.75
+elseif widezag%>230 then
+	axy@ 72.5,369
+else
+	axy@ 42,369
+end if
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ "S="+ FMTUSING$("###.##",sc#)
+
+ss% = ss#/100
+ss# = ss% / 100.0
+change_text@
+setsnap@ 1
+textangle@ 0
+textmirror@ 1
+textjust@ 33
+if widezag%>280 then
+	axy@ 131.25,558.75
+elseif widezag%>230 then
+	axy@ 120,369
+else
+	axy@ 84,369
+end if
+textfont@ "SIMPLE.EFN"
+edit_chgtext@ "S="+ FMTUSING$("###.##",ss#)
+
+
+
+noform=1
+!include "sortdrill.scr"
+setlayer@ comp
+
+' номера слоев'
+newapr = Blankdcode!
+set_aperture@ newapr,"Round d:0.300"
+update_dcodebar@ 
+setdcode@ newapr
+
+
+
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfont@ "SIMPLE.EFN"
+
+add_text@
+textfullheight@ 4.0000
+textangle@ 9000
+textjust@ 36
+setgridsnap@ 1
+
+
+if widezag%>280 then
+	dty# =  35
+	dtx# = (widezag%-13.75)
+elseif widezag%>230 then
+	dty# =  42.5
+	dtx# = (widezag%-15)
+else
+	dty# =  42.5
+	dtx# = (widezag%-15)
+end if
+setlayer@ comp
+' уже есть'
+lay = 2
+trulay = 1
+for i=1 to mpp
+BREAK
+	chet = i mod 2
+	setlayer@ int(i)
+	layer_alloff@ 1
+	if  chet > 0 then
+		textmirror@ 1
+	else
+		textmirror@ 0
+	end if
+	ln$=Layername!
+	if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"а")>0 or instr(1,ln$,"А")>0 then
+		if chet=0 then
+			layname$ = str$(trulay+1)+"A"
+		else 
+			layname$ = str$(trulay)+"A"
+		end if
+	else 
+		trulay=trulay+1
+		layname$ = str$(trulay)
+	end if
+	addtext@ dtx#,dty#+5*(lay-2),210,dty#+5+5*(lay-2),layname$
+	lay=lay+1
+next
+setlayer@ solder
+textmirror@ 1
+addtext@ dtx#,dty#+5*(lay-2),210,dty#+5+5*(lay-2),str$(trulay+1)
+
+
+setlayer@ comp
+layer_alloff@ 0
+'view_all@
+setsaveasfile@ filename$
+
+view_SuppressGrphcs@ 0
+
+550
+end
+
+!include "translit.sub" 

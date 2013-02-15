@@ -1,0 +1,94 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 PRO V6.0 Date:  Tue Dec 25 13:56:16 2001
+util_camed@
+setdcode@ 10
+setlayer@ 0
+setsectorize@ 0,1000
+textfullheight@ 2.5400
+textangle@ 0
+textmirror@ 0
+textjust@ 17
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfont@ "SIMPLE.EFN"
+dim int(16)
+'Получение пути файла
+!include "getpathandname.scr"
+
+'запрос имени файла
+OpenForm #1,70,7,"Sch'arapoff", character, okcancel
+AddForm #1, 0, 3, "Имя (для сверловки)",input,name$
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto 550
+
+
+
+'ввод пик файлов
+setup_fmtype@ 0,1
+rc1 = blanklayer!
+edit_layer@ rc1,15,15,7,0,"rc.gbx"
+importgbrfile@ rc1,0.0000,0.0000,path$+"gerber\pos_rc.gbx"
+setsnap@ 1
+rc = blanklayer!
+edit_layer@ rc,15,15,16,0,"rc.gbx"
+importgbrfile@ rc,0.0000,0.0000,path$+"gerber\neg_rcn.gbx"
+setsnap@ 1
+mc = blanklayer!
+edit_layer@ mc,2,2,11,0,"mc.gbx"
+importgbrfile@ mc,0.0000,0.0000,path$+"gerber\pos_mc.gbx"
+setsnap@ 1
+setup_fmtype@ 0,1
+c = blanklayer!
+edit_layer@ c,2,2,0,0,"c.gbx"
+importgbrfile@ c,0.0000,0.0000,path$+"gerber\pos_c.gbx"
+setsnap@ 1
+for i=1 to 14
+	int(i) = blanklayer!
+	edit_layer@ int(i),13,13,1,0,"i"+str$(i)+".gbx"
+	importgbrfile@ int(i),0.0000,0.0000,path$+"gerber\neg_i"+str$(i)+".gbx"
+	setsnap@ 1
+next
+s = blanklayer!
+edit_layer@ s,3,3,3,0,"s.gbx"
+importgbrfile@ s,0.0000,0.0000,path$+"gerber\pos_s.gbx"
+setsnap@ 1
+ms = blanklayer!
+edit_layer@ ms,3,3,12,0,"ms.gbx"
+importgbrfile@ ms,0.0000,0.0000,path$+"gerber\pos_ms.gbx"
+setsnap@ 1
+rs = blanklayer!
+edit_layer@ rs,13,13,17,0,"rs.gbx"
+importgbrfile@ rs,0.0000,0.0000,path$+"gerber\neg_rsn.gbx"
+setsnap@ 1
+rs1 = blanklayer!
+edit_layer@ rs1,13,13,8,0,"rs.gbx"
+importgbrfile@ rs1,0.0000,0.0000,path$+"gerber\pos_rs.gbx"
+setsnap@ 1
+brd = blanklayer!
+edit_layer@ brd,6,6,6,0,"brd.brd"
+importgbrfile@ brd,0.0000,0.0000,path$+"gerber\brd.brd"
+setsnap@ 1
+
+update_dcodebar@ 
+view_all@
+
+layer_alloff@ 1
+
+
+nc_add_table@ 3
+nc_import_drill_pl@ blanklayer!,1,path$+name$+".mk4"
+nc_add_table@ 2
+nc_import_mill@ blanklayer!,2,path$+name$+".frz"
+
+layer_alloff@ 0
+view_all@
+
+550
+end

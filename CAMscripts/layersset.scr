@@ -1,0 +1,107 @@
+if layersset <> 1 then 
+	dim int(30)
+	' сверловок - фрезеровок'
+	dim dr(10)
+	dim mi(10)
+	dim dr$(10)
+	dim mi$(10)
+	' указание что файл включен
+	layersset = 1;
+
+	' сверловок - фрезеровок'
+	drs=0
+	mis=0
+	mill = -1
+	drill = -1
+	drill  = drilllayer!
+	mill   = milllayer!
+	if mill = -1 then mill = drilllayer_unplated!
+	comp   = -1
+	solder = -1
+	mc     = -1
+	ms     = -1
+	rc     = -1
+	rs     = -1
+	rsn = -1
+	rcn = -1
+	mcv = -1
+	msv = -1
+	brd = -1
+	mpp = 0;
+
+	layer_renumber@
+	For lay = Nextlay to Highestlayer!
+		setlayer@ lay
+		if Layerblank! then 
+			edit_removelyr@ lay
+		end if
+	next
+	layer_renumber@
+	
+	For lay = Nextlay to Highestlayer!
+		setlayer@ lay
+			if layertype! = 0 then 
+				comp = lay
+			elseif layertype! = 3 then 
+				solder = lay
+			elseif layertype! = 1 then 
+				mpp = mpp+1
+				int(mpp) = lay
+			elseif layertype!=11 then 
+				mc = lay
+			elseif layertype!=12 then 
+				ms = lay
+			elseif layertype!=7 then 
+				rc = lay
+			elseif layertype!=8 then 
+				rs = lay
+			elseif layertype!=6 then 
+				brd = lay
+			elseif layertype!=16 then 
+				if layername! = "mcv" then
+					mcv = lay
+				else 
+					rcn = lay
+				end if
+			elseif layertype!=17 then 
+				if layername! = "msv" then
+					msv = lay
+				else 
+					rsn = lay
+				end if
+			end if
+			if layertype! = 21 then 
+				if instr(layername!,"mkr") > 0 OR instr(layername!,"MKR") > 0 OR instr(layername!,"mk4") > 0 OR instr(layername!,"mk2") > 0 OR instr(layername!,"drill")>0 OR (instr(layername!,"drl")>0 AND NOT (instr(layername!,"n.drl")>0 AND customer$="Импульс")) then
+					drill = lay
+					drs = drs + 1
+					dr(drs) = lay
+					dr$(drs) = layername!
+				elseif instr(layername!,"fr") > 0 OR instr(layername!,"FR") > 0 OR instr(layername!,"mill")>0 OR (instr(layername!,"n.drl")>0 AND customer$="Импульс") or lay = mill then
+					mill = lay
+					mis = mis+1
+					mi(mis) = lay
+					mi$(mis) = layername!
+				else 
+					drill = lay
+					drs = drs + 1
+					dr(drs) = lay
+					dr$(drs) = layername!
+				end if
+			 'AND mill = -1 AND  lay <> drill then mill = lay
+			end if
+	next
+
+	if mpp = 0 then
+		mpp = -1
+		layers = 0
+	else
+		layers = mpp
+	end if
+	if comp <>-1 then
+		layers = layers+1
+	end if
+	if solder <>-1 then
+		layers = layers+1
+	end if
+	layer_renumber@
+end if

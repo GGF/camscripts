@@ -1,0 +1,810 @@
+util_camed@
+which$=1
+OpenForm #1,70,7,"Обработка кондуктора", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос обрабатывает четырехствольный кондуктор",Print
+AddForm #1, 0, 1, "для использования на большом поле",Print
+AddForm #1, 0, 2, "Создайте два дополнительных слоя outline1 - меньший габарит",Print
+AddForm #1, 0, 3, "outline - больший",Print
+AddForm #1, 0, 4, "Имя кондуктора",input,text$
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then goto endofscript
+
+Drill18%=6        ' pin 1.8 
+MaxDrill18=100   ' к-во 1.8 после которого выводится сообщение
+path$="x:\tool\mania\LongField\4plates\"
+StiffDrill%=7
+TextDrill%=8
+Neg#= -1.0
+StiffShift#=12.5 
+StiffShift4SmallPlate#=37.5
+layer_renumber@
+setlayer@ 1
+outline = -1
+outline1 = -1
+l1plus = -1
+l2plus = -1
+mirror = 1
+setortho@ 2	'L0 - Orthogonal Lock
+
+for lay=Nextlay to Highestlayer!
+setlayer@ lay
+if UCASE$(layername!) ="OUTLINE" then
+	edit_layer@ lay,-2,-2,6,-2,-2
+	outline = lay
+elseif UCASE$(layername!) = "OUTLINE1" then
+	edit_layer@ lay,-2,-2,6,-2,-2
+	outline1 = lay
+elseif layername! = "TFBPLATE_2" then
+	l1 = lay
+	mirror = 0
+elseif layername! = "TFBPLATE_4" then
+	l2 = lay
+	mirror = 0
+elseif layername! = "TFBPLATE_6" then
+	l3 = lay
+	mirror = 0
+elseif layername! = "TFBPLATE_8" then
+	l4 = lay
+	mirror = 0
+elseif layername! = "TFTPLATE_2" then
+	l1 = lay
+elseif layername! = "TFTPLATE_4" then
+	l2 = lay
+elseif layername! = "TFTPLATE_6" then
+	l3 = lay
+elseif layername! = "TFTPLATE_8" then
+	l4 = lay
+elseif layername! = "1" then
+	goto RemainsLayers
+elseif layername! = "2" then
+	goto RemainsLayers
+elseif layername! = "3" then
+	goto RemainsLayers
+elseif layername! = "4" then
+	goto RemainsLayers
+elseif layername! = "1plus" then
+	goto RemainsLayers
+elseif layername! = "2plus" then
+	goto RemainsLayers
+end if
+next
+
+if outline = -1 then 
+	MessageBox "Создайте слой с именем outline и outline1","Выход",WARNING
+	goto endofscript
+elseif outline1 = -1 then 
+	MessageBox "Создайте слой с именем outline и outline1","Выход",WARNING
+	goto endofscript
+end if
+
+'Highest tool table number - added 4-09-07
+HighestNCT%=-1
+setlayer@ 1
+for lay=1 to Highestlayer!
+  setlayer@ lay
+  if Layertype! = 21 and Tooltable! > HighestNCT% then 
+    HighestNCT%=Tooltable!
+  end if
+next
+
+'проверка на слишком большое к-во 1.8 pins
+setlayer@ l1
+set_current_toolref@ Drill18%
+if Lyrdrillcount! > MaxDrill18 then
+	drillcount$=Lyrdrillcount!
+	message$="Использовано  " + drillcount$ + " игл 1.8 . Продолжить?"
+	Ok_cancel message$ , ret%
+	if ret% = 0 then goto endofscript
+end if
+
+ 'Проверка размеров и относительного положения контуров
+ ' Меньший контур
+setlayer@ outline1
+layer_alloff@ 1
+maxX#= vismaxx!
+minX#= visminx!
+maxY#= vismaxy! 
+minY#= visminy!
+LengthX# = vismaxx! - visminx!
+LengthY#= vismaxy! - visminy!
+ ' Больший контур
+setlayer@ outline
+layer_alloff@ 1
+if maxX# > vismaxx! then  goto WrongOutline
+if minX# < visminx! then  goto WrongOutline
+if maxY# > vismaxy! then  goto WrongOutline
+if minY# < visminy! then  goto WrongOutline
+
+MaxLengthX# = vismaxx! - visminx!
+MaxLengthY#= vismaxy! - visminy!
+if MaxLengthX# < LengthX# then
+  goto WrongOutline
+elseif MaxLengthY# < LengthY# then
+   goto WrongOutline
+end if
+
+'Проверка сверловок до замены таблиц
+zazor# = 0.09
+gosub checkdrill
+'Переименование слоев
+edit_layer@ l1,-2,-2,-2,-2,"1"
+edit_layer@ l2,-2,-2,-2,-2,"2"
+edit_layer@ l3,-2,-2,-2,-2,"3"
+edit_layer@ l4,-2,-2,-2,-2,"4"
+
+layer_renumber@
+
+'Создание слоев досверловки
+l1plus = Blanklayer!
+edit_layer@ l1plus,-2,-2,21,0,"1plus"
+l2plus = Blanklayer!
+edit_layer@ l2plus,-2,-2,21,0,"2plus"
+
+'Присвоение новым слоям соответствующей таблицы сверловки
+setlayer@ l1
+table = Tooltable!
+nc_assign_tool_table_to_layer@ l1plus,table
+nc_assign_tool_table_to_layer@ l2plus,table
+
+'копирование с l1 на l1plus
+setlayer@ l1
+layer_alloff@ 1
+edit_copy@
+edit_selectall2@
+setcoplayer@ l1plus,1
+copy_to_layer@
+back@
+
+'копирование с l2 на l2plus
+setlayer@ l2
+layer_alloff@ 1
+edit_copy@
+edit_selectall2@
+setcoplayer@ l2plus,1
+copy_to_layer@
+back@
+
+'размеры outline
+setlayer@ outline1
+layer_alloff@ 1
+maxX#= vismaxx!
+minX#= visminx!
+maxY#= vismaxy! 
+minY#= visminy!
+'включение только нужных слоев
+setlayer@ l1
+layer_alloff@ 1
+setlayer@ l2
+setlayer@ l3
+setlayer@ l4
+setlayer@ l1plus
+setlayer@ l2plus
+'сверловка должна быть внутри outline1
+if maxX# < vismaxx! then  goto InsideOutline1
+if minX# > visminx! then  goto InsideOutline1
+if maxY# < vismaxy! then  goto InsideOutline1
+if minY# > visminy! then  goto InsideOutline1
+setlayer@ outline1
+setlayer@ outline
+
+'поворот, если нужно
+MaxLengthX# = vismaxx! - visminx!
+MaxLengthY# = vismaxy! - visminy!
+if MaxLengthX# > MaxLengthY# then
+	edit_rotate@
+	edit_selectall2@
+	axy@ 0,0
+	end@
+	SWAP MaxLengthX#, MaxLengthY#
+end if
+
+'зеркало, если нужно
+if mirror = 1 then
+	edit_mirv@
+	setmirroraxis@ 1
+	edit_selectall2@
+	axy@ 0,0
+	end@
+end if
+
+'передвижение в 0
+edit_move@
+setsnap@ 1
+edit_selectall2@
+axy@ visminx!,visminy!
+setsnap@ 0
+axy@ 0,0
+end@
+
+'проверить вертикальный размер
+if MaxLengthY# < 200.0 then goto ErrYSize
+
+'добавить стифенеры
+setlayer@ outline1
+layer_alloff@ 1
+LengthX# = vismaxx! - visminx!
+LengthY#= vismaxy! - visminy!
+if LengthX# < 200.0 and LengthY# < 200.0 then goto ErrYSize
+if (LengthX# < (MaxLengthX#-25.0)) then
+  fOnvert = 1      'меньшие пластины располагаются вертикально
+  'if
+else
+  fOnvert = 0
+  if (LengthY# < LengthX#) then fSmallRot=1 'small plates must be rotated again 
+  else	 fSmallRot=0
+end if
+
+if fOnvert=1 then
+  setlayer@ l1 'на 1
+  gosub AddBigStiffDrillVert
+  setlayer@ l2 'на 2
+  gosub AddBigStiffDrillVert
+  gosub AddSmallStiffDrillVert
+  setlayer@ l3 'на 3
+  gosub AddSmallStiffDrillVert
+  setlayer@ l4 'на 4
+  gosub AddBigStiffDrillVert
+else
+  setlayer@ l1 'на 1
+  gosub AddBigStiffDrillHor
+  setlayer@ l2 'на 2
+  gosub AddBigStiffDrillHor
+  gosub AddSmallStiffDrillHor
+  setlayer@ l3 'на 3
+  gosub AddSmallStiffDrillHor
+  setlayer@ l4 'на 4
+  gosub AddBigStiffDrillHor
+end if
+
+view_all@
+'замена таблиц   - corrected 4-09-07
+'абсолютные номера таблиц заменены  на относительные к максимальному номеру из уже существующих
+Nct1%=HighestNCT%+1			'10
+Nct1plus%=HighestNCT%+2			'11
+Nct2%=HighestNCT%+3			'12
+Nct3%=HighestNCT%+4			'13
+Nct4%=HighestNCT%+5			'14
+
+nc_load_table_replace@ Nct1%,path$+"1.nct"		'10
+nc_load_table_replace@ Nct1plus%,path$+"1plus.nct"	'11
+nc_load_table_replace@ Nct2%,path$+"2.nct"		'12
+nc_load_table_replace@ Nct3%,path$+"3.nct"		'13
+nc_load_table_replace@ Nct4%,path$+"4.nct"		'14
+
+nc_assign_tool_table_to_layer@ l1,Nct1%			'10
+nc_assign_tool_table_to_layer@ l2,Nct2%			'12
+nc_assign_tool_table_to_layer@ l3,Nct3%			'13
+nc_assign_tool_table_to_layer@ l1plus,Nct1plus%		'11
+nc_assign_tool_table_to_layer@ l2plus,Nct1plus%		'11
+nc_assign_tool_table_to_layer@ l4,Nct4%			'14
+
+
+'combine 1plus & 4
+nc_combine_tool@ Nct1plus%,1,2
+nc_combine_tool@ Nct1plus%,1,3
+nc_combine_tool@ Nct1plus%,1,4
+nc_combine_tool@ Nct1plus%,1,8
+nc_combine_tool@ Nct1plus%,1,9
+nc_combine_tool@ Nct1plus%,5,6
+nc_combine_tool@ Nct4%,1,2
+nc_combine_tool@ Nct4%,1,3
+nc_combine_tool@ Nct4%,1,6
+nc_combine_tool@ Nct4%,4,5
+
+'добавить текст
+nLay=l1
+LayTxt$="-1"
+gosub AddText
+
+'добавить текст
+nLay=l2
+LayTxt$="-2"
+gosub AddText
+
+'добавить текст
+nLay=l3
+LayTxt$="-3"
+gosub AddText
+
+'добавить текст
+nLay=l4
+LayTxt$="-4"
+gosub AddText
+
+'включение только нужных слоев
+setlayer@ l1
+layer_alloff@ 1
+setlayer@ l2
+setlayer@ l3
+setlayer@ l4
+setlayer@ l1plus
+setlayer@ l2plus
+setlayer@ outline
+setlayer@ outline1
+view_all@
+
+'Проверка сверловок
+zazor# = 0.050
+gosub checkdrill
+
+'sort:
+'сортировка
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l1
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l2
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l3
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l4
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l1plus
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,l2plus
+drill_sort@ 0,0,0,0
+end@
+
+' отражение дополнительных слоев 30-08-06 и основных, потому что Стасу так нравится
+setsnap@ 0
+setlayer@ l1plus
+layer_alloff@ 1
+setlayer@ l2plus
+setlayer@ l1
+setlayer@ l2
+'
+setlayer@ outline
+edit_mirv@
+setmirroraxis@ 2
+edit_selectall2@
+axy@ 0,0
+end@
+
+'передвижение в 0
+edit_move@
+setsnap@ 1
+edit_selectall2@
+axy@ visminx!,visminy!
+setsnap@ 0
+axy@ 0,0
+end@
+
+' смещение 3-го слоя
+setlayer@ l3
+layer_alloff@ 1
+setlayer@ outline1
+'передвижение в 0
+edit_move@
+setsnap@ 1
+edit_selectall2@
+axy@ visminx!,visminy!
+setsnap@ 0
+axy@ 0,0
+end@
+'если пластина 3 горизонтальна - поворачиваем её
+if vismaxy! < vismaxx! then
+  edit_rotate@
+  edit_selectall2@
+  axy@ 0,0
+'передвижение в 0
+  edit_move@
+  setsnap@ 1
+  edit_selectall2@
+  axy@ visminx!,visminy!
+  setsnap@ 0
+  axy@ 0,0
+  end@
+end if  
+
+
+'Вывод файлов
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+s$=mid$(filename$,n%,1)
+if s$="\" then goto path
+next
+path:
+path$ = left$(filename$,n%)
+
+'создание файла заголовка для 3
+X# = vismaxx! - visminx!
+Y# = vismaxy! - visminy!
+
+Z#=(Y#-180.0)/2.0
+Z%=Z#
+if Z% > 150 then Z% = 150
+X% = X#
+if X%<X# then X%=X%+1
+Y% = Y#
+if Y%<Y# then Y%=Y%+1
+head$= path$ + "header.hdr"
+open head$ for output as #1 print #1,"%%3000"
+print #1, USING "M47, ###*###  ##";X%;Y%;Z%
+nx# = 99.375-10.0
+ny# = 277.375-Z%
+print #1, USING "X##.###Y##.###M50";nx#;ny#
+close #1
+
+'Настройка вывода drill mashine
+setup_fmtype@ 1,7
+'drill mashine - SIEB & MEYER 3000
+setup_fmtunit@ 1,1
+'drill mashine - metric
+setup_fmtdigits@ 1,3,3
+'drill mashine - 3.3 digit
+setup_fmtmode@ 1,0
+'drill mashine - absolute
+setup_fmtzero@ 1,2
+'drill mashine - zero none
+Export_XYmodal@ 1,0        'new
+'Set non modal
+nc_exp_nc_use_SR@ 0
+'do not use Step&Repeat
+drill_sethdrfile@ head$
+'header file
+nc_exp_drill_Exc_decimals@ 1
+Expdrl_generate_Header@ 0
+'Собственно вывод сверловки
+print_msg "Идет вывод файла сверловки"
+drill_out@ l3,path$+"3.mkr"
+Expdrl_generate_Header@ 1
+kill head$
+
+'создание файла заголовка для остальных
+X# = MaxLengthX#
+Y# = MaxLengthY#
+
+Z#=(Y#-180.0)/2.0
+Z%=Z#
+if Z% > 150 then Z% = 150
+X% = X#
+if X%<X# then X%=X%+1
+Y% = Y#
+if Y%<Y# then Y%=Y%+1
+head$= path$ + "header.hdr"
+open head$ for output as #1
+print #1,"%%3000"
+print #1, USING "M47, ###*###  ##";X%;Y%;Z%
+nx# = 99.375-10.0
+ny# = 277.375-Z%
+print #1, USING "X##.###Y##.###M50";nx#;ny#
+close #1
+
+'Настройка вывода drill mashine
+setup_fmtype@ 1,7
+'дрилл машина - SIEB & MEYER 3000
+setup_fmtunit@ 1,1
+'drill mashine - metric
+setup_fmtdigits@ 1,3,3
+'drill mashine - 3.3 digit
+setup_fmtmode@ 1,0
+'drill mashine - absolute
+setup_fmtzero@ 1,2
+'drill mashine - zero none
+Export_XYmodal@ 1,0        'new
+'Set non modal
+nc_exp_nc_use_SR@ 0
+'do not use Step&Repeat
+drill_sethdrfile@ head$
+'header file
+nc_exp_drill_Exc_decimals@ 1
+Expdrl_generate_Header@ 0
+'Собственно вывод сверловки
+drill_out@ l1,path$+"1.mkr"
+drill_out@ l2,path$+"2.mkr"
+drill_out@ l4,path$+"4.mkr"
+drill_out@ l2plus,path$+"2plus.mkr"
+drill_out@ l1plus,path$+"1plus.mkr"
+Expdrl_generate_Header@ 1
+
+close_msg
+kill head$
+
+view_all@
+
+endofscript:
+end
+'============================ SUBROUTINES ======================
+'------------------------ Сверление отверстий под крепеж -------
+AddBigStiffDrillVert:
+'error-prone place, because Z# is evalueted again 
+' while drill files are output, so these algorithms must be identical
+Z#=(MaxLengthY#-180.0)/2.0
+Z%=Z#
+if Z% > 150 then Z% = 150
+ToolStiff1#=Z%
+ToolStiff4#=Z%+180
+nc_add_drill_hit@
+set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+Displacement#=0.0
+if abs(StiffShift#-ToolStiff1#) < 6.5 then
+  Displacement#=6.5-abs(StiffShift#-ToolStiff1#)
+  if StiffShift# <  ToolStiff1# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement Vert. Low. ", Displacement#
+axy@ StiffShift#,StiffShift#+Displacement#				'LL
+axy@  MaxLengthX# - StiffShift#,StiffShift#+Displacement#		'RL
+'очень длинная плата
+if MaxLengthY# > 330.0 then
+  Displacement#=0.0
+  if abs((MaxLengthY#*2)/3-ToolStiff4#) < 6.5 then
+    Displacement#=6.5 - abs((MaxLengthY#*2)/3 - ToolStiff4#)
+    if (MaxLengthY#*2)/3 < ToolStiff4# then Displacement#=Displacement# * Neg#
+  end if  
+ 'print "Displacement Vert. Long plate. ", Displacement#
+ axy@ StiffShift#,MaxLengthY#/3.0 + (Displacement# * Neg#)		'LC1 - never coincide with drill tool stiffeners but we move it 
+ axy@ MaxLengthX#-StiffShift#,MaxLengthY#/3 + (Displacement# * Neg#)	'RC1 - with opposit sign because on plates longer than 480 mm we loose horisontal
+									'symmetry
+  axy@ StiffShift#, (MaxLengthY#*2.0)/3.0+Displacement#			'LC2
+  axy@ MaxLengthX#-StiffShift#, (MaxLengthY#*2.0)/3.0+Displacement#	'RC2
+else
+  axy@ StiffShift#, MaxLengthY#/2.0					'LC
+  axy@ MaxLengthX#-StiffShift#, MaxLengthY#/2.0				'RC
+end if
+Displacement#=0.0
+if abs((MaxLengthY# - StiffShift#) - ToolStiff4#) < 6.5 then
+  Displacement#=6.5 - abs((MaxLengthY# - StiffShift#) - ToolStiff4#)
+  if (MaxLengthY# - StiffShift#) < ToolStiff4# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement Vert. Upper ", Displacement#
+axy@ StiffShift#, MaxLengthY# + Displacement# - StiffShift#			'LU
+axy@ MaxLengthX#-StiffShift#, MaxLengthY# + Displacement# - StiffShift#		'RU
+back@
+return
+
+'====================================
+AddBigStiffDrillHor:
+'error-prone place, because Z# is evalueted again 
+' while drill files are output, so these algorithms must be identical
+Z%=(MaxLengthY#-180.0)/2.0
+if Z% > 150 then Z% = 150
+ToolStiff1#=Z%
+ToolStiff4#=Z%+180
+
+nc_add_drill_hit@
+set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+DisplacementLow#=0.0
+if abs(StiffShift#-ToolStiff1#) < 6.5 then
+  DisplacementLow#=6.5-abs(StiffShift#-ToolStiff1#)
+  if StiffShift# <  ToolStiff1# then DisplacementLow#=DisplacementLow# * Neg#
+end if
+'print "Displacement of low row of holes (big plate) ", DisplacementLow#
+axy@ StiffShift#,StiffShift#+DisplacementLow#			'LL
+axy@  MaxLengthX# - StiffShift#,StiffShift#+DisplacementLow#	'RL
+if MaxLengthX# > 330.0 then
+  axy@ MaxLengthX#/3.0, StiffShift#+DisplacementLow#		'C1L
+  axy@ (MaxLengthX# * 2.0)/3.0, StiffShift#+DisplacementLow#	'C2L
+else
+  axy@ MaxLengthX#/2.0, StiffShift#+DisplacementLow#		'CL
+end if
+DisplacementHigh#=0.0
+if abs((MaxLengthY# - StiffShift#) - ToolStiff4#) < 6.5 then
+  DisplacementHigh#=6.5 - abs((MaxLengthY# - StiffShift#) - ToolStiff4#)
+  if (MaxLengthY# - StiffShift#) < ToolStiff4# then DisplacementHigh#=DisplacementHigh# * Neg#
+end if
+'print "Displacement Hor. Upper (big plate)", DisplacementHigh#
+
+axy@ StiffShift#,(MaxLengthY# - StiffShift#)+DisplacementHigh#			'LU
+axy@  MaxLengthX# - StiffShift#,(MaxLengthY# - StiffShift#)+DisplacementHigh#	'RU
+if MaxLengthX# > 330.0 then
+  axy@ MaxLengthX#/3.0,(MaxLengthY# - StiffShift#)+DisplacementHigh#		'C1U
+  axy@ (MaxLengthX# * 2.0)/3.0,(MaxLengthY# - StiffShift#)+DisplacementHigh#	'C2U
+else
+  axy@ MaxLengthX#/2.0,(MaxLengthY# - StiffShift#)+DisplacementHigh#		'CU
+end if
+back@
+return
+'======================================
+AddSmallStiffDrillVert:
+Z%=(MaxLengthY#-180.0)/2.0
+if Z% > 150 then Z% = 150
+ToolStiff1#=Z%
+ToolStiff4#=Z%+180
+nc_add_drill_hit@
+set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+if abs(StiffShift#-ToolStiff1#) < 6.5 then
+  Displacement#=6.5-abs(StiffShift#-ToolStiff1#)
+  if StiffShift# <  ToolStiff1# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement Small Vert. Low. ", Displacement#
+axy@ StiffShift4SmallPlate#, StiffShift#+Displacement#				'LL
+axy@ MaxLengthX#-StiffShift4SmallPlate#, StiffShift#+Displacement#		'RL
+
+'очень длинная плата
+if MaxLengthY# > 330.0 then
+  Displacement#=0.0
+  if abs((MaxLengthY#*2)/3-ToolStiff4#) < 6.5 then
+    Displacement#=6.5 - abs((MaxLengthY#*2)/3 - ToolStiff4#)
+    if (MaxLengthY#*2)/3 < ToolStiff4# then Displacement#=Displacement# * Neg#
+  end if  
+  'print "Displacement Vert. Short plate center. ", Displacement#
+  axy@ StiffShift4SmallPlate#,MaxLengthY#/3 + (Displacement# * Neg#)			'LC1- never coincide with drill tool stiffeners but we move it
+  axy@ MaxLengthX#-StiffShift4SmallPlate#,MaxLengthY#/3 + (Displacement# * Neg#)	'RC1- with opposit sign because on plates longer than 480 mm we
+											' loose horisontal symmetry
+  axy@ StiffShift4SmallPlate#, (MaxLengthY#*2.0)/3.0+Displacement#		'LC2
+  axy@ MaxLengthX#-StiffShift4SmallPlate#, (MaxLengthY#*2.0)/3.0+Displacement#	'RC2
+ else
+  axy@ StiffShift4SmallPlate#, MaxLengthY#/2.0					'LC
+  axy@ MaxLengthX#- StiffShift4SmallPlate#, MaxLengthY#/2.0			'RC
+end if
+Displacement#=0.0
+if abs((MaxLengthY# - StiffShift#) - ToolStiff4#) < 6.5 then
+  Displacement#=6.5 - abs((MaxLengthY# - StiffShift#) - ToolStiff4#)
+  if (MaxLengthY# - StiffShift#) < ToolStiff4# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement Vert. Upper (short plate) ", Displacement#
+axy@ StiffShift4SmallPlate#, (MaxLengthY#-StiffShift#)+Displacement#		'LU
+axy@ MaxLengthX#-StiffShift4SmallPlate#,(MaxLengthY#-StiffShift#)+Displacement#	'RU
+back@
+return
+
+'===============Uvaga! Achtung! NB!================
+'====The plate may be rotated afterwards!=========
+AddSmallStiffDrillHor:
+' малые пластины будут снова повернуты 
+if fSmallRot=1 then
+  Z%=(MaxLengthY#-180.0)/2.0
+  if Z% > 150 then Z% = 150
+  ToolStiff1#=Z%
+  ToolStiff4#=Z%+180
+  nc_add_drill_hit@
+  set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+  if abs(StiffShift#-ToolStiff1#) < 6.5 then
+    Displacement#=6.5-abs(StiffShift#-ToolStiff1#)
+    if StiffShift# <  ToolStiff1# then Displacement#=Displacement# * Neg#
+  end if
+  'print "Displacement Small Hor (left) . ", Displacement#
+  axy@ StiffShift#+Displacement#,StiffShift4SmallPlate#				'LL
+  axy@ StiffShift#+Displacement#,MaxLengthY#-StiffShift4SmallPlate# 		'LU
+  'очень длинная плата
+  if MaxLengthX# > 330.0 then
+    Displacement#=0.0
+    axy@ MaxLengthX#/3.0,StiffShift4SmallPlate#					'C1L
+    axy@ MaxLengthX#/3.0,MaxLengthY#-StiffShift4SmallPlate#,			'C1U
+    if abs((MaxLengthX#*2)/3-ToolStiff4#) < 6.5 then
+      Displacement#=6.5 - abs((MaxLengthX#*2)/3 - ToolStiff4#)
+      if (MaxLengthX#*2)/3 < ToolStiff4# then Displacement#=Displacement# * Neg#
+    end if  
+    'print "Displacement Hor. Short plate center. ", Displacement#
+    axy@ (MaxLengthX#*2.0)/3.0+Displacement#,StiffShift4SmallPlate#			'C2L
+    axy@ (MaxLengthX#*2.0)/3.0+Displacement#,MaxLengthY#-StiffShift4SmallPlate#,	'C2U
+  else
+    axy@ MaxLengthX#/2.0,StiffShift4SmallPlate# 					'CL
+    axy@ MaxLengthX#/2.0,MaxLengthY#- StiffShift4SmallPlate#				'CU
+  end if
+  Displacement#=0.0
+  if abs((MaxLengthX# - StiffShift#) - ToolStiff4#) < 6.5 then
+    Displacement#=6.5 - abs((MaxLengthX# - StiffShift#) - ToolStiff4#)
+    if (MaxLengthX# - StiffShift#) < ToolStiff4# then Displacement#=Displacement# * Neg#
+  end if
+  'print "Displacement Small Hor. right", Displacement#
+  axy@ (MaxLengthX#-StiffShift#)+Displacement#,StiffShift4SmallPlate# 			'RL
+  axy@ (MaxLengthX#-StiffShift#)+Displacement#,MaxLengthY#-StiffShift4SmallPlate#	'RU
+  back@
+  return
+else		' малые пластины повернуты не будут
+  Z#=(LengthY#-180.0)/2.0		'note axis!
+  ToolStiff1#=Z#
+  ToolStiff4#=Z#+180
+  nc_add_drill_hit@
+  set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+  DisplacementLow#=0.0
+  if abs(StiffShift#-ToolStiff1#) < 6.5 then
+    DisplacementLow#=6.5-abs(StiffShift#-ToolStiff1#)
+    if StiffShift# <  ToolStiff1# then DisplacementLow#=DisplacementLow# * Neg#
+  end if
+  'print "Displacement of the low row of holes on small plate ", DisplacementLow#
+  axy@ StiffShift#,StiffShift4SmallPlate#+DisplacementLow#			'LL
+  axy@  MaxLengthX# - StiffShift#,StiffShift4SmallPlate#+DisplacementLow#	'RL
+  if MaxLengthX# > 330.0 then
+    axy@ MaxLengthX#/3.0, StiffShift4SmallPlate#+DisplacementLow#		'C1L
+    axy@ (MaxLengthX# * 2.0)/3.0,StiffShift4SmallPlate#+DisplacementLow#	'C2L
+  else
+    axy@ MaxLengthX#/2.0, StiffShift4SmallPlate#+DisplacementLow#		'CL
+  end if
+  DisplacementHigh#=0.0
+  if abs((LengthY# - StiffShift#) - ToolStiff4#) < 6.5 then
+    DisplacementHigh#=6.5 - abs((LengthY# - StiffShift#) - ToolStiff4#)
+    if (LengthY# - StiffShift#) < ToolStiff4# then DisplacementHigh#=DisplacementHigh# * Neg#
+  end if
+  'print "Displacement of the high row of holes on small plate ", DisplacementHigh#
+
+  axy@ StiffShift#,(MaxLengthY# - StiffShift4SmallPlate#)+DisplacementHigh#			'LU
+  axy@  MaxLengthX# - StiffShift#,(MaxLengthY# - StiffShift4SmallPlate#)+DisplacementHigh#	'RU
+  if MaxLengthX# > 330.0 then
+    axy@ MaxLengthX#/3.0,(MaxLengthY# - StiffShift4SmallPlate#)+DisplacementHigh#		'C1U
+    axy@ (MaxLengthX# * 2.0)/3.0,(MaxLengthY# - StiffShift4SmallPlate#)+DisplacementHigh#	'C2U
+  else
+    axy@ MaxLengthX#/2.0,(MaxLengthY# - StiffShift4SmallPlate#)+DisplacementHigh#		'CU
+  end if
+  back@
+  return
+end if
+'------------------------Сверление текста ------------------
+AddText:
+tool_1_zero_dia = 8
+setlayer@ nLay
+layer_alloff@ 1
+table = Tooltable!
+if fOnvert = 1 then
+	nc_add_drilled_text@ MaxLengthX#/3, MaxLengthY#-15.0,nLay,tool_1_zero_dia,0,text$ +LayTxt$'MaxLengthX#/5, MaxLengthY#-15.0,nLay,tool_1_zero_dia,0,text$ +LayTxt$
+	back@
+else
+	nc_add_drilled_text@ MaxLengthX#-5, MaxLengthY#/3,nLay,tool_1_zero_dia,1,text$ +LayTxt$'MaxLengthX#-5, MaxLengthY#/5,nLay,tool_1_zero_dia,1,text$ +LayTxt$
+	back@
+end if
+templay = Blanklayer!
+edit_move@ 
+set_drilltext_filter@ 1
+set_pldrill_filter@ 0
+set_upldrill_filter@ 0
+edit_selectall2@
+movetolayer@ templay
+back@
+nc_gerber_to_drill@ templay,nLay,0,0,1,""
+edit_removelyr@ templay
+layer_renumber@
+return
+
+'------------------------- Проверка сверловок --------------------
+checkdrill:
+delete_error_list@ 5,l1
+nc_analysis_drill_errors@ l1,1,1,1,zazor#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,l2
+nc_analysis_drill_errors@ l2,1,1,1,zazor#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,l3
+nc_analysis_drill_errors@ l3,1,1,1,zazor#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,l4
+nc_analysis_drill_errors@ l4,1,1,1,zazor#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+return
+
+'------------------------ ERROR MESSAGES------------------
+drillerr:
+messagebox "Есть ошибки в сверловке. Смотри info-find-drill errors"
+goto endofscript
+
+RemainsLayers:
+messagebox "Удалите слои, оставшиеся от предыдущего запуска скрипта"+CR!+"и заново получите исходные сверловки."
+goto endofscript
+
+WrongOutline:
+messagebox "Размеры контура на слое outline должны быть больше контура на outline1."
+goto endofscript
+
+InsideOutline1:
+messagebox "Сверловка должна находиться внутри outline1."
+goto endofscript
+
+ErrYSize:
+messagebox "Больший размер должен быть больше 200 мм"
+goto endofscript
+  

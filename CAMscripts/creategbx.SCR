@@ -1,0 +1,103 @@
+util_camed@
+setgridsnap@ 0
+setsnap@ 0
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+s$=mid$(filename$,n%,1)
+if s$="\" then goto gbxpath
+next
+gbxpath:
+pathgbx$ = left$(filename$,n%)
+pathgbx$ = pathgbx$+"gerber"
+mkdir pathgbx$
+pathgbx$ = pathgbx$+"\" 
+
+'9. Вывод герберов
+print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
+setup_fmtype@ 0,1
+setup_fmtunit@ 0,0
+setup_fmtdigits@ 0,2,4
+setup_fmtmode@ 0,0
+setup_fmtzero@ 0,0
+internal = 1;
+for lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if layertype! = 6 then 
+		'border
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"brd.brd"
+	elseif layertype! = 0 then 'comp
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_c.gbx"
+	elseif layertype! = 3 then 'solder
+		set_layermirrorstate@ lay,1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_s.gbx"
+	elseif layertype! = 11 then 'mask top
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_mc.gbx"
+	elseif layertype! = 12 then 'mask bottom
+		set_layermirrorstate@ lay,1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_ms.gbx"
+	elseif layertype! = 7 then 'slk top
+		set_layermirrorstate@ lay,1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_rc.gbx"
+	elseif layertype! = 8 then 'slk BOT
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_rs.gbx"
+	elseif layertype! = 16 then 'refdes top
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		if layername! = "mcv" then
+			exportgbrfile@ lay,-1,pathgbx$+"neg_mcv.gbx"
+		else
+			exportgbrfile@ lay,-1,pathgbx$+"neg_rcn.gbx"
+		end if
+	elseif layertype! = 17 then 'reefdes BOT
+		set_layermirrorstate@ lay,1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		if layername! = "msv" then
+			exportgbrfile@ lay,-1,pathgbx$+"neg_msv.gbx"
+		else
+			exportgbrfile@ lay,-1,pathgbx$+"neg_rsn.gbx"
+		end if
+	elseif layertype! = 19 then 'PASTE TOP
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'пзитив
+		exportgbrfile@ lay,-1,pathgbx$+"pos_c1.gbx"
+	elseif layertype! = 20 then 'PASTE TOP
+		set_layermirrorstate@ lay,1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'пзитив
+		exportgbrfile@ lay,-1,pathgbx$+"pos_s1.gbx"
+	elseif layertype! = 1 then 'internal
+		delta = internal - (internal / 2)*2)
+		if delta = 0 then
+			set_layermirrorstate@ lay,0 '0-not 1-yes
+		else
+			set_layermirrorstate@ lay,1 '0-not 1-yes
+		end if
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"neg_i"+str$(internal)+".gbx"
+		internal = internal+1
+	elseif layertype! = 2 then 'neg plane
+		delta = internal - (internal / 2)*2)
+		if delta = 0 then
+			set_layermirrorstate@ lay,0 '0-not 1-yes
+		else
+			set_layermirrorstate@ lay,1 '0-not 1-yes
+		end if
+
+
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+"pos_i"+str$(internal)+".gbx"
+		internal = internal+1
+	end if
+next
+close_msg

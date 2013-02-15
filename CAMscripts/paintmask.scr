@@ -1,0 +1,108 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 PRO V6.0 Date:  Tue Dec 25 13:56:16 2001
+util_camed@
+setdcode@ 10
+setlayer@ 0
+setsectorize@ 0,1000
+textfullheight@ 2.5400
+textangle@ 0
+textmirror@ 0
+textjust@ 17
+textfitting@ 0
+textcspace@ 0.0000
+textlspace@ 0.6350
+textslant@ 0
+textxscale@ 100
+textvertical@ 0
+textfont@ "SIMPLE.EFN"
+
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+s$=mid$(filename$,n%,1)
+if s$="\" then goto path
+next
+path:
+path$ = left$(filename$,n%)
+
+setlayer@ 0
+
+For lay = Nextlay to Highestlayer!
+setlayer@ lay
+	if layertype! = 0 then 
+		comp = lay
+	elseif layertype! = 3 then 
+		solder = lay
+	elseif layertype!=11 then 
+		mc = lay
+	elseif layertype!=12 then 
+		ms = lay
+	elseif layertype!=7 then 
+		rc = lay
+	elseif layertype!=8 then 
+		rs = lay
+	end if
+next
+
+Print_msg "Ждите окончания работы макроса"
+
+setlayer@ Blanklayer!
+
+open dbname! for input as #1
+
+setdcode@ 17 ' .5 mm
+
+claynum = mc
+
+DO 
+input #1, s$
+if s$<>"*DRC_ERROR" then goto nextstr
+input #1, s$ ' DRC_POINT1 X Y
+pr1 = instr(1,s$," ")
+pr2 = instr(pr1+1,s$," ")
+x1$ = mid$(s$,pr1,pr2-pr1)
+y1$ = right$(s$,len(s$)-pr2)
+x1#=val(x1$)
+y1#=val(y1$)
+x1#=x1#/500000
+y1#=y1#/500000
+input #1, s$ ' DRC_POINT2 X Y
+pr1 = instr(1,s$," ")
+pr2 = instr(pr1+1,s$," ")
+x2$ = mid$(s$,pr1,pr2-pr1)
+y2$ = right$(s$,len(s$)-pr2)
+x2#=val(x2$)
+y2#=val(y2$)
+x2#=x2#/500000
+y2#=y2#/500000
+input #1,s$ ' DRC_TOL
+input #1,s$ ' DRC_DIST
+input #1,s$ ' DRC_PADSTACK
+input #1,s$ ' DRC_TYPE
+input #1,s$ ' DRC_PASSID
+input #1,s$ ' *DRC_ERROBJ (v9); DRC_OBJ_LYR 0 (v7)
+if s$="*DRC_ERROBJ" then 
+	input #1,s$ ' DRC_OBJ_LYR 0 (v9)
+end if
+laynum = val(right$(s$,2))
+
+' другой слой
+if laynum = ms and claynum <> ms then 
+	setlayer@ Blanklayer!
+	claynum = ms
+end if
+
+if laynum = claynum then
+	add_line@
+	axy@ x1#,y1#
+	axy@ x2#,y2#
+	back@
+end if
+
+nextstr:
+LOOP UNTIL EOF(1)
+
+close #1
+Close_msg
+'550
+end

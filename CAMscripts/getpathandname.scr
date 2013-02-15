@@ -1,0 +1,57 @@
+if pathandname<>1 then
+	' указание что файл уже включен
+	pathandname =1
+	path$  = ""
+	board$ = ""
+	mainboard$ = ""
+	customer$ = ""
+	dim p(20)
+	'Получение пути файла
+	filename$=dbname!
+	i=0
+	DO
+		i=i+1
+		p(i)=INSTR(p(i-1)+1,filename$,"\")
+	LOOP UNTIL p(i) = 0
+	i = i - 1
+	
+
+	if i>5 then 
+		MessageBox "Ну нельзя же так глубоко запихивать плату","Ошибка глубины", ERROR
+	else 
+		board$ = mid$(filename$,p(i-1)+1,p(i)-p(i-1)-1)
+		if INSTR(board$,":") then
+			board$ = ""
+		end if
+		if i > 4 then
+			mainboard$ = mid$(filename$,p(i-2)+1,p(i-1)-p(i-2)-1)
+			board$ = mainboard$ + "/" + board$
+			customer$ = mid$(filename$,p(i-3)+1,p(i-2)-p(i-3)-1)
+		else
+			if i>3 then
+				customer$ = mid$(filename$,p(i-2)+1,p(i-1)-p(i-2)-1)
+			end if
+		end if
+
+		
+		shortfilename$ = mid$ (filename$,p(i)+1)
+		path$=left$(filename$,p(i))
+
+		l = len(shortfilename$);
+		t = INSTR(1,shortfilename$,"_")
+		if t = 0 then
+			t = INSTR(1,shortfilename$,"cam")
+			if t = 0 then
+				name$ = left$(shortfilename$,INSTR(1,shortfilename$,".")-1)
+			else
+				name$ = left$(shortfilename$,t-1)
+			end if
+		else
+			name$ = left$(shortfilename$,t-1)
+		end if
+
+		if len(name$)>8 then
+		 name$ = right$(name$,8)
+		end if
+	end if
+end if

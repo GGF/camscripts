@@ -1,0 +1,37 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 V7.0 (Build 187) Date:  Fri Jun 11 10:09:39 2004
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+	s$=mid$(filename$,n%,1)
+	if s$="\" then goto path
+next
+path:
+path$ = left$(filename$,n%)
+
+if (len(filename$)-n% > 8 ) then 
+	name$ = mid$ (filename$,n%+1,len(filename$)-n%-8)
+	' точка и расширение + _cam
+else
+	name$ = mid$ (filename$,n%+1,len(filename$)-n%)
+end if
+
+if fileexists(path$+"copper.rpt") then 
+	open path$+"copper.rpt" for input as #1
+		input #1,name$
+	close #1
+end if
+
+OK_CANCEL path$+name$+"_cam_full.pcb" + " будет записан?",OK
+IF OK <> 1 THEN GOTO endscript
+
+if FileExists(path$+name$+"_cam_full.pcb") = 1 then
+	OK_Cancel "There is already a file of that name in the directory. Overwrite file?", OK
+	IF OK <> 1 THEN GOTO endscript
+end if
+
+
+setsaveasfile@ path$+name$ + "_cam_full.pcb"
+
+endscript:
+END

@@ -1,0 +1,565 @@
+util_camed@
+ConfPath$="X:\TOOL\mania\3plates\"
+CustName$=""
+PCBName$=""
+InfN$=""	'извещение
+StiffDrill%=6
+TextDrill%=7
+Drill18%=5        ' pin 1.8 
+MaxDrill18=100   ' к-во 1.8 после которого выводится сообщение
+MinExY#=235.0	'Мин.высота пластины для обработки на V3
+OutputEx%=1	'Выводить ex2
+dist#=0.08
+'----------------start-----------------
+
+gosub GetNames
+
+OpenForm #1,70,4,"Обработка кондуктора", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос обрабатывает кондуктор",Print
+AddForm #1, 0, 1, "Имя кондуктора",input,text$
+AddForm #1, 0, 2, "Получать файлы Exellon",Check,OutputEx%
+if CustName$ ="Импульс" then 
+  AddForm #1, 0, 3, "Извещение",input,InfN$
+end if
+
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+
+if Canceled% = 1 then goto endofscript
+
+setortho@ 2	'L0 - Orthogonal Lock
+
+setlayer@ 1
+layer_renumber@
+outline = -1
+gridplus = -1
+mirror = 1
+
+for lay=Nextlay to Highestlayer!
+setlayer@ lay
+if UCASE$(layername!) = "OUTLINE" then
+	edit_layer@ lay,-2,-2,6,-2,-2
+	outline = lay
+elseif layername! = "TFBPLATE_2" then
+	edit_layer@ lay,-2,-2,-2,-2,"board"
+	board = lay
+	mirror = 0
+elseif layername! = "TFBPLATE_4" then
+	edit_layer@ lay,-2,-2,-2,-2,"mid"
+	mid = lay
+	mirror = 0
+elseif layername! = "TFBPLATE_6" then
+	edit_layer@ lay,-2,-2,-2,-2,"grid"
+	grid = lay
+	mirror = 0
+elseif layername! = "TFTPLATE_2" then
+	board = lay
+elseif layername! = "TFTPLATE_4" then
+	mid = lay
+elseif layername! = "TFTPLATE_6" then
+	grid = lay
+elseif layername! = "board" then
+	goto RemainsLayers
+elseif layername! = "mid" then
+	goto RemainsLayers
+elseif layername! = "grid" then
+	goto RemainsLayers
+elseif layername! = "gridplus" then
+	goto RemainsLayers
+end if
+next
+
+if outline = -1 then goto Nooutline
+
+'Highest tool table number - added 25-06-07
+HighestNCT%=-1
+setlayer@ 1
+for lay=1 to Highestlayer!
+  setlayer@ lay
+  if Layertype! = 21 and Tooltable! > HighestNCT% then 
+    HighestNCT%=Tooltable!
+  end if
+next
+
+'проверка на слишком большое к-во 1.8 pins
+setlayer@ board
+set_current_toolref@ Drill18%
+if Lyrdrillcount! > MaxDrill18 then
+	drillcount$=Lyrdrillcount!
+	message$="Использовано  " + drillcount$ + " игл 1.8 . Продолжить?"
+	Ok_cancel message$ , ret%
+	if ret% = 0 then goto endofscript
+end if
+
+'переименование слоев
+edit_layer@ board,-2,-2,-2,-2,"board"
+edit_layer@ mid,-2,-2,-2,-2,"mid"
+edit_layer@ grid,-2,-2,-2,-2,"grid"
+
+'создание gridplus 
+gridplus = Blanklayer!
+edit_layer@ gridplus,-2,-2,21,0,"gridplus"
+setlayer@ board
+table = Tooltable!
+nc_assign_tool_table_to_layer@ gridplus,table
+
+'копирование с grid на gridplus
+setlayer@ grid
+layer_alloff@ 1
+edit_copy@
+edit_selectall2@
+setcoplayer@ gridplus,1
+copy_to_layer@
+back@
+
+'включение только нужных слоев
+setlayer@ board
+layer_alloff@ 1
+setlayer@ mid
+setlayer@ grid
+setlayer@ gridplus
+setlayer@ outline
+
+'поворот, если нужно
+shir = vismaxx! - visminx!
+dlin = vismaxy! - visminy!
+if shir > dlin then
+	edit_rotate@
+	edit_selectall2@
+	axy@ 0,0
+	end@
+	SWAP shir,dlin
+end if
+if dlin < 200 then goto WrongSize
+if dlin < MinExY#  and  OutputEx% = 1 then
+  print "Невозможно получить файлы EXCELLON т.к. недостаточны размеры адаптера"
+  OutputEx%=0
+end if
+
+'зеркало если нужно
+if mirror = 1 then
+	edit_mirv@
+	setmirroraxis@ 1
+	edit_selectall2@
+	axy@ 0,0
+	end@
+end if
+
+'передвижение в 0
+edit_move@
+setsnap@ 1
+edit_selectall2@
+axy@ visminx!,visminy!
+setsnap@ 0
+axy@ 0,0
+end@
+
+'добавить стифенер
+setlayer@ board 'на board
+gosub AddStiff
+setlayer@ mid 'на mid
+gosub AddStiff
+setlayer@ grid 'на grid
+gosub AddStiff
+
+view_all@
+
+'-----------добавить текст -----
+'формат - EXCELLON для вывода узкого шрифта
+setup_fmtype@ 1,5 
+
+setlayer@ board
+text2drill$=text$ +"-1"
+gosub AddText 'на board
+
+setlayer@ mid
+text2drill$=text$ +"-2"
+gosub AddText 'на mid
+
+setlayer@ grid
+text2drill$=text$ +"-3"
+gosub AddText 'на grid
+
+'замена таблиц   - corrected 25-06-07
+MidNct%=HighestNCT%+1
+GridNct%=HighestNCT%+2
+GridplusNct%=HighestNCT%+3
+BoardNct%=HighestNCT%+4
+
+
+nc_load_table_ignore@ MidNct%,ConfPath$+"mid.nct"
+nc_load_table_ignore@ GridNct%,ConfPath$+"grid.nct"
+nc_load_table_ignore@ GridplusNct%,ConfPath$+"gridplus.nct"
+nc_load_table_ignore@ BoardNct%,ConfPath$+"board.nct"
+
+nc_assign_tool_table_to_layer@ mid,MidNct%
+nc_assign_tool_table_to_layer@ grid,GridNct%
+nc_assign_tool_table_to_layer@ gridplus,GridplusNct%
+nc_assign_tool_table_to_layer@ board,BoardNct%
+
+'комбайн gridplus
+nc_combine_tool@ GridplusNct%,1,2
+nc_combine_tool@ GridplusNct%,1,3
+nc_combine_tool@ GridplusNct%,1,4
+nc_combine_tool@ GridplusNct%,1,5
+
+'включение только нужных слоев
+setlayer@ board
+layer_alloff@ 1
+setlayer@ mid
+setlayer@ grid
+setlayer@ gridplus
+setlayer@ outline
+view_all@
+
+'Проверка сверловок
+delete_error_list@ 5,board
+nc_analysis_drill_errors@ board,1,1,1,dist#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,mid
+nc_analysis_drill_errors@ mid,1,1,1,dist#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,grid
+nc_analysis_drill_errors@ grid,1,1,1,dist#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+delete_error_list@ 5,gridplus
+nc_analysis_drill_errors@ gridplus,1,1,1,dist#
+nc_set_fix_drill_errors@ 0, 0
+back@
+if Number_drill_errors! >0 then goto drillerr
+
+'сортировка
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,board
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,mid
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,grid
+drill_sort@ 0,0,0,0
+end@
+drill_firstlast@ 0
+drill_sort_set@ 2,0,50.0000,gridplus
+drill_sort@ 0,0,0,0 
+end@
+
+'Вывод файлов
+'Получение пути файла -- перемещено в GetNames
+'создание файла заголовка
+X# = vismaxx! - visminx!
+Y# = vismaxy! - visminy!
+
+Z%=(Y#-180)/2/10
+Z%=Z%*10
+if Z%<0 then Z%=10
+if Z%>150 then Z%=150  ' очень длинная пластина
+X% = X#
+if X%<X# then X%=X%+1
+Y% = Y#
+if Y%<Y# then Y%=Y%+1
+head$= path$ + "header.hdr"
+open head$ for output as #1
+print #1,"%%3000"
+print #1, USING "M47, ###*###  ##";X%;Y%;Z%
+nx# = 99.375-10
+ny# = 277.375-Z%
+print #1, USING "X##.###Y##.###M50";nx#;ny#
+close #1
+'Вывод SIEB&MEYER
+'Настройка вывода drill mashine
+setup_fmtype@ 1,7
+'дрилл машина - SIEB & MEYER 3000
+setup_fmtunit@ 1,1
+'drill mashine - metric
+setup_fmtdigits@ 1,3,3
+'drill mashine - 3.3 digit
+setup_fmtmode@ 1,0
+'drill mashine - absolute
+setup_fmtzero@ 1,2
+'drill mashine - zero none
+Export_XYmodal@ 1,0        'new
+'Set non modal
+nc_exp_nc_use_SR@ 0
+'do not use Step&Repeat
+drill_sethdrfile@ head$
+'header file
+nc_exp_drill_Exc_decimals@ 1
+Expdrl_generate_Header@ 0
+' new
+nc_exp_drilltool_infeed@ 1
+nc_exp_drilltool_retract@ 1
+nc_exp_drilltool_RPMs@ 1
+nc_exp_drilltool_MaxHits@ 1
+' end new
+'Собственно вывод сверловки
+print_msg "Идет вывод файлов SIEB&MEYER"
+drill_out@ board,path$+"board.mkr"
+drill_out@ mid,path$+"mid.mkr"
+drill_out@ grid,path$+"grid.mkr"
+drill_out@ gridplus,path$+"gridplus.mkr"
+'Expdrl_generate_Header@ 1
+kill head$
+'------------ EX2 ------------------------
+if OutputEx% = 0 then goto CloseMess
+print_msg "Идет вывод файлов в формате Excellon"+CR!+"Ждите."
+'Вывод EXCELLON
+setup_fmtype@ 1,5             'формат - EXCELLON
+setup_fmtunit@ 1,1            'metric
+setup_fmtdigits@ 1,3,3        ' 3.3
+setup_fmtzero@ 1,2            ' no zero suppression
+nc_exp_drill_Exc_decimals@ 1  ' use decimal
+setup_fmtmode@ 1,0            ' absolut
+export_XYmodal@ 1,0           ' nomodal
+nc_exp_drill_t00@ 0           ' do NOT append T0
+expdrl_generate_Header@ 1
+expdrl_generate_Tools@ 1
+nc_exp_drilltool_infeed@ 0
+nc_exp_drilltool_retract@ 0
+nc_exp_drilltool_RPMs@ 0
+nc_exp_drilltool_MaxHits@ 0
+'Собственно вывод сверловки
+Ex2Path$=path$+"board.ex2"
+drill_out@ board,Ex2Path$
+gosub AddG93
+Ex2Path$=path$+"mid.ex2"
+drill_out@ mid,Ex2Path$
+gosub AddG93
+Ex2Path$=path$+"grid.ex2"
+drill_out@ grid,Ex2Path$
+gosub AddG93
+Ex2Path$=path$+"gridplus.ex2"
+drill_out@ gridplus,Ex2Path$
+gosub AddG93
+
+CloseMess:
+close_msg
+gosub MakeData4Excel
+
+view_all@
+
+print "Сверловки для Mikronik необходимо сбросить на диск K: !!!"
+
+endofscript:
+end
+'---------- Получение пути и имени платы и заказчика -----------
+GetNames:
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+	s$=mid$(filename$,n%,1)
+	if s$="\" then goto path
+next
+path:
+path$ = left$(filename$,n%)
+break
+' только на Z:
+if ucase$(mid$(path$,1,1)) <> "Z" then return  
+' Получение пути и имени платы и заказчика 
+PathLen%=len(path$)
+cnt%=0
+StartCust%=-1
+StartPCB%=-1
+finish%=-1
+for n%=1 to PathLen% step 1
+  s$=mid$(filename$,n%,1)
+  if s$="\" then 
+    cnt%=cnt%+1
+    select case cnt%
+      case 2
+        StartCust%=n%+1
+      case 3
+	StartPCB%=n%+1
+      case 4
+	finish%=n%
+	goto out
+    end select
+  end if  
+next
+out:
+'print "vars",StartCust%,StartPCB%,finish%
+if StartCust%=-1 then return 
+if StartPCB%=-1 then return
+if finish%=-1 then return
+CustName$=mid$(path$,StartCust%,StartPCB%-(StartCust%+1))
+PCBName$=mid$(path$,StartPCB%,finish%-StartPCB%)
+break
+return
+
+
+'------------------------Сверление текста ------------------
+AddText:
+TextX#=25.0
+'не попадаем ли мы на штифт при выводе ex2
+if OutputEx%=1  then
+  TextLen%=LEN(text2drill$)
+  RealBuf#=((shir/2.0)-(25.0+8.0))/6.0
+  NChar2Place%=RealBuf#
+  if NChar2Place% < TextLen% then 
+    TextBuf$=LEFT$(text2drill$,NChar2Place%)+"  "+RIGHT$(text2drill$,TextLen%-NChar2Place%)
+    text2drill$=TextBuf$
+    TextX#=(shir/2.0)-(((NChar2Place%+1)*6.0)-1.2)  'помещаем пробелы по центру
+  end if
+end if  
+
+layer_alloff@ 1
+nc_add_drilled_text@ TextX#, dlin-15,Activelayer!,TextDrill%,0,text2drill$ 
+back@
+templay = Blanklayer!
+edit_move@ 
+set_drilltext_filter@ 1
+set_pldrill_filter@ 0
+set_upldrill_filter@ 0
+edit_selectall2@
+movetolayer@ templay
+back@
+nc_gerber_to_drill@ templay,Activelayer!,0,0,1,""
+edit_removelyr@ templay
+layer_renumber@
+
+return
+'-----------------------Сверление крепежа --------------------
+AddStiff:
+Neg#= -1.0
+StiffShift#=12.5 'added 20.08.07
+rDlin# = dlin
+'определяем координаты штифтов на столе станка в координатах пластин
+X# = vismaxx! - visminx!
+Y# = vismaxy! - visminy!
+Z%=(Y#-180.0)/2.0/10.0
+Z%=Z%*10
+if Z%<0 then Z%=10
+if Z%>150 then Z%=150   ' очень длинная пластина
+ToolStiff1#=Z%
+ToolStiff2#=Z%+45
+ToolStiff3#=Z%+135
+ToolStiff4#=Z%+180
+'--------------
+nc_add_drill_hit@
+set_current_toolref@ StiffDrill% 'это сверло должно быть 4.2
+Displacement#=0.0
+if abs(StiffShift#-ToolStiff1#) < 6.5 then
+  Displacement#=6.5-abs(StiffShift#-ToolStiff1#)
+  if StiffShift# <  ToolStiff1# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement  ", Displacement#
+axy@ StiffShift#,StiffShift#+Displacement#
+axy@ shir-StiffShift#,StiffShift#+Displacement#
+ ' очень длинная пластина
+if rDlin# > 330.0 then
+  Displacement#=0.0
+  axy@ StiffShift#,rDlin#/3
+  axy@ shir-StiffShift#,rDlin#/3
+  if abs((rDlin#*2)/3-ToolStiff4#) < 6.5 then
+    Displacement#=6.5 - abs((rDlin#*2)/3 - ToolStiff4#)
+    if (rDlin#*2)/3 < ToolStiff4# then Displacement#=Displacement# * Neg#
+  end if  
+ ' print "Displacement  ", Displacement#
+  axy@ StiffShift#,(rDlin#*2)/3+Displacement#
+  axy@ shir-StiffShift#,(rDlin#*2)/3+Displacement#
+else
+  axy@ StiffShift#,rDlin#/2
+  axy@ shir-StiffShift#,rDlin#/2
+end if
+Displacement#=0.0
+if abs((rDlin# - StiffShift#) - ToolStiff4#) < 6.5 then
+  Displacement#=6.5 - abs((rDlin# - StiffShift#) - ToolStiff4#)
+  if (rDlin# - StiffShift#) < ToolStiff4# then Displacement#=Displacement# * Neg#
+end if
+'print "Displacement  ", Displacement#
+axy@ StiffShift#, rDlin# + Displacement# - StiffShift# 
+axy@ shir-StiffShift#, rDlin# + Displacement# - StiffShift#
+back@
+return
+'--------------------Add G93 to ex2 ----------------------------
+AddG93:
+TmpPath$=path$+"tmp.tmp"
+open Ex2Path$ for input as #1
+open TmpPath$ for output as #2
+first=0
+do
+	line input #1,s$
+	if s$<>"" then print #2,s$
+	if s$="%" and first=0 then 
+		print #2,USING "G93X-##.###Y-6.250"; shir/2.0
+		first = 1
+	end if
+loop until EOF(1) = 1
+close #1
+close #2
+kill Ex2Path$
+name TmpPath$ as Ex2Path$
+return
+'------------------файл для последующей загрузки в Excel -------------------
+MakeData4Excel:
+if len(PCBName$) = 0 then
+  return
+end if
+DataFile$=path$+"Data4excel.txt"
+open DataFile$ for output as #1
+NextSearch:
+   Pos%=instr(1,CustName$,"_")
+  if Pos%<>0 then
+    mid$(CustName$,Pos%,1)=" "
+    Goto NextSearch
+  end if
+print #1,CustName$
+print #1,PCBName$
+if OutputEx% = 1 then
+  print #1,path$
+else
+  print #1,"Файлы не были получены"
+end if
+print #1,using "##.##"; shir
+print #1,using "##.##"; dlin
+print #1,using "##";Z%
+if OutputEx% = 1 then
+  print #1,using "##.##";shir/2.0
+else
+  print #1,using "##.##";0.0
+end if
+if InfN$ <> "" then
+  InfN$="Изв. "+InfN$
+  print #1,InfN$
+else
+  print #1,"   "
+end if
+
+close #1
+Command$="copy /Y X:\TOOL\CAMscripts\TZ3plate.xls "+ chr$(34)+ path$ +chr$(34)
+Command$="cmd /C "+  chr$(34) + Command$ +  chr$(34)
+wincall Command$
+oldname$=path$+"TZ3plate.xls"
+newname$=path$+"ТЗ на 3-х ствольный кондуктор.xls"
+kill newname$
+name oldname$ as newname$
+return
+
+'------------------------ ERROR MESSAGES------------------
+drillerr:
+messagebox "Есть ошибки в сверловке. Смотри info-find-drill errors"
+goto endofscript
+
+RemainsLayers:
+messagebox "Удалите слои, оставшиеся от предыдущего запуска скрипта"+CR!+"и заново получите исходные сверловки.","Выход",WARNING
+goto endofscript
+
+Nooutline:
+MessageBox "Создайте слой с именем outline","Выход",WARNING
+goto endofscript
+
+WrongSize:
+MessageBox "Больший размер должен быть больше 200 мм","Выход",WARNING
+goto endofscript

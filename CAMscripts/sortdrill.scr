@@ -1,0 +1,226 @@
+!include "layersset.scr"
+
+X#=dbmaxx!+10
+Y#=dbmaxy!+10
+' Для координат контрольных отверстий
+dim xc#(100)
+dim yc#(100)
+dim dc#(100)
+
+if X# = 240 and Y# = 405 then tc = 1
+if X# = 290 and Y# = 405 then tc = 1
+if X# = 495 and Y# = 595 then tc = 1
+
+if noform=1 then goto sd_noform
+
+OpenForm #1,45,5,"Сортировка отверстий за поле платы (с)Sch'arapoff 2011", character, okcancel
+AddForm #1, 0, 0, "Этот Макрос сортирует отверстия и создает контрольные отверстия!",Print
+AddForm #1, 0, 2, "Добавлять минимальные в тесткупон",check,tc
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then end
+
+sd_noform:
+
+'Добавление контрольных сверловок
+' слой сверловки
+if drill <> -1 then
+	setlayer@ drill
+	layer_alloff@ 1
+	nc_add_drill_hit@
+	set_nc_plated_add_drill@ 1
+	offset#=0
+	off#=0
+	mindrill#=100
+	imindrill=0
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if toolused! and tooltype! <> 2 then
+			oldoff# = off#
+			off#=drillsize!/2
+			if mindrill# > drillsize! then
+				' запомним номер минимального сверла'
+				mindrill# = drillsize!
+				imindrill = i
+			end if
+			offset#=offset#+oldoff#+off#+1
+			yc#(i)=Y#
+			xc#(i)=X#+offset#
+			axy@ xc#(i),yc#(i)
+			if i > md then md= i
+		end if
+	next
+	back@
+	' Сортировка отверстий
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if toolused! and tooltype! <> 2 then
+			' Добавить отверстие в нуле
+			nc_add_drill_hit@
+			set_nc_plated_add_drill@ 1
+			axy@ 0,0
+			end@
+			' Отсортировать
+			drill_firstlast@ 1
+			drill_sort_set@ 2,0,1.2700,drill
+			drill_sort@ 0,0,xc#(i),yc#(i)
+			end@
+			' Удалить отверстие в нуле
+			edit_delete@
+			axy@ 0,0
+			back@
+			end@
+		end if
+	next
+	' если многослойка 230 на 395 добавим контрольные минимальным'
+	if X# = 240 and Y# = 405 and tc = 1 then
+		' ну вы помните чот Х и У на десятку больше
+		' еще неизвестно что произойдет на двусторонней с такими габаритами, но этот скрипт там практически 
+		' не вызывается
+		set_current_toolref@ imindrill
+		nc_add_drill_hit@
+		set_nc_plated_add_drill@ 1
+		axy@ 10.0000,10.0000
+		axy@ 10.0000,15.0000
+		axy@ 10.0000,378.7500
+		axy@ 10.0000,383.7500
+		axy@ 30.0000,383.7500
+		axy@ 35.0000,383.7500
+		axy@ 32.5000,11.2500
+		axy@ 37.5000,11.2500
+		axy@ 220.0000,10.0000
+		axy@ 220.0000,15.0000
+		axy@ 220.0000,378.7500
+		axy@ 220.0000,383.7500
+		axy@ 192.5000,11.2500
+		axy@ 192.5000,383.7500
+		axy@ 197.5000,383.7500
+		axy@ 197.5000,11.2500
+	end if
+	if X# = 290 and Y# = 405 and tc = 1 then
+		' ну вы помните чот Х и У на десятку больше
+		' еще неизвестно что произойдет на двусторонней с такими габаритами, но этот скрипт там практически 
+		' не вызывается
+		set_current_toolref@ imindrill
+		nc_add_drill_hit@
+		set_nc_plated_add_drill@ 1
+		axy@ 12.5000,11.2500
+		axy@ 12.5000,16.2500
+		axy@ 12.5000,378.7500
+		axy@ 12.5000,383.7500
+		axy@ 267.5000,11.2500
+		axy@ 267.5000,16.2500
+		axy@ 267.5000,378.7500
+		axy@ 267.5000,383.7500
+
+		axy@ 242.5000,383.7500
+		axy@ 247.5000,383.7500
+		axy@ 32.5000,383.7500
+		axy@ 37.5000,383.7500
+		
+		axy@ 32.5000,11.2500
+		axy@ 37.5000,11.2500
+		axy@ 242.5000,11.2500
+		axy@ 247.5000,11.2500
+	end if
+
+end if
+'Добавление контрольных сверловок
+' слой сверловки
+if mill <> -1 then
+	setlayer@ mill
+	layer_alloff@ 1
+	nc_add_drill_hit@
+	set_nc_plated_add_drill@ 1
+	offset#=0
+	off#=0
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if toolused! and tooltype! <> 2 then
+			oldoff# = off#
+			off#=drillsize!/2
+			offset#=offset#+oldoff#+off#+1
+			yc#(i)=Y#
+			xc#(i)=X#+offset#
+			axy@ xc#(i),yc#(i)
+			if i > md then md= i
+		end if
+	next
+	back@
+	' Сортировка отверстий
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		if toolused! and tooltype! <> 2 then
+			' Добавить отверстие в нуле
+			nc_add_drill_hit@
+			set_nc_plated_add_drill@ 1
+			axy@ 0,0
+			end@
+			' Отсортировать
+			drill_firstlast@ 1
+			drill_sort_set@ 2,0,1.2700,lay
+			drill_sort@ 0,0,xc#(i),yc#(i)
+			end@
+			' Удалить отверстие в нуле
+			edit_delete@
+			axy@ 0,0
+			back@
+			end@
+		end if
+		' Удалить отверстие в конце
+		edit_delete@
+		axy@ xc#(i),yc#(i)
+		back@
+	next
+
+
+end if
+
+' теперь снова получим сверла сверловочного слоя
+offset#=0
+off#=0
+setlayer@ drill
+for i=1 to Highesttoolref!
+	set_current_toolref@ i
+	if toolused! and tooltype! <> 2 then
+		oldoff# = off#
+		off#=drillsize!/2
+		dc#(i) = drillsize!
+		offset#=offset#+oldoff#+off#+1
+		yc#(i)=Y#
+		xc#(i)=X#+offset#
+		if i > md then md= i
+	end if
+next
+
+For lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if layertype! = 0 OR layertype! = 1 OR layertype! = 3 then 
+	' если слой тор internal or bottom
+		for i=1 to md
+			bd = Blankdcode!
+			edit_aperture@ bd,1,dc#(i)+0.5,dc#(i)+0.5,bd,"" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
+			update_dcodebar@ 
+			Setdcode@ bd
+			add_flash@
+			axy@ xc#(i),yc#(i)
+			back@
+		next
+	end if
+	if layertype! = 11 OR layertype! = 12  then 
+	' если слой маска
+		for i=1 to md
+			bd = Blankdcode!
+			edit_aperture@ bd,1,dc#(i)+0.7,dc#(i)+0.7,bd,"" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
+			update_dcodebar@ 
+			Setdcode@ bd
+			add_flash@
+			axy@ xc#(i),yc#(i)
+			back@
+		next
+	end if
+
+next
+4
