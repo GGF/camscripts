@@ -1,0 +1,1 @@
+for %%i in (*.frz) do echo %%~ni >name.txt"

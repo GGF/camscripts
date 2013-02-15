@@ -1,0 +1,81 @@
+# # - COMMENT
+# N - not applicable
+# T - through
+# S - SMD
+# Format:
+# 1. one exeption
+# number [N|S|T]
+# 1. range
+# number-number [N|S|T]
+# NB:
+# 1. The rest of line after [N|S|T] is never read
+# 2. if no exception for particular PIN type given 
+#    25-50 are SMD, 0-24 and 51-999 are THROUGH
+# File is read up to the fist empty line or EOF
+4 S  # 314596 
+5 S
+6 S
+7 S   # добавлено для 784
+8-10 S # добавлено для 764
+11 s
+13 s
+14 s
+15 N
+16 n
+18 s
+19 s
+17-20 s # добавлено для 769
+23-27 s
+30 S  # 314811
+32-34 s # 314711
+34 s # 726029
+36 s
+42 s
+45 s
+46 s
+49 s
+50 N
+112-114 S
+115 N
+116 S
+122-125 S
+127-130 S
+130 S
+134 S
+133-138 S
+140-143 S
+146 S
+148-150 S
+154-158 S
+159 n # для 806
+160-170 S
+173-175 S
+178 S
+180-190 S
+192-200 S # добавлено для платы 667
+193 S
+194 S
+201-202 S
+203-205 S      # для 798
+208 S
+208-209 S # для платы 765
+210 S # для платы 761
+211-216 s
+217 s # для платы 890
+219 S
+220 s
+221 s
+222 s
+225 s
+227 T # для платы M107
+228 T # для платы mpp943
+229 T
+230 s # A004
+237 s # 947
+238 s # 947
+233 s # 959
+234 s #A004
+235 s
+239 s
+240 s
+250 T
