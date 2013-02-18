@@ -1,0 +1,31 @@
+date$ = Time!
+year$ = right$(date$,4)
+mounth$ = mid$(date$,5,3)
+day$ = mid$(date$,9,2)
+select case mounth$
+	case "Jan"
+		mount$ = "01"
+	case "Feb"
+		mount$ = "02"
+	case "Mar"
+		mount$ = "03"
+	case "Apr"
+		mount$ = "04"
+	case "May"
+		mount$ = "05"
+	case "Jun"
+		mount$ = "06"
+	case "Jul"
+		mount$ = "07"
+	case "Aug"
+		mount$ = "08"
+	case "Sep"
+		mount$ = "09"
+	case "Oct"
+		mount$ = "10"
+	case "Nov"
+		mount$ = "11"
+	case "Dec"
+		mount$ = "12"
+end select
+date$ = day$ + "-" + mount$ + "-" + year$
