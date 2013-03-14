@@ -134,9 +134,12 @@ if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
 	if MacroEnd% = 2 then end
 end if
 
+frr = 1
+
 DPP:
 OpenForm #1,70,7,"Сверловка и фрезеровка (с) Sch'arapoff", character, okcancel
 if mpp <> -1 then
+	frr=0
 	vert% = 1
 	'AddForm #1, 0, 32, "Старая пробивка?",check,prob% ' вычисляется выше потому закоментарил
 	select case prob%
@@ -152,6 +155,8 @@ if mpp <> -1 then
 else
 	xprob# = 10
 	AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
+	AddForm #1, 40, 0, "fr-20/10?",check,frr
+
 end if
 AddForm #1, 0, 1, "Сверловки:",print
 for i = 1 to drs
@@ -248,8 +253,9 @@ for drlay = 1 to drs
 		vert% = 1
 	end if
 	' --- конец развернуть --- '
+	
 
-	'1. создание файлов заголовка
+	'1. создание файлов заголовка, должны быть до сверления под фрезеровку потому что вычисляется Z
 	if 1=1 then
 		' вычисление отступов для многослоек
 		nullx# = 99.375
@@ -291,6 +297,62 @@ for drlay = 1 to drs
 	end if
 	' -- конец файлов заголовка -- '
 
+
+	' Добавить свееерловку под фрезеровку если двусторонняя
+	if mpp = -1 then
+		'Highest tool table number
+		HighestNCT%=-1
+		setlayer@ 1
+		for lay=1 to Highestlayer!
+		  setlayer@ lay
+		  if Layertype! = 21 and Tooltable! > HighestNCT% then 
+			HighestNCT%=Tooltable!
+		  end if
+		next
+		for tab = HighestNCT%+1 to 100
+			'set_nc_table@ tab
+			'if dbq_tooltable! = tab then
+				nc_delete_table@ tab
+			'end if
+		next
+		dopdrill = Blanklayer!
+		doptable = HighestNCT%+1
+		nc_delete_table@ doptable
+		nc_add_table@ doptable
+		nc_set_table_type@ doptable,3
+		nc_set_table_name@ doptable,"Dop Drill Tool"
+		nc_add_tool@ doptable,1
+		nc_set_tool_id@ doptable,1,1
+		nc_set_tool_type@ doptable,1,3
+		nc_set_tool_size@ doptable,1,3.0000
+		'util_nced@
+		setsnap@ 0
+		edit_layer@ dopdrill,-2,-2,21,0
+		nc_assign_tool_table_to_layer@ dopdrill,doptable
+		nc_set_layer_rank@ dopdrill,1
+		setlayer@ dopdrill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+		if Z# < Y% then
+			axy@ 20.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 20.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 20.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 20.0000,Z#+45+90+45
+		end if
+		back@
+		edit_copy@
+		edit_selectall2@ 
+		setcoplayer@ drill,1
+		copy_to_layer@ 
+	end if
+' конец сверления отв под фрезеровку '
 
 	if drill <> -1 and mk4exist then
 		tablefile$ = tablepath$+"\tables4.lst"
@@ -373,61 +435,6 @@ for drlay = 1 to drs
 
 	' экселон
 	if drill <> -1 and ex2exist then
-		' Добавить свееерловку под фрезеровку если двусторонняя
-		if mpp = -1 then
-			'Highest tool table number
-			HighestNCT%=-1
-			setlayer@ 1
-			for lay=1 to Highestlayer!
-			  setlayer@ lay
-			  if Layertype! = 21 and Tooltable! > HighestNCT% then 
-				HighestNCT%=Tooltable!
-			  end if
-			next
-			for tab = HighestNCT%+1 to 100
-				'set_nc_table@ tab
-				'if dbq_tooltable! = tab then
-					nc_delete_table@ tab
-				'end if
-			next
-			dopdrill = Blanklayer!
-			doptable = HighestNCT%+1
-			nc_delete_table@ doptable
-			nc_add_table@ doptable
-			nc_set_table_type@ doptable,3
-			nc_set_table_name@ doptable,"Dop Drill Tool"
-			nc_add_tool@ doptable,1
-			nc_set_tool_id@ doptable,1,1
-			nc_set_tool_type@ doptable,1,3
-			nc_set_tool_size@ doptable,1,3.0000
-			'util_nced@
-			setsnap@ 0
-			edit_layer@ dopdrill,-2,-2,21,0
-			nc_assign_tool_table_to_layer@ dopdrill,doptable
-			nc_set_layer_rank@ dopdrill,1
-			setlayer@ dopdrill
-			layer_alloff@ 1
-			nc_add_drill_hit@
-			setsnap@ 0
-			if Z# < Y% then
-				axy@ 10.0000,Z#
-			end if
-			if Z#+45 < Y% then
-				axy@ 10.0000,Z#+45
-			end if
-			if Z#+45+90 < Y% then
-				axy@ 10.0000,Z#+45+90
-			end if
-			if Z#+45+90+45 < Y% then
-				axy@ 10.0000,Z#+45+90+45
-			end if
-			back@
-			edit_copy@
-			edit_selectall2@ 
-			setcoplayer@ drill,1
-			copy_to_layer@ 
-		end if
-
 		if sz485x585 = 1 then
 			' повернуть немного 10-09-2012 16;21
 			setlayer@ drill
@@ -777,6 +784,9 @@ if vert%=1 then
 		if Z#<=0 then Z#=10
 		xprob# = 10
 	end if
+	if fr = 1 AND frr = 1 then
+		xprob# = 20
+	end if
 	print #1, USING "M47, ###*###  ##";X%;Y%;Z#
 	nx# = nullx#-xprob#
 	ny# = nully#-Z#
@@ -815,6 +825,9 @@ else
 		Z#=zz%*10
 		if Z#<=0 then Z#=10
 		xprob# = 10
+	end if
+	if fr = 1 AND frr = 1 then
+		xprob# = 20
 	end if
 	print #1, USING "M47, ###*###  ##";Y%;X%;Z#
 	nx# = nullx#-xprob#+Y%
