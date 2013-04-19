@@ -134,7 +134,7 @@ if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
 	if MacroEnd% = 2 then end
 end if
 
-frr = 1
+frr = 0
 
 DPP:
 OpenForm #1,70,7,"Сверловка и фрезеровка (с) Sch'arapoff", character, okcancel
@@ -184,6 +184,9 @@ for drlay = 1 to drs
 		drill = -1
 	else
 		drill = dr(drlay)
+	end if
+	if drlay <> 1 then
+		suffix$="-"+str$(drlay)
 	end if
 	if drill <> -1 then
 		if scalex# <> 1 OR scaley# <> 1 then 
@@ -334,17 +337,18 @@ for drlay = 1 to drs
 		layer_alloff@ 1
 		nc_add_drill_hit@
 		setsnap@ 0
+' 1-04-2013 сделал 17 вместо 20'
 		if Z# < Y% then
-			axy@ 20.0000,Z#
+			axy@ 17.0000,Z#
 		end if
 		if Z#+45 < Y% then
-			axy@ 20.0000,Z#+45
+			axy@ 17.0000,Z#+45
 		end if
 		if Z#+45+90 < Y% then
-			axy@ 20.0000,Z#+45+90
+			axy@ 17.0000,Z#+45+90
 		end if
 		if Z#+45+90+45 < Y% then
-			axy@ 20.0000,Z#+45+90+45
+			axy@ 17.0000,Z#+45+90+45
 		end if
 		back@
 		edit_copy@
@@ -389,7 +393,7 @@ for drlay = 1 to drs
 
 
 		'5. Собственно вывод фрезеровки
-		millPCB_out@ drill,path$+drillname$+"1.mk4"
+		millPCB_out@ drill,path$+drillname$+suffix$+"1.mk4"
 	'	mill_out@ mill,path$+name$+"1.frz"
 		Expmill_generate_Header@ 1
 
@@ -428,7 +432,7 @@ for drlay = 1 to drs
 
 
 		'3. Собственно вывод сверловки
-		drillPCB_out@ drill,path$+drillname$+"1.mk2"
+		drillPCB_out@ drill,path$+drillname$+suffix$+"1.mk2"
 	'	drill_out@ drill,path$+name$+"1.mk2"
 		Expdrl_generate_Header@ 1
 	end if
@@ -478,7 +482,7 @@ for drlay = 1 to drs
 		nc_exp_milltool_RPMs@ 0
 		''
 		'drillPCB_out@ drill,path$+drillname$+"1.ex2"
-		mill_out@ drill,path$+drillname$+"1.ex2" ' для плат в металлизированной фрезеровкой'
+		mill_out@ drill,path$+drillname$+suffix$+"1.ex2" ' для плат в металлизированной фрезеровкой'
 		' удалить отверстия
 		if mpp = -1 then
 			setlayer@ drill
@@ -524,8 +528,8 @@ for drlay = 1 to drs
 		GOSUB corecttool
 
 		if mk4exist then
-			open path$+drillname$+"1.mk4" for input as #1
-			open path$+drillname$+".mk4" for output as #2
+			open path$+drillname$+suffix$+"1.mk4" for input as #1
+			open path$+drillname$+suffix$+".mk4" for output as #2
 			first=0
 			do
 				line input #1,s$
@@ -537,12 +541,12 @@ for drlay = 1 to drs
 			loop until EOF(1) = 1
 			close #1
 			close #2
-			kill path$+drillname$+"1.mk4"
+			kill path$+drillname$+suffix$+"1.mk4"
 		end if
 
 		if mk2exist then
-			open path$+drillname$+"1.mk2" for input as #1
-			open path$+drillname$+".mk2" for output as #2
+			open path$+drillname$+suffix$+"1.mk2" for input as #1
+			open path$+drillname$+suffix$+".mk2" for output as #2
 			first=0
 			do
 				line input #1,s$
@@ -554,7 +558,7 @@ for drlay = 1 to drs
 			loop until EOF(1) = 1
 			close #1
 			close #2
-			kill path$+drillname$+"1.mk2"
+			kill path$+drillname$+suffix$+"1.mk2"
 		end if
 		
 		if ex2exist then
@@ -571,12 +575,12 @@ for drlay = 1 to drs
 				STY# = -6.25
 			end if
 			
-			exelonfile1$ = path$+drillname$+"1.ex2"
-			exelonfile$ =  path$+drillname$+".ex2"
+			exelonfile1$ = path$+drillname$+suffix$+"1.ex2"
+			exelonfile$ =  path$+drillname$+suffix$+".ex2"
 			gosub editexelon
-			open path$+drillname$+".prl" for output as #2
+			open path$+drillname$+suffix$+".prl" for output as #2
 				print #2,"T,O"
-				print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$
+				print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$+suffix$
 			close #2
 		end if
 	end if
@@ -785,7 +789,7 @@ if vert%=1 then
 		xprob# = 10
 	end if
 	if fr = 1 AND frr = 1 then
-		xprob# = 20
+		xprob# = 17
 	end if
 	print #1, USING "M47, ###*###  ##";X%;Y%;Z#
 	nx# = nullx#-xprob#
@@ -827,7 +831,7 @@ else
 		xprob# = 10
 	end if
 	if fr = 1 AND frr = 1 then
-		xprob# = 20
+		xprob# = 17
 	end if
 	print #1, USING "M47, ###*###  ##";Y%;X%;Z#
 	nx# = nullx#-xprob#+Y%

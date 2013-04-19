@@ -1,0 +1,5 @@
+ERROR (25): On line 92 of x:\tool\camscripts\createcond3.scr
+Description: ", expected"
+
+Line 92:
+	SWAP shir dlin

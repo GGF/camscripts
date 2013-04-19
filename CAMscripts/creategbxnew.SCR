@@ -19,7 +19,7 @@
 ' иметь в виду, кроме того что оно ставится между шаблонами еще и от краев такое же расстояние
 spacing# = 10
 
-plenka% = 1 ' 1 - AGFA 2-KODAK
+plenka% = 2 ' 1 - AGFA 2-KODAK
 
 layer_alloff@ 0
 view_close@
@@ -233,12 +233,12 @@ for lay = Nextlay to Highestlayer!
 		gosub mirror
 	elseif layertype! = 19 then 'PASTE TOP
 		play(i)=lay
-		playtypre(i) = 5
+		playtype(i) = 5
 		i=i+1
 		c1=lay
 	elseif layertype! = 20 then 'PASTE TOP
 		play(i)=lay
-		playtypre(i) = 5
+		playtype(i) = 5
 		i=i+1
 		gosub mirror
 		s1=lay
@@ -262,7 +262,7 @@ for lay = Nextlay to Highestlayer!
 	elseif layertype! = 2 then 'neg plane
 		mpp = 1 ' есть внутренние слои
 		play(i)=lay
-		playtypre(i) = 4
+		playtype(i) = 4
 		i=i+1
 		delta = internal - (internal / 2)*2)
 		if delta = 0 then
@@ -295,71 +295,100 @@ i=i-1
 j=j-1
 lay = 1
 
+' вывести данные'
+'open path$+"gbx.rpt" for output as #1
+'for rep=1 to j
+'	print #1,nlay(rep),"-",nlaytype(rep)
+'next
+'print #1,"-------------------"
+'for rep=1 to i
+'	print #1,play(rep),"-",playtype(rep)
+'next
+'close #1
+' конец вывода'
+
 BREAK
 ' сортировка двух массивов по массиву типов'
 ' positiv
 ' i - количество элементов '
-' быстрая сортировка'
-ii = 1 ' начальный '
-jj = i ' конечный'
-xx = playtype((ii+jj)/2) ' серединный эелемент
-startsortp:
-	wp1:
-		if playtype(ii) < xx then
-			ii=ii+1
-			goto wp1
+' пузырьком '
+N=i
+for jj=1 to N-1
+	ff=0
+	min=jj
+	for ii=jj to N-jj
+		if playtype(ii) > playtype(ii+1) then
+			' swap'
+			temp = play(ii)
+			ttemp = playtype(ii)
+			play(ii) = play (ii+1)
+			playtype(ii) = playtype(ii+1)
+			play(ii+1) = temp
+			playtype(ii+1) = ttemp
+			' был обмен '
+			ff=1
 		end if
-	wp2:
-		if playtype(jj) > xx then
-			jj=jj-1
-			goto wp2
-		end if
-	if ii <= jj then
-		' поменять '
-		temp = play(ii)
-		ttemp = playtype(ii)
-		play(ii) = play (jj)
-		playtype(ii) = playtype(jj)
-		play(jj) = temp
-		playtype(jj) = ttemp
-		' указатели '
-		ii = ii + 1
-		jj = jj - 1
+		if playtype(ii)<playtype(min) then min=ii
+	next
+	if ff=0 then goto endsortp
+	if min<>jj then
+		temp = play(jj)
+		ttemp = playtype(jj)
+		play(jj) = play (min)
+		playtype(jj) = playtype(min)
+		play(min) = temp
+		playtype(min) = ttemp
 	end if
-	if ii < jj then goto startsortp
-	
-' сортировка двух массивов по массиву типов'
+next
+endsortp:
+
 ' negative
 ' j - количество элементов '
-' быстрая сортировка'
-ii = 1 ' начальный '
-jj = j ' конечный'
-xx = nlaytype((ii+jj)/2) ' серединный эелемент
-startsortn:
-	wn1:
-		if nlaytype(ii) < xx then
-			ii=ii+1
-			goto wn1
+' пузырьком '
+N=j
+for jj=1 to N-1
+	ff=0
+	min=jj
+	for ii=jj to N-jj
+		if nlaytype(ii) > nlaytype(ii+1) then
+			' swap'
+			temp = nlay(ii)
+			ttemp = nlaytype(ii)
+			nlay(ii) = nlay (ii+1)
+			nlaytype(ii) = nlaytype(ii+1)
+			nlay(ii+1) = temp
+			nlaytype(ii+1) = ttemp
+			' был обмен '
+			ff=1
 		end if
-	wn2:
-		if nlaytype(jj) > xx then
-			jj=jj-1
-			goto wn2
-		end if
-	if ii <= jj then
-		' поменять '
-		temp = nlay(ii)
-		ttemp = nlaytype(ii)
-		nlay(ii) = nlay (jj)
-		nlaytype(ii) = nlaytype(jj)
-		nlay(jj) = temp
-		nlaytype(jj) = ttemp
-		' указатели '
-		ii = ii + 1
-		jj = jj - 1
+		if nlaytype(ii) < nlaytype(min) then min=ii
+	next
+	if ff=0 then goto endsortn
+	if min<>jj then
+		temp = nlay(jj)
+		ttemp = nlaytype(jj)
+		nlay(jj) = nlay (min)
+		nlaytype(jj) = nlaytype(min)
+		nlay(min) = temp
+		nlaytype(min) = ttemp
 	end if
-	if ii < jj then goto startsortn
-	
+next
+endsortn:
+
+
+
+' вывести данные'
+'open path$+"gbx1.rpt" for output as #1
+'for rep=1 to j'
+'	print #1,nlay(rep),"-",nlaytype(rep)
+'next
+'print #1,"-------------------"
+'for rep=1 to i
+'	print #1,play(rep),"-",playtype(rep)
+'next
+'close #1
+' конец вывода'
+
 
 for ii=1 to i step num
 	setlayer@ play(ii) 
