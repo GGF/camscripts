@@ -81,11 +81,14 @@ view_all@
 
 layer_alloff@ 1
 
-
-nc_add_table@ 3
-nc_import_drill_pl@ blanklayer!,1,path$+name$+".mk4"
-nc_add_table@ 2
-nc_import_mill@ blanklayer!,2,path$+name$+".frz"
+if fileexists(path$+name$+".mk4") then 
+	nc_add_table@ 3
+	nc_import_drill_pl@ blanklayer!,1,path$+name$+".mk4"
+end if
+if fileexists(path$+name$+".frz") then
+	nc_add_table@ 2
+	nc_import_mill@ blanklayer!,2,path$+name$+".frz"
+end if
 
 layer_alloff@ 0
 view_all@
