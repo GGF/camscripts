@@ -134,7 +134,7 @@ count = spx%*spy%
 
 ' wide and gap
 if mins% = 1 then
-	!include "wideandgaps.scr"
+	macro_play "wideandgaps.scr"
 end if
 
 filename$ = path$ + name$ + "_cam_full.pcb"
