@@ -110,7 +110,7 @@ view_SuppressGrphcs@ 1
 
 ' wide and gap
 if mins% = 1 then
-	!include "wideandgaps.scr"
+	macro_play "wideandgaps.scr"
 end if
 
 filename$ = dbname!

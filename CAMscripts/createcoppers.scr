@@ -152,6 +152,7 @@ Command$="cmd /C "+  chr$(34) + Command$ +  chr$(34)
 wincall Command$
 
 ' записать данные в базу
-dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)
+dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)+"&sostav="+sostav$+"&drillsostav="+drillsostav$
+outfile$="cx.bat"
 
 !include "baseupdate.scr"

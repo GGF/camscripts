@@ -8,10 +8,14 @@ encodestr$=board$
 gosub URL_encode
 board$=LTRIM$(RTRIM$(encodestr$))
 
-url$="x:\tool\tear.exe "+chr$(34)+"http://baza3/?customer="+customer$+"&board="+board$+"&level=update&update[act]="+dopurl$+chr$(34)+" > cx.bat"
+url$="x:\tool\tear.exe "+chr$(34)+"http://baza4/?customer="+customer$+"&board="+board$+"&level=update&update[act]="+dopurl$+chr$(34)+" > "+outfile$
 
 open path$+"dbq.bat" for output as #1
+	print #1,"chcp 1251"
+	print #1,"z:"
+	print #1,"cd "+path$
 	print #1,url$
+	print #1,outfile$
 close #1
 
 s1$ = chr$(34)+path$+"dbq.bat"+chr$(34)
