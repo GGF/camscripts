@@ -152,25 +152,6 @@ Command$="cmd /C "+  chr$(34) + Command$ +  chr$(34)
 wincall Command$
 
 ' записать данные в базу
-encodestr$=customer$
-gosub URL_encode
-customer$=LTRIM$(RTRIM$(encodestr$))
-encodestr$=board$
-gosub URL_encode
-board$=LTRIM$(RTRIM$(encodestr$))
+dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)
 
-url$="x:\tool\tear.exe "+chr$(34)+"http://baza3/?level=update&update[act]=copper&customer="+customer$+"&board="+board$+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)+chr$(34)+" > cx.bat"
-
-open path$+"dbq.bat" for output as #1
-	print #1,url$
-close #1
-
-s1$ = chr$(34)+path$+"dbq.bat"+chr$(34)
-WinCall s1$,MinimizedNoFocus,done%
-kill path$+"dbq.bat"
-
-goto cc_endscript
-
-!INCLUDE "urlencode.sub"
-
-cc_endscript:
+!include "baseupdate.scr"

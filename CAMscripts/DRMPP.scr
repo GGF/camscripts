@@ -25,7 +25,6 @@ customer$ = translit1$
 tablepath$="x:\tool\camscripts"
 
 !include "layersset.scr"
-!include "layersset.scr"
 
 if comp > -1 then
 	setlayer@ comp
@@ -81,7 +80,7 @@ AddForm #1, 0, 3, "штук по x:",input,spx%
 AddForm #1, 35, 3, "штук по y:",input,spy%
 AddForm #1, 0, 4, "»м€ ",input,name$
 AddForm #1, 0, 5, "ƒата (мес€ц.год)",input,date$
-AddForm #1, 50, 4, "Ўирина заготовки:",Choice,widezag%,"230","280","485"
+AddForm #1, 56, 4, "Ўирина:",Choice,widezag%,"230","280","485","280+"
 AddForm #1, 0, 6, "—читать минимальные размеры (долго)",check,mins%
 DisplayForm #1
 Canceled% = formcancel(1)
@@ -99,9 +98,13 @@ if widezag% = 1 then
 elseif widezag% = 2 then
 	widezag%=280
 	heightzag% = 395
-else
+elseif widezag% = 3 then
 	widezag%=485
 	heightzag% = 585
+else
+	widezag%=280
+	heightzag% = 395
+	wideplus%=1
 end if
 
 ' посчитаем количество на заготовке'
@@ -157,7 +160,11 @@ textxscale@ 100
 textvertical@ 0
 textfontface@ 2
 view_close@
-openlibitem@ 3,str$(widezag%)+"x"+str$(heightzag%)
+if wideplus%=1 then
+	openlibitem@ 3,str$(widezag%)+"x"+str$(heightzag%)+"+5"
+else
+	openlibitem@ 3,str$(widezag%)+"x"+str$(heightzag%)
+end if
 'if widezag% >280 then
 '	openlibitem@ 3,"485x585"
 'elseif widezag% >230 then
@@ -178,7 +185,11 @@ techfieldb# = techfieldt#
 'MessageBox str$(techfieldt#)
 set_panel_border_spacing@ techfieldl#,techfieldt#,techfieldr#,techfieldb#
 set_minimum_image_spacing@ 0.0000,0.0000
-add_panel_symbol@ 1,str$(widezag%)+"x"+str$(heightzag%)
+if wideplus%=1 then
+	add_panel_symbol@ 1,str$(widezag%)+"x"+str$(heightzag%)+"+5"
+else
+	add_panel_symbol@ 1,str$(widezag%)+"x"+str$(heightzag%)
+end if
 'if widezag% >230 then
 '	add_panel_symbol@ 1,"280x395"
 'else 

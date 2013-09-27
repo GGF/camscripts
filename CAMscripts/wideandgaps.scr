@@ -9,7 +9,7 @@ open path$+"wideandgap.rpt" for output as #1
 print #1,board$
 print #1,customer$
 
-
+wideandgaps$=""
 for lay=comp to Highestlayer!
 	setlayer@ lay
 	layer_alloff@ 1
@@ -36,6 +36,7 @@ for lay=comp to Highestlayer!
 		print #1,wide$
 		print #1,gap$
 		print #1,num$
+		wideandgaps$=wideandgaps$+num$+"x"+wide$+"x"+gap$+"|"
 		if lay=solder then goto closefiles
 	end if
 next
@@ -65,3 +66,8 @@ oldname$=path$+passport$
 kill newname$
 name oldname$ as newname$
 
+goto wag_endscript
+
+!INCLUDE "urlencode.sub"
+
+wag_endscript:

@@ -452,7 +452,30 @@ for drlay = 1 to drs
 			setsnap@ 1
 			back@
 		end if
-
+' доп для фрезеровки'
+		setsnap@ 0
+		edit_layer@ dopdrill,-2,-2,21,0
+		nc_assign_tool_table_to_layer@ dopdrill,doptable
+		nc_set_layer_rank@ dopdrill,1
+		setlayer@ drill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+' 1-04-2013 сделал 17 вместо 20'
+		if Z# < Y% then
+			axy@ 10.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 10.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 10.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 10.0000,Z#+45+90+45
+		end if
+		back@
+' end доп для фрезеровки'
 		' вывод 
 		expdrl_generate_Header@ 1
 		export_XYmodal@ 1,0
@@ -483,39 +506,7 @@ for drlay = 1 to drs
 		''
 		'drillPCB_out@ drill,path$+drillname$+"1.ex2"
 		mill_out@ drill,path$+drillname$+suffix$+"1.ex2" ' для плат в металлизированной фрезеровкой'
-		' удалить отверстия
-		if mpp = -1 then
-			setlayer@ drill
-			layer_alloff@ 1
-			query_all@
-			axy@ 10,Z#
-			back@
-			toolref = Toolreference!
-			tabref = Tooltable!
-			edit_delete@
-			setsnap@ 0
-			seteditdraw@ 0
-			seteditflash@ 0
-			seteditmill@ 0
-			if Z# < Y% then
-				axy@ 10.0000,Z#
-			end if
-			if Z#+45 < Y% then
-				axy@ 10.0000,Z#+45
-			end if
-			if Z#+45+90 < Y% then
-				axy@ 10.0000,Z#+45+90
-			end if
-			if Z#+45+90+45 < Y% then
-				axy@ 10.0000,Z#+45+90+45
-			end if
-			back@
-			if Lyrdrillcount! = 0 then
-				nc_delete_tool@ tabref,toolref
-			end if
-			edit_removelyr@ dopdrill
-			nc_delete_table@ doptable
-		end if
+
 	end if
 
 	'6. дополнение файла сверловки
@@ -659,16 +650,35 @@ if mis>0 then
 			nc_exp_mill_IncludeDrills@ 1
 			nc_exp_mill_Exc_decimals@ 1
 			nc_exp_mill_Exc_toolingoffset@ 1
+			
+			
+			nc_exp_drilltool_infeed@ 0
+			nc_exp_drilltool_retract@ 0
+			nc_exp_drilltool_RPMs@ 0
+			nc_exp_drilltool_MaxHits@ 0
+			nc_exp_milltool_infeed@ 0
+			nc_exp_milltool_retract@ 0
+			nc_exp_milltool_RPMs@ 0
+			
+			
 			mill_out@ mi(frezlay),path$+drillnamef$+"1.fx2"
 
 			'7.1 дополнение файла фрезеровки exelon
 			if mpp <> -1 then
 				STX# = X%/2.0
 				STY# = 66.0
+				if sz485x585 then
+					Z# = 202.5
+				else
+					Z# = 107.5
+				end if
 			else
 				STX# = 190
 				STY# = 210-Z#
 			end if
+			
+				STX# = 190
+				STY# = 210-Z#
 
 			exelonfile1$ = path$+drillnamef$+"1.fx2" 
 			exelonfile$ = path$+drillnamef$+".fx2" 
@@ -701,12 +711,15 @@ board$=LTRIM$(RTRIM$(encodestr$))
 url$="x:\tool\tear.exe "+chr$(34)+"http://baza3/?level=update&update[act]=mkrfrz&customer="+customer$+"&board="+board$+"&drillname="+drillname$+"&mpp="+str$(mpp)+"&sizex="+str$(X%)+"&sizey="+str$(Y%)+chr$(34)+" > cx.bat"
 
 open path$+"dbq.bat" for output as #1
+	print #1,"chcp 1251"
+	print #1,"z:"
+	print #1,"cd "+path$
 	print #1,url$
 	print #1,"cx.bat"
 close #1
 
 s1$ = chr$(34)+path$+"dbq.bat"+chr$(34)
-WinCall s1$,MinimizedNoFocus,done%
+WinCall s1$,MinimizedNoFocus ,done%
 kill path$+"dbq.bat"
 
 ' закончить, дальше подпрограммы'
@@ -866,7 +879,7 @@ do
 				goto breakfr
 			end if
 			i = i + 1
-		if i>4 then goto nnn else goto fff
+		if i<=4 then goto fff
 		'next
 	nnn:
 	end if

@@ -1,0 +1,25 @@
+' записать данные в базу
+' добавлением скрипта пути и имена определяем заказчика и блок'
+' параметром dopurl$ определяем действие update и дополнительные параметры'
+encodestr$=customer$
+gosub URL_encode
+customer$=LTRIM$(RTRIM$(encodestr$))
+encodestr$=board$
+gosub URL_encode
+board$=LTRIM$(RTRIM$(encodestr$))
+
+url$="x:\tool\tear.exe "+chr$(34)+"http://baza3/?customer="+customer$+"&board="+board$+"&level=update&update[act]="+dopurl$+chr$(34)+" > cx.bat"
+
+open path$+"dbq.bat" for output as #1
+	print #1,url$
+close #1
+
+s1$ = chr$(34)+path$+"dbq.bat"+chr$(34)
+WinCall s1$,MinimizedNoFocus,done%
+kill path$+"dbq.bat"
+
+goto bu_endscript
+
+!INCLUDE "urlencode.sub"
+
+bu_endscript:
