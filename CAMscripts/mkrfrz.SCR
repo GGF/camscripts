@@ -7,6 +7,7 @@ dim if#(200)'in feed
 dim of#(200)'out feed
 dim r#(200)'rpms
 dim numbers(200) ' использованые номера сверел
+dim sizes#(200) ' использованые номера сверел
 dim frezy(200)
 dim drr(10)
 dim mir(10)
@@ -20,6 +21,7 @@ if X%<Y% then vert%=1
 yprob# = (Y%-210)/2.0
 prob% = 1
 drillnew = -1
+dopdrill = -1
 scalex# = 1
 scaley# = 1
 
@@ -302,6 +304,7 @@ for drlay = 1 to drs
 
 
 	' Добавить свееерловку под фрезеровку если двусторонняя
+	break
 	if mpp = -1 then
 		'Highest tool table number
 		HighestNCT%=-1
@@ -318,6 +321,7 @@ for drlay = 1 to drs
 				nc_delete_table@ tab
 			'end if
 		next
+		break
 		dopdrill = Blanklayer!
 		doptable = HighestNCT%+1
 		nc_delete_table@ doptable
@@ -351,10 +355,10 @@ for drlay = 1 to drs
 			axy@ 17.0000,Z#+45+90+45
 		end if
 		back@
-		edit_copy@
+		edit_move@
 		edit_selectall2@ 
-		setcoplayer@ drill,1
-		copy_to_layer@ 
+		movetolayer@ drill
+		back@
 	end if
 ' конец сверления отв под фрезеровку '
 
@@ -453,15 +457,28 @@ for drlay = 1 to drs
 			back@
 		end if
 ' доп для фрезеровки'
-		setsnap@ 0
-		edit_layer@ dopdrill,-2,-2,21,0
-		nc_assign_tool_table_to_layer@ dopdrill,doptable
-		nc_set_layer_rank@ dopdrill,1
-		setlayer@ drill
+		break
+		if dopdrill = -1 then
+			dopdrill = Blanklayer!
+			doptable = HighestNCT%+1
+			nc_delete_table@ doptable
+			nc_add_table@ doptable
+			nc_set_table_type@ doptable,3
+			nc_set_table_name@ doptable,"Dop Drill Tool"
+			nc_add_tool@ doptable,1
+			nc_set_tool_id@ doptable,1,1
+			nc_set_tool_type@ doptable,1,3
+			nc_set_tool_size@ doptable,1,3.0000
+			'util_nced@
+			setsnap@ 0
+			edit_layer@ dopdrill,-2,-2,21,0
+			nc_assign_tool_table_to_layer@ dopdrill,doptable
+			nc_set_layer_rank@ dopdrill,1
+		end if
+		setlayer@ dopdrill
 		layer_alloff@ 1
 		nc_add_drill_hit@
 		setsnap@ 0
-' 1-04-2013 сделал 17 вместо 20'
 		if Z# < Y% then
 			axy@ 10.0000,Z#
 		end if
@@ -474,6 +491,10 @@ for drlay = 1 to drs
 		if Z#+45+90+45 < Y% then
 			axy@ 10.0000,Z#+45+90+45
 		end if
+		back@
+		edit_move@
+		edit_selectall2@ 
+		movetolayer@ drill
 		back@
 ' end доп для фрезеровки'
 		' вывод 
@@ -729,19 +750,42 @@ CLOSE #1
 ' пройти только по нужному слою'
 setlayer@ selected_layer
 table = tooltable!
-number = 0;
+number = 1;
 fre=1;
 for i=1 to Highesttoolref! 
 	set_current_toolref@ i
-	' проверка на повторяемость номеров
-	for j=0 to number
-		if Toolnum! = numbers(j) AND Toolnum! <> 0 then
-			MessageBox "Повторяются номера в таблице сверл!","Ошибка!!!",ERROR
-			goto mkrfrz_endscript
+	if Toolused! =1 then
+		sizes#(number)=toolsize!
+		numbers(number)=i
+		number=number+1
+	else
+		nc_delete_tool@ table,i
+	end if
+next
+number=number-1
+'sort'
+for j=1 to number-1
+	for i=1 to number-j
+		if sizes#(i)>sizes#(i+1) then
+			temp#=sizes#(i)
+			sizes#(i)=sizes#(i+1)
+			sizes#(i+1) = temp#
+			temp=numbers(i)
+			numbers(i)=numbers(i+1)
+			numbers(i+1)=temp
 		end if
 	next
-	number=number+1
-	numbers(number)=Toolnum!
+next
+' end sort'
+' renumber '
+for i=1 to number
+	nc_set_tool_id@ table,numbers(i),i
+next
+break
+'end renumber'
+for i=1 to number 
+	toolref = numbers(i)
+	set_current_toolref@ toolref
 	
 	if tooltype! = 2 then goto freza
 
@@ -750,26 +794,26 @@ for i=1 to Highesttoolref!
 	next
 	if index>lines% then goto notoolintable
 	if units! = 1 then
-		nc_set_tool_infeed@ table,i,if#(index)*10/6
-		nc_set_tool_outfeed@ table,i,of#(index)*10/6
+		nc_set_tool_infeed@ table,toolref,if#(index)*10/6
+		nc_set_tool_outfeed@ table,toolref,of#(index)*10/6
 	else
-		nc_set_tool_infeed@ table,i,if#(index)*10/6
-		nc_set_tool_outfeed@ table,i,of#(index)*10/6
+		nc_set_tool_infeed@ table,toolref,if#(index)*10/6
+		nc_set_tool_outfeed@ table,toolref,of#(index)*10/6
 	end if
-	nc_set_tool_rpms@ table,i,r#(index)*1000
+	nc_set_tool_rpms@ table,toolref,r#(index)*1000
 	goto notoolintable
 freza:
 	'print_msg "Есть фреза!" + CR!
 	frezy(fre) = Toolnum! 'было i вместо Toolnum!'
 	fre = fre + 1
-	nc_set_tool_infeed@ table,i,8.3333
-	nc_set_tool_outfeed@ table,i,75
-	nc_set_tool_rpms@ table,i,30000
+	nc_set_tool_infeed@ table,toolref,8.3333
+	nc_set_tool_outfeed@ table,toolref,75
+	nc_set_tool_rpms@ table,toolref,30000
 	ts# = toolsize!
 	if ts# < 1 then
 		ts# = 1 ' проверка на маленькие фрезы'
 	end if
-	nc_set_tool_feedrate@ table,i,ts#*10/6 'преобразование
+	nc_set_tool_feedrate@ table,toolref,ts#*10/6 'преобразование
 notoolintable:
 next
 

@@ -61,7 +61,11 @@ if drill <> -1 then
 	layer_alloff@ 1
 	for i=1 to Highesttoolref!
 		set_current_toolref@ i
-		drillsostav$ = drillsostav$ + str$(toolsize!) + "|" + str$(Lyrdrillcount!)+"x"
+		frezcomment$ = ""
+		if tooltype! = 2 then
+			frezcomment$ = "-פנוחא"
+		end if
+		drillsostav$ = drillsostav$ + str$(toolsize!) + "|" + str$(Lyrdrillcount!)+frezcomment$+"x"
 		if toolused! and tooltype! <> 2 then
 			if toolsize! <= 0.6 then
 				smalldrill = smalldrill + Lyrdrillcount!

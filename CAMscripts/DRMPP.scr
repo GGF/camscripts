@@ -645,10 +645,17 @@ back@
 setsnap@ 1
 '------------------------------------------------------
 
+setlayer@ comp
+
 drillname$ = name$
 customer$ = ruscustomer$
 board$=rusboard$
 !include "createcoppers.scr"
+
+' контрольные отверстия не попадут в статистику сверловки, но и не испортят размеры плат, а то createcoppers не то пишет'
+noform=1
+!include "sortdrill.scr"
+
 'sc#ss#
 setlayer@ comp
 layer_alloff@ 0
@@ -696,10 +703,6 @@ textfont@ "SIMPLE.EFN"
 edit_chgtext@ "S="+ FMTUSING$("###.##",ss#)
 
 
-
-noform=1
-!include "sortdrill.scr"
-setlayer@ comp
 
 ' номера слоев'
 newapr = Blankdcode!

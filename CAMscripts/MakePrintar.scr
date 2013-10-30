@@ -1,0 +1,391 @@
+'---- constants ------
+Block=-1
+Small=0
+Middle=1
+Pferd=2
+X=0
+Y=1
+Bot=0
+Top=1
+Left=0
+Right=1
+
+
+DIM Sizes#(Pferd,1)
+Sizes#(Small,X)=230.0
+Sizes#(Small,Y)=395.0
+Sizes#(Middle,X)=280.0
+Sizes#(Middle,Y)=395.0
+Sizes#(Pferd,X)=485.0
+Sizes#(Pferd,Y)=585.0
+
+DIM Targets#(Pferd,Y,Top)
+Targets#(Small,X,Left)=32.5
+Targets#(Small,Y,Bot)=25.0
+Targets#(Small,X,Right)=197.5
+Targets#(Small,Y,Top)=370.0
+Targets#(Middle,X,Left)=32.5
+Targets#(Middle,Y,Bot)=25.0
+Targets#(Middle,X,Right)=247.5
+Targets#(Middle,Y,Top)=370.0
+Targets#(Pferd,X,Left)=32.5
+Targets#(Pferd,Y,Bot)=25.0
+Targets#(Pferd,X,Right)=452.5
+Targets#(Pferd,Y,Top)=560.0
+
+OneSide = -1
+
+TargLeftX# = 0.0
+TargBotY# = 0.0
+
+TargRightX# = 0.0
+TargTopY# = 0.0
+
+!INCLUDE "getpathandname.scr"
+
+translit$ = customer$
+gosub translit
+customer$ = translit1$
+
+translit$ = mainboard$
+gosub translit
+mainboard$ = translit1$
+
+
+OutCustom$="M:\Printar\"+customer$
+CustExist=FILEEXISTS(OutCustom$)
+
+Outpath$=OutCustom$ + "\"+mainboard$
+BrdExist=FILEEXISTS(Outpath$)
+
+break
+
+Thickness#=1.5
+
+!include "layersset.scr"
+
+setresolution@ 100
+setsnap@ 0
+setgridsnap@ 0
+
+
+if mpp = 0 then 
+	PRINT "Пока работает только с МПП "
+	goto endofscript
+end if
+if rcn=-1 and rsn = -1 then 
+	print "Маркировка отсутствует"
+	goto endofscript
+end if
+
+
+OpenForm #1,60,7,"Получение файлов для Printar", character, okcancel
+if CustExist=0 then
+	AddForm #1,0,1, "Будет создан каталог "+OutCustom$,PRINT
+end if
+if BrdExist then
+	AddForm #1,0,2,"Каталог "+ Outpath$ + "существует. Файлы в нем будут переписаны." ,PRINT
+else
+	AddForm #1,0,2,"Файлы будут записаны в каталог "+ Outpath$,PRINT
+end if
+
+AddForm #1, 10, 4, "Толщина платы: ",input,Thickness#
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+if Canceled% = 1 then goto endofscript
+
+if rcn=-1 then OneSide=rsn
+if rsn=-1 then OneSide=rcn
+
+For lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if lay <> comp and lay <> solder and lay <> mc and lay <> rcn and lay <> rsn and lay <> ms and lay <> drill and lay <> mill  then 
+		edit_removelyr@ lay
+	end if
+next
+if OneSide = -1 then
+	setlayer@ rcn
+else 
+	setlayer@ OneSide
+end if
+layer_alloff@ 1
+if vismaxx! = Sizes#(Small,X) then
+	Block=Small
+	TargLeftX# = 32.5
+	TargBotY# = 25.0
+	TargRightX# = 197.5
+	TargTopY# = 370.0
+	'Print "Small block"
+elseif vismaxx! = Sizes#(Middle,X) then
+	Block=Middle
+	TargLeftX# = 32.5
+	TargBotY# = 25.0
+	TargRightX# = 252.5
+	TargTopY# = 370.0
+	'Print "Middle block"
+elseif vismaxx! = Sizes#(Pferd,X) then
+	Block=Pferd
+	TargLeftX# = 0
+	TargBotY# = 0
+	TargRightX# = 0
+	TargTopY# = 0
+	'Print "Das Pferd. Nicht arbeiten !!!"
+else
+	Print "Странный размер по X :", vismaxx!
+	goto endofscript
+end if
+'-------------------- пытаемся определить есть ли прицелы на маркировке
+if OneSide = -1 then 
+	setlayer@ rcn
+	layer_alloff@ 1
+	setlayer@ rsn
+else
+	setlayer@ OneSide
+	layer_alloff@ 1
+end if
+TempLayer = Blanklayer!
+edit_layer@ TempLayer,-2,-2,4,0,"Temp"
+edit_copy@
+edit_multiple@
+axy@ Targets#(Block,X,Right),Targets#(Block,Y,Bot)
+axy@ Targets#(Block,X,Left),Targets#(Block,Y,Top)
+edit_multiple@
+setcoplayer@ TempLayer,1
+copy_to_layer@
+back@
+setlayer@ TempLayer
+layer_alloff@ 1
+NoSilkTargets=Layerblank!
+edit_delete@
+edit_selectall2@
+delete_edits@ 4,1
+back@
+
+'-----------пытаемся определить есть ли данные между реперами на маркировке 
+if OneSide = -1 then 
+	setlayer@ rcn
+	layer_alloff@ 1
+	setlayer@ rsn
+else
+	setlayer@ OneSide
+	layer_alloff@ 1
+end if
+
+edit_copy@
+edit_group@
+edit_inside@
+edit_cross@
+axy@ 36.0,22.0
+axy@ Targets#(Block,X,Right)-5,32.5
+axy@ 36.0,Sizes#(Block,Y)-32,5
+axy@ Sizes#(Block,X)/2,Sizes#(Block,Y)-20,5
+back@
+setcoplayer@ TempLayer,1
+copy_to_layer@
+back@
+setlayer@ TempLayer
+IsBlank=Layerblank!
+edit_removelyr@ TempLayer
+if IsBlank = 0 then 
+	MessageBox  "Возможно плата слишком велика и часть маркировки может быть случайно удалена."+CR!+"Очистить автоматически?" ,"Проблема", YESNOCANCEL,Answer 
+	if Answer = 2 then 
+		goto endofscript
+	elseif Answer = 7 then 
+		goto wo_erasing 
+	end if
+end if
+
+'-------------------------- удаляем ненужное с маркировки ---------------
+if OneSide = -1 then 
+	setlayer@ rcn
+	layer_alloff@ 1
+	setlayer@ rsn
+else
+	setlayer@ OneSide
+	layer_alloff@ 1
+end if
+
+edit_delete@
+edit_group@
+edit_outside@
+edit_cross@
+axy@ 20.0, 22,0
+axy@ Sizes#(Block,X)-21.0,Sizes#(Block,Y)-23.0
+back@
+delete_edits@ 4,1
+back@
+' удаляем реперы и номер
+edit_delete@
+edit_group@
+edit_inside@
+edit_cross@
+'реперы
+axy@ 22.0,22.0
+axy@ 28.0,28.0
+axy@ Sizes#(Block,X)-22.0,22.0
+axy@ Sizes#(Block,X)-28.0,28.0
+axy@ 22.0,Sizes#(Block,Y)-22.0
+axy@ 28.0,Sizes#(Block,Y)-28.0
+axy@ Sizes#(Block,X)-22.0,Sizes#(Block,Y)-22.0
+axy@ Sizes#(Block,X)-28.0,Sizes#(Block,Y)-28.0
+' номер
+axy@ 41.0,Sizes#(Block,Y)-32.0
+axy@ Sizes#(Block,X)-37.0,Sizes#(Block,Y)-19.0
+back@
+delete_edits@ 4,1
+back@
+
+'-----------------------------------------------------------
+
+wo_erasing:
+
+'----------------- добавляем прицелы, если их нет на маркировке
+if NoSilkTargets then 
+	aptable_compress@
+	update_dcodebar@
+	set_aperture@ 1007,"Donut rnd od:2.4 id:2.0"
+	setdcode@ 1007
+	update_dcodebar@
+	TargApr=Activedcode!
+	if OneSide=-1 then
+		setlayer@ rcn
+		layer_alloff@ 1
+		add_flash@
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Top)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Top)
+		setlayer@ rsn
+		layer_alloff@ 1
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Top)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Top)
+		back@
+	else
+		setlayer@ OneSide
+		layer_alloff@ 1
+		add_flash@
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Bot)
+		axy@ Targets#(Block,X,Left),Targets#(Block,Y,Top)
+		axy@ Targets#(Block,X,Right),Targets#(Block,Y,Top)
+		back@
+	end if
+end if
+'-------------создаем слой targets и добавляем прицелы
+TargLayer = Blanklayer!
+edit_layer@ TargLayer,-2,-2,4,0,"targets.gbr"
+setlayer@ TargLayer
+layer_alloff@ 1
+add_flash@
+axy@ Targets#(Block,X,Left),Targets#(Block,Y,Bot)
+axy@ Targets#(Block,X,Right),Targets#(Block,Y,Bot)
+axy@ Targets#(Block,X,Left),Targets#(Block,Y,Top)
+axy@ Targets#(Block,X,Right),Targets#(Block,Y,Top)
+back@
+
+'--------------------создаем зеркальную копию нижней маркировки
+if  rsn <> -1 then 
+	RsnMir=Blanklayer!
+	edit_layer@ RsnMir,-2,-2,4,0,"RsnMir.gbr"
+	setlayer@ rsn
+	layer_alloff@ 1
+	edit_copy@
+	edit_selectall2@
+	setcoplayer@ RsnMir,1
+	copy_to_layer@
+	back@
+	setlayer@ RsnMir
+	layer_alloff@ 1
+	edit_mirv@
+	setmirroraxis@ 2
+	edit_selectall2@
+	axy@ Sizes#(Block,X)/2.0,Sizes#(Block,Y)/2.0
+	back@
+end if
+
+'----------------- поворот 
+layer_alloff@ 0 
+edit_rotate@
+setrot100angle@ 27000
+edit_selectall2@
+axy@ Sizes#(Block,X)/2.0,Sizes#(Block,Y)/2.0
+back@
+'------------------- сдвиг 
+setsnap@ 1
+LeftX#=Sizes#(Block,X)/2.0-Sizes#(Block,Y)/2.0
+BotY#=Sizes#(Block,Y)/2.0-Sizes#(Block,X)/2.0
+edit_move@
+edit_selectall2@
+axy@ LeftX#, BotY#
+setsnap@ 0
+if Block=Small then 
+	axy@ 112.5,61.0
+elseif Block=Middle then 
+	axy@ 112.5,0.0
+else
+	axy@ 17.5,0.0
+end if
+back@
+'--------------------------- экспорт файлов 
+if CustExist=0 then
+	MKDIR OutCustom$
+end if
+if BrdExist=0 then
+	MKDIR Outpath$
+end if
+
+setup_fmtype@ 0,1
+setup_fmtunit@ 0,1
+setup_fmtdigits@ 0,3,3
+setup_fmtmode@ 0,0
+setup_fmtzero@ 0,0
+if rcn <> -1 then exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_rc.gbr"
+if rsn <> -1 then exportgbrfile@ RsnMir,-1,Outpath$+"\"+name$+"_rs.gbr"
+exportgbrfile@ TargLayer,-1,Outpath$+"\"+name$+"_targ.gbr"
+
+OPEN Outpath$+"\"+name$+"_rc.inf" for output as #1
+print #1, "[Setup]"
+print #1, using "DI=##.##",Thickness#
+if Block=Small then 
+	print #1, "SET=MPP230"
+elseif Block = Middle then
+	print #1, "SET=MPP280"
+else
+	print #1, "SET=MPP485"
+end if
+close #1
+
+OPEN Outpath$+"\"+name$+"_rs.inf" for output as #1
+print #1, "[Setup]"
+print #1, "DI=",Thickness#
+if Block=Small then 
+	print #1, "SET=MPP230"
+elseif Block = Middle then
+	print #1, "SET=MPP280"
+else
+	print #1, "SET=MPP485"
+end if
+close #1
+
+OPEN Outpath$+"\"+name$+"_targ.inf" for output as #1
+print #1, "[Setup]"
+print #1, "DI=",Thickness#
+if Block=Small then 
+	print #1, "SET=MPP230"
+elseif Block = Middle then
+	print #1, "SET=MPP280"
+else
+	print #1, "SET=MPP485"
+end if
+close #1
+
+
+'-------------------end of script ----------------------------
+endofscript:
+end
+
+
+!include "translit.sub" 

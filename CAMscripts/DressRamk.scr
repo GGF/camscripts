@@ -155,6 +155,27 @@ else
 	end if
 	X#=X#+techfield#*2
 	Y#=Y#+techfield#+bigtechfield#
+	if (X#>270 OR Y#>270) AND ( rcn <> -1 OR rsn <> -1) then
+		markreper = 1
+		X% = X#
+		dx = X% mod 10
+		if( dx > 0 ) then
+			dx% = X#/10+1
+		else 
+			dx% = X#/10
+		end if
+		X#=dx%*10.0
+		Y% = Y#
+		dx = Y% mod 10
+		if( dx > 0 ) then
+			dx% = Y#/10+1
+		else
+			dx% = Y#/10
+		end if
+		Y#=dx%*10.0
+	else 
+		markreper=-1
+	end if
 end if
 
 'запись текущего файла
@@ -268,8 +289,11 @@ edit_aperture@ 73,1,2.6000,2.6000,73,""
 edit_aperture@ 19,1,0.8000,0.8000,19,""
 edit_aperture@ 14,1,0.3000,0.3000,14,""
 edit_aperture@ 21,1,1.2000,1.2000,21,""
+edit_aperture@ 24,1,1.5000,1.5000,21,""
+edit_aperture@ 31,1,3.0000,3.0000,21,""
 set_aperture@ 97,"Donut Rnd od:1.800 id:1.400" ' donut for repper'
-edit_aperture@ 98,1,1.4000,1.2000,98,""
+edit_aperture@ 98,1,1.4000,1.4000,98,""
+set_aperture@ 99,"Donut Rnd od:2.400 id:2.000" ' donut for repper'
 update_dcodebar@ 
 
 update_dcodebar@ 
@@ -442,6 +466,16 @@ axy@ techfield#-5,Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),techfield#
 Back@
+'add printar repers
+if markreper=1 then 
+	Setdcode@ 24
+	Add_flash@
+	axy@ techfield#-12,techfield#-5
+	axy@ techfield#-12,Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),techfield#-5
+	Back@
+end if
 
 'view_all@
 'view_redraw@
@@ -480,6 +514,16 @@ axy@ techfield#+1.75+2.6,3.75+2.6 ' первый полигон
 axy@ 3.75+2.6,(techfield#+5)+2.6 ' второй 
 axy@ (X#-3.75-2.6),(techfield#+5+2.6) ' третий
 back@
+'add printar repers
+if markreper=1 then 
+	Setdcode@ 31
+	Add_flash@
+	axy@ techfield#-12,techfield#-5
+	axy@ techfield#-12,Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),techfield#-5
+	Back@
+end if
 
 'layer_alloff@ 1
 edit_copy@
@@ -554,6 +598,16 @@ axy@ techfield#-5,Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),techfield#
 Back@
+'add printar repers
+if markreper=1 then 
+	Setdcode@ 99
+	Add_flash@
+	axy@ techfield#-12,techfield#-5
+	axy@ techfield#-12,Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),Y#-bigtechfield#+5+5-5
+	axy@ X#-(techfield#-12),techfield#-5
+	Back@
+end if
 
 'copy
 'layer_alloff@ 1
@@ -693,6 +747,7 @@ nc_set_tool_outfeed@ 1,2,45.0*10/6
 nc_set_tool_rpms@ 1,2,43.0*1000
 
 
+
 setlayer@ r_drill
 layer_alloff@ 1
 
@@ -707,6 +762,21 @@ axy@ techfield#-5,Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),techfield#
 back@
+' add printar drill'
+if markreper=1 then 
+	nc_add_tool@ 1,3
+	nc_set_tool_id@ 1,3,3
+	nc_set_tool_type@ 1,3,3
+	nc_set_tool_size@ 1,3,3.0000
+	nc_set_tool_infeed@ 1,3,26.0*10/6
+	nc_set_tool_outfeed@ 1,3,45.0*10/6
+	nc_set_tool_rpms@ 1,3,28.0*1000
+	set_current_toolref@ 3
+	nc_add_drill_hit@
+	axy@ (X#-230.0)/2.0,9 ' потому как именно в 9 мм и с расстоянием 230 в середину  '
+	axy@ (X#-230.0)/2.0+230.0,9
+	back@
+end if
 
 'name drill
 view_close@
@@ -880,7 +950,7 @@ else
 	external_map_layer2none@ r_msv,0
 end if
 
-file_merge_refresh@ X,Y,path$+"dppramk.pcb"
+file_merge_refresh@ 0,0,path$+"dppramk.pcb"
 
 back@
 
@@ -913,11 +983,11 @@ if drill > -1 then
 			off#=drillsize!/2
 			offset#=offset#+oldoff#+off#+1
 			if vert%=1 then
-				yc#(i)=X#-bigtechfield#/2-offset#
+				yc#(i)=X#-bigtechfield#/2-15.0-offset#
 				xc#(i)=Y#-techfield#/2
 				axy@ xc#(i),yc#(i)
 			else
-				yc#(i)=Y#-bigtechfield#/2-offset#
+				yc#(i)=Y#-bigtechfield#/2-15.0-offset#
 				xc#(i)=X#-techfield#/2
 				axy@ xc#(i),yc#(i)
 			end if
