@@ -34,6 +34,7 @@ Targets#(Pferd,X,Right)=452.5
 Targets#(Pferd,Y,Top)=560.0
 
 OneSide = -1
+ClearMrk = 0
 
 TargLeftX# = 0.0
 TargBotY# = 0.0
@@ -41,24 +42,27 @@ TargBotY# = 0.0
 TargRightX# = 0.0
 TargTopY# = 0.0
 
+DPPerror=0
+'------------------------- output paths and filenames
 !INCLUDE "getpathandname.scr"
+'break
+if mainboard$ = "" then
+	MessageBox  "Неверный путь к плате"+ dbname!+CR!+"Скрипт следует запускать из подкаталога Printar", "Ошибка",ERROR 
+	goto endofscript
+end if
 
 translit$ = customer$
 gosub translit
 customer$ = translit1$
-
 translit$ = mainboard$
 gosub translit
 mainboard$ = translit1$
-
-
 OutCustom$="M:\Printar\"+customer$
 CustExist=FILEEXISTS(OutCustom$)
-
 Outpath$=OutCustom$ + "\"+mainboard$
 BrdExist=FILEEXISTS(Outpath$)
 
-break
+'break
 
 Thickness#=1.5
 
@@ -69,10 +73,6 @@ setsnap@ 0
 setgridsnap@ 0
 
 
-if mpp = 0 then 
-	PRINT "Пока работает только с МПП "
-	goto endofscript
-end if
 if rcn=-1 and rsn = -1 then 
 	print "Маркировка отсутствует"
 	goto endofscript
@@ -90,6 +90,7 @@ else
 end if
 
 AddForm #1, 10, 4, "Толщина платы: ",input,Thickness#
+AddForm #1, 10, 5, "Очищать маркировку автоматически", Check, ClearMrk
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -104,6 +105,18 @@ For lay = Nextlay to Highestlayer!
 		edit_removelyr@ lay
 	end if
 next
+
+'-------------------- для ДПП отдельная подпрограмма
+if mpp = -1 then 
+	gosub MakeDPP
+	if DPPerror then
+		goto endofscript
+	else 
+		goto OutputFiles
+	end if
+end if
+
+
 if OneSide = -1 then
 	setlayer@ rcn
 else 
@@ -162,6 +175,7 @@ edit_selectall2@
 delete_edits@ 4,1
 back@
 
+if ClearMrk = 0 then goto wo_erasing
 '-----------пытаемся определить есть ли данные между реперами на маркировке 
 if OneSide = -1 then 
 	setlayer@ rcn
@@ -192,31 +206,29 @@ if IsBlank = 0 then
 	if Answer = 2 then 
 		goto endofscript
 	elseif Answer = 7 then 
+		ClearMrk=0
 		goto wo_erasing 
 	end if
 end if
 
-'-------------------------- удаляем ненужное с маркировки ---------------
-if OneSide = -1 then 
-	setlayer@ rcn
-	layer_alloff@ 1
-	setlayer@ rsn
-else
-	setlayer@ OneSide
-	layer_alloff@ 1
-end if
-
-edit_delete@
+'-------------------------- удаляем ненужное с маркировки --------------
+'-------------- rcn
+if rcn = -1 then goto clear_rsn
+RcnClr = Blanklayer!
+edit_layer@ RcnClr,-2,-2,4,0,"RcnClr"
+setlayer@ rcn
+layer_alloff@ 1
+edit_move@
 edit_group@
 edit_outside@
 edit_cross@
 axy@ 20.0, 22,0
 axy@ Sizes#(Block,X)-21.0,Sizes#(Block,Y)-23.0
 back@
-delete_edits@ 4,1
+movetolayer@ RcnClr
 back@
 ' удаляем реперы и номер
-edit_delete@
+edit_move@
 edit_group@
 edit_inside@
 edit_cross@
@@ -233,7 +245,44 @@ axy@ Sizes#(Block,X)-28.0,Sizes#(Block,Y)-28.0
 axy@ 41.0,Sizes#(Block,Y)-32.0
 axy@ Sizes#(Block,X)-37.0,Sizes#(Block,Y)-19.0
 back@
-delete_edits@ 4,1
+movetolayer@ RcnClr
+back@
+if rsn = -1 then goto wo_erasing
+
+'---------- clear rsn
+clear_rsn:
+RsnClr = Blanklayer!
+edit_layer@ RsnClr,-2,-2,4,0,"RsnClr"
+setlayer@ rsn
+layer_alloff@ 1
+edit_move@
+edit_group@
+edit_outside@
+edit_cross@
+axy@ 20.0, 22,0
+axy@ Sizes#(Block,X)-21.0,Sizes#(Block,Y)-23.0
+back@
+movetolayer@ RsnClr
+back@
+' удаляем реперы и номер
+edit_move@
+edit_group@
+edit_inside@
+edit_cross@
+'реперы
+axy@ 22.0,22.0
+axy@ 28.0,28.0
+axy@ Sizes#(Block,X)-22.0,22.0
+axy@ Sizes#(Block,X)-28.0,28.0
+axy@ 22.0,Sizes#(Block,Y)-22.0
+axy@ 28.0,Sizes#(Block,Y)-28.0
+axy@ Sizes#(Block,X)-22.0,Sizes#(Block,Y)-22.0
+axy@ Sizes#(Block,X)-28.0,Sizes#(Block,Y)-28.0
+' номер
+axy@ 41.0,Sizes#(Block,Y)-32.0
+axy@ Sizes#(Block,X)-37.0,Sizes#(Block,Y)-19.0
+back@
+movetolayer@ RsnClr
 back@
 
 '-----------------------------------------------------------
@@ -330,6 +379,8 @@ else
 end if
 back@
 '--------------------------- экспорт файлов 
+OutputFiles:
+Thickness# = Thickness#+0.85
 if CustExist=0 then
 	MKDIR OutCustom$
 end if
@@ -345,47 +396,282 @@ setup_fmtzero@ 0,0
 if rcn <> -1 then exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_rc.gbr"
 if rsn <> -1 then exportgbrfile@ RsnMir,-1,Outpath$+"\"+name$+"_rs.gbr"
 exportgbrfile@ TargLayer,-1,Outpath$+"\"+name$+"_targ.gbr"
+if mpp <> -1 then
+	OPEN Outpath$+"\"+name$+"_rc.inf" for output as #1
+	print #1, "[Setup]"
+	print #1, using "DI=##.##",Thickness#
+	if Block=Small then 
+		print #1, "SET=MPP230"
+	elseif Block = Middle then
+		print #1, "SET=MPP280"
+	else
+		print #1, "SET=MPP485"
+	end if
+	close #1
 
-OPEN Outpath$+"\"+name$+"_rc.inf" for output as #1
-print #1, "[Setup]"
-print #1, using "DI=##.##",Thickness#
-if Block=Small then 
-	print #1, "SET=MPP230"
-elseif Block = Middle then
-	print #1, "SET=MPP280"
+	OPEN Outpath$+"\"+name$+"_rs.inf" for output as #1
+	print #1, "[Setup]"
+	print #1, "DI=",Thickness#
+	if Block=Small then 
+		print #1, "SET=MPP230"
+	elseif Block = Middle then
+		print #1, "SET=MPP280"
+	else
+		print #1, "SET=MPP485"
+	end if
+	close #1
+
+	OPEN Outpath$+"\"+name$+"_targ.inf" for output as #1
+	print #1, "[Setup]"
+	print #1, "DI=",Thickness#
+	if Block=Small then 
+		print #1, "SET=MPP230"
+	elseif Block = Middle then
+		print #1, "SET=MPP280"
+	else
+		print #1, "SET=MPP485"
+	end if
+	close #1
 else
-	print #1, "SET=MPP485"
+	OPEN Outpath$+"\"+name$+"inf.txt" for output as #1
+	print #1,"Targets:"
+	print #1, using "DI=##.##",Thickness# 
+	print #1, using "Left bottom ##.## , ##.##",TargLeftX#, TargBotY# 
+	print #1, using "Left top ##.## , ##.##",TargLeftX#, TargTopY# 
+	print #1, using "Right top ##.## , ##.##",TargRightX#, TargTopY# 
+	print #1, using "Right bottom ##.## , ##.##",TargRightX#, TargBotY# 
+	close #1
 end if
-close #1
 
-OPEN Outpath$+"\"+name$+"_rs.inf" for output as #1
-print #1, "[Setup]"
-print #1, "DI=",Thickness#
-if Block=Small then 
-	print #1, "SET=MPP230"
-elseif Block = Middle then
-	print #1, "SET=MPP280"
-else
-	print #1, "SET=MPP485"
+'--------------------------- 
+FinishMSG:
+Finish$="Файлы были сохранены в "+Outpath$+CR!
+if ClearMrk then
+	If rcn <> -1 then
+		setlayer@ rcn
+		layer_alloff@ 1
+		Finish$=Finish$+"Рекомендуем ознакомиться с содержимым слоя RcnClr"+CR!
+		if rsn <> -1 then
+			setlayer@ rsn
+			Finish$=Finish$+"и слоя RsnClr"
+		end if
+	else
+		setlayer@ rsn
+		layer_alloff@ 1
+		Finish$=Finish$+"Рекомендуем ознакомиться с содержимым слоя RsnClr"+CR!
+	end if
 end if
-close #1
-
-OPEN Outpath$+"\"+name$+"_targ.inf" for output as #1
-print #1, "[Setup]"
-print #1, "DI=",Thickness#
-if Block=Small then 
-	print #1, "SET=MPP230"
-elseif Block = Middle then
-	print #1, "SET=MPP280"
-else
-	print #1, "SET=MPP485"
-end if
-close #1
-
-
+MessageBox Finish$, "Финиш",INFORMATION
 '-------------------end of script ----------------------------
 endofscript:
 end
+'----------------------------------------------------------------------------
+'------------------------------ о б р а б о т к а ДПП -----------------------
+'----------------------------------------------------------------------------
+MakeDPP:
+RotateFlg=0
+if OneSide = -1 then
+	setlayer@ rcn
+else 
+	setlayer@ OneSide
+end if
+layer_alloff@ 1
+SizeX#= vismaxx! 
+SizeY#= vismaxy! 
+if SizeX# < SizeY# and  SizeY# < 270 then 
+	MessageBox  "Блок слишком мал", "Ошибка",ERROR 
+	DPPerror =1
+	return
+elseif SizeX# < 270 then
+	MessageBox  "Блок слишком мал", "Ошибка",ERROR 
+	DPPerror =1
+	return
+end if
+'----------------- rotate and move 
+if SizeX# < SizeY# then 
+	layer_alloff@ 0 
+	edit_rotate@
+	setrot100angle@ 27000
+	edit_selectall2@
+	axy@ SizeX#/2.0,SizeY#/2.0
+	back@
+	edit_move@
+	edit_selectall2@
+	axy@ visminx!,visminy!
+	axy@ 0.0,0.0
+	back@
+	swap SizeX#,SizeY#
+	RotateFlg=1
+end if
 
+
+'suspend
+
+TargLeftX# = 5.5
+TargBotY# = 12.5.0
+TargRightX# = SizeX# - 5.5
+TargTopY# = SizeY# - 20.0
+'---- проверяем прицелы на comp-------------
+setlayer@ comp
+layer_alloff@ 1
+nTrg=0
+query_dcode@
+axy@ TargLeftX#,TargBotY#
+nTrg=nTrg+Queryfound!
+axy@ TargRightX#,TargBotY#
+nTrg=nTrg+Queryfound!
+axy@ TargRightX#,TargTopY#
+nTrg=nTrg+Queryfound!
+axy@ TargLeftX#,TargTopY#
+nTrg=nTrg+Queryfound!
+back@
+'DCODE=Activedcode!
+'break
+if nTrg = 0 then 
+	MessageBox  "Отсутствуют прицелы на слое top", "Ошибка",ERROR 
+	DPPerror =1
+	return
+elseif nTrg <> 4 then
+	MessageBox  "Неверное число прицелов на слое top", "Ошибка",ERROR 
+	DPPerror =1
+	return
+end if
+'---- проверяем прицелы на маркировке-------------
+if OneSide = -1 then
+	setlayer@ rcn
+else
+	setlayer@ OneSide
+end if
+
+layer_alloff@ 1
+
+nTrg=0
+query_dcode@
+axy@ TargLeftX#,TargBotY#
+nTrg=nTrg+Queryfound!
+axy@ TargRightX#,TargBotY#
+nTrg=nTrg+Queryfound!
+axy@ TargRightX#,TargTopY#
+nTrg=nTrg+Queryfound!
+axy@ TargLeftX#,TargTopY#
+nTrg=nTrg+Queryfound!
+back@
+DCODE=Activedcode!
+if nTrg = 0 then 
+	MessageBox  "Отсутствуют прицелы на маркировке", "Ошибка",ERROR 
+	DPPerror =1
+	return
+elseif nTrg <> 4 then
+	MessageBox  "Неверное число прицелов на маркировке", "Ошибка",ERROR 
+	DPPerror =1
+	return
+end if
+if Dcodeshape! <> 7 then
+	MessageBox  "Неправильная форма КП для прицелов на маркировке", "Ошибка",ERROR 
+	DPPerror =1
+	return
+end if
+
+TargLayer = Blanklayer!
+edit_layer@ TargLayer,-2,-2,4,0,"targets.gbr"
+setlayer@ TargLayer
+layer_alloff@ 1
+add_flash@
+axy@ TargLeftX#, TargBotY#
+axy@ TargRightX#,TargBotY#
+axy@ TargLeftX#, TargTopY#
+axy@ TargRightX#,TargTopY#
+back@
+
+'suspend
+if ClearMrk = 0 then 
+	if rsn <> -1 then goto MirrorRsnDPP
+	goto continueDPP
+end if
+'-------------------------- удаляем ненужное с маркировки --------------
+'-------------- rcn
+if rcn = -1 then goto clear_rsnDPP
+RcnClr = Blanklayer!
+edit_layer@ RcnClr,-2,-2,4,0,"RcnClr"
+setlayer@ rcn
+layer_alloff@ 1
+edit_move@
+edit_group@
+edit_outside@
+edit_cross@
+axy@ 17.0, 17.0
+axy@ SizeX# - 17.5,SizeY# - 24.5
+back@
+movetolayer@ RcnClr
+back@
+'-------------- добавляем удаленные прицелы
+add_flash@
+axy@ TargLeftX#, TargBotY#
+axy@ TargRightX#,TargBotY#
+axy@ TargLeftX#, TargTopY#
+axy@ TargRightX#,TargTopY#
+back@
+
+'----------------------------- rsn 
+clear_rsnDPP:
+if rsn = -1 then goto continueDPP
+RsnClr = Blanklayer!
+edit_layer@ RsnClr,-2,-2,4,0,"RsnClr"
+setlayer@ rsn
+layer_alloff@ 1
+edit_move@
+edit_group@
+edit_outside@
+edit_cross@
+axy@ 17.0, 17.0
+axy@ SizeX# - 17.0,SizeY# - 24.5
+back@
+movetolayer@ RsnClr
+back@
+'-------------- добавляем удаленные прицелы
+add_flash@
+axy@ TargLeftX#, TargBotY#
+axy@ TargRightX#,TargBotY#
+axy@ TargLeftX#, TargTopY#
+axy@ TargRightX#,TargTopY#
+back@
+'--------------------создаем зеркальную копию нижней маркировки
+MirrorRsnDPP:
+RsnMir=Blanklayer!
+edit_layer@ RsnMir,-2,-2,4,0,"RsnMir.gbr"
+setlayer@ rsn
+layer_alloff@ 1
+edit_copy@
+edit_selectall2@
+setcoplayer@ RsnMir,1
+copy_to_layer@
+back@
+setlayer@ RsnMir
+layer_alloff@ 1
+edit_mirv@
+setmirroraxis@ 1
+edit_selectall2@
+axy@ SizeX#/2.0,SizeY#/2.0
+back@
+'-------------------- сдвиг ---------------------
+continueDPP:
+YmoveDPP#=0
+if SizeY# < 250.0 then
+	YmoveDPP# = YmoveDPP#+61.0
+end if
+XmoveDPP#= 310.0-SizeX#/2.0
+layer_alloff@ 0
+edit_move@
+edit_selectall2@
+axy@ 0.0, 0.0
+axy@ XmoveDPP#,YmoveDPP#
+back@
+TargLeftX# =TargLeftX# + XmoveDPP#
+TargRightX#=TargRightX#+ XmoveDPP#
+TargBotY# = TargBotY#+YmoveDPP#
+TargTopY# = TargTopY#+YmoveDPP#
+return
+'---------------------
 
 !include "translit.sub" 
+

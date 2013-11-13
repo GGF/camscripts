@@ -85,7 +85,7 @@ AddForm #1, 0, 2, "Вычислять wide'n'gaps? (Долго для сложных)",check,mins%
 
 'AddForm #1, 0, 3, "Gerber-ы выводить?",check,ger%
 'AddForm #1, 25, 3, "Minimum?",check,mr%
-'AddForm #1, 40, 3, "Ориентация?",check,orient%
+'AddForm #1, 45, 3, "Ориентация?",check,orient%
 AddForm #1, 0, 3, "Minimum?",check,mr%
 AddForm #1, 30, 3, "230х305?",check,mrr%
 
@@ -115,46 +115,36 @@ end if
 
 filename$ = dbname!
 
-X# = xpl#*xx%+step#*(xx%-1)
-Y# = ypl#*yy%+step#*(yy%-1)
+mX# = xpl#*xx%+step#*(xx%-1)
+mY# = ypl#*yy%+step#*(yy%-1)
 
+
+if mX#<mY# or orient% = 1 then
+	txx# = mX#
+	mX# = mY#
+	mY# = txx#
+	vert%=1
+else
+	vert%=0
+end if
 
 if mr%=1 then
-	mX# = X#
-	mY# = Y#
 	if mY# > 127.5 or mX# > 145 then 
-		MessageBox "Не влезает в минимальную рамку. Может разветнуть?"
+		MessageBox "Не влезает в минимальную рамку."
 		goto 550
 	end if
-	X# = 180
-	Y# = 170
+	X# = 180.0
+	Y# = 170.0
 elseif mrr%=1 then
-	mX# = X#
-	mY# = Y#
-	X# = 305
-	Y# = 230
-else
-	if orient% = 0 then
-		if X#<Y# then
-			txx# = X#
-			X# = Y#
-			Y# = txx#
-			vert%=1
-		else
-			vert%=0
-		end if
-	else
-		if X#>Y# then
-			txx# = X#
-			X# = Y#
-			Y# = txx#
-			vert%=1
-		else
-			vert%=0
-		end if
+	if mY# > 187 or mX# > 270 then 
+		MessageBox "Не влезает в 230x305 рамку."
+		goto 550
 	end if
-	X#=X#+techfield#*2
-	Y#=Y#+techfield#+bigtechfield#
+	X# = 305.0
+	Y# = 230.0
+else
+	X#=mX#+techfield#*2
+	Y#=mY#+techfield#+bigtechfield#
 	if (X#>270 OR Y#>270) AND ( rcn <> -1 OR rsn <> -1) then
 		markreper = 1
 		X% = X#
@@ -177,7 +167,6 @@ else
 		markreper=-1
 	end if
 end if
-
 'запись текущего файла
 setsaveasfile@ filename$
 setsaveasfile@ path$+"dpp.pcb"
@@ -588,6 +577,15 @@ axy@ (techfield#-5)-3.75,(Y#-bigtechfield#+5)-3.75
 axy@ (techfield#-5)+3.75,(Y#-bigtechfield#+5)+6.25
 axy@ (X#-(techfield#-5))-3.75,(Y#-bigtechfield#+5)-3.75
 axy@ (X#-(techfield#-5))+3.75,(Y#-bigtechfield#+5)+6.25
+' delete printar reper'
+axy@ techfield#-12,techfield#-5
+axy@ techfield#-12,Y#-bigtechfield#+5+5-5
+axy@ X#-(techfield#-12),Y#-bigtechfield#+5+5-5
+axy@ X#-(techfield#-12),techfield#-5
+axy@ techfield#-12,techfield#-5
+axy@ techfield#-12,Y#-bigtechfield#+5+5-5
+axy@ X#-(techfield#-12),Y#-bigtechfield#+5+5-5
+axy@ X#-(techfield#-12),techfield#-5
 back@
 delete_edits@ 4,1
 'add over reper
@@ -858,21 +856,17 @@ setopenfile@ path$+"dpp.pcb"
 view_SuppressGrphcs@ 1
 
 'перемещение
+
 layer_alloff@ 0
 edit_move@
 edit_selectall2@
 axy@ xmin#,ymin#
-if mr%=1 then
-	axy@ (145-mX#)/2+techfield#,(127.5-mY#)/2+techfield#
-elseif mrr%=1 then
-	axy@ (270-mX#)/2+techfield#,(187.5-mY#)/2+techfield#
-else
-	if vert%=1 then 
-		axy@ bigtechfield#,techfield# 
-	else 
-		axy@ techfield#,techfield#
-	end if
-end if	
+'MessageBox str$(X#)+" "+str$(Y#)+" "+str$(mX#)+" "+str$(mY#)
+if vert%=1 then 
+	axy@ (Y#-techfield#-bigtechfield#-mY#)/2.0+bigtechfield#,(X#-techfield#-techfield#-mX#)/2.0+techfield#
+else 
+	axy@ (X#-techfield#-techfield#-mX#)/2.0+techfield#,(Y#-techfield#-bigtechfield#-mY#)/2.0+techfield#
+end if
 back@
 end@
 
@@ -983,8 +977,8 @@ if drill > -1 then
 			off#=drillsize!/2
 			offset#=offset#+oldoff#+off#+1
 			if vert%=1 then
-				yc#(i)=X#-bigtechfield#/2-15.0-offset#
-				xc#(i)=Y#-techfield#/2
+				yc#(i)=X#-bigtechfield#/2-offset#
+				xc#(i)=Y#-techfield#/2+4
 				axy@ xc#(i),yc#(i)
 			else
 				yc#(i)=Y#-bigtechfield#/2-15.0-offset#
