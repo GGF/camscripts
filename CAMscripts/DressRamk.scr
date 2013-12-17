@@ -129,17 +129,9 @@ else
 end if
 
 if mr%=1 then
-	if mY# > 127.5 or mX# > 145 then 
-		MessageBox "Не влезает в минимальную рамку."
-		goto 550
-	end if
 	X# = 180.0
 	Y# = 170.0
 elseif mrr%=1 then
-	if mY# > 187 or mX# > 270 then 
-		MessageBox "Не влезает в 230x305 рамку."
-		goto 550
-	end if
 	X# = 305.0
 	Y# = 230.0
 else
@@ -167,6 +159,14 @@ else
 		markreper=-1
 	end if
 end if
+
+' проверка на влезаемость в рамку, актуально только для рамок с заданным размером'
+if mY# > (Y#-techfield#-bigtechfield#) or mX# > (X#-techfield#*2.0) then 
+	MessageBox "Не влезает в рамку."
+	goto 550
+end if
+
+
 'запись текущего файла
 setsaveasfile@ filename$
 setsaveasfile@ path$+"dpp.pcb"

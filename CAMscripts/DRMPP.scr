@@ -108,7 +108,6 @@ else
 end if
 
 ' посчитаем количество на заготовке'
-BREAK
 if spx% = 0 or spy% = 0 then
 	spx% = (widezag%-techfield#*2.0) / xpl#
 	if spx% > 1 then
@@ -173,7 +172,7 @@ end if
 '	openlibitem@ 3,"230x395"
 'end if
 set_panel_dimensions@ widezag%,heightzag%
-BREAK
+
 'techfieldl# = (widezag%*1.0 - spx%*xpl# - (step#*(spx%-1)))*0.5 - 1.0 
 techfieldl# = (widezag%*1.0 - spx%*(xpl# + step#))*0.5 - 1.0 
 ' 1 мм в конце на всякий пожарный '
@@ -436,7 +435,6 @@ if msv <> -1 then
 end if
 
 for i=1 to mpp
-BREAK
 	chet = i mod 2
 	if  chet > 0 then
 		setlayer@ int(i)
@@ -478,6 +476,7 @@ BREAK
 		back@
 	end if
 next
+
 'setopenfile@ filename$
 
 ' add drill text'
@@ -642,6 +641,7 @@ axy@ 10,287.5
 
 back@
 
+
 setsnap@ 1
 '------------------------------------------------------
 
@@ -742,7 +742,6 @@ setlayer@ comp
 lay = 2
 trulay = 1
 for i=1 to mpp
-BREAK
 	chet = i mod 2
 	setlayer@ int(i)
 	layer_alloff@ 1
@@ -765,6 +764,7 @@ BREAK
 	addtext@ dtx#,dty#+5*(lay-2),210,dty#+5+5*(lay-2),layname$
 	lay=lay+1
 next
+
 setlayer@ solder
 textmirror@ 1
 addtext@ dtx#,dty#+5*(lay-2),210,dty#+5+5*(lay-2),str$(trulay+1)

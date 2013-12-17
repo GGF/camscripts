@@ -9,7 +9,20 @@ encodestr$=board$
 gosub URL_encode
 board$=LTRIM$(RTRIM$(encodestr$))
 
-url$="x:\tool\tear.exe "+chr$(34)+"http://baza4/?customer="+customer$+"&board="+board$+"&level=update&update[act]="+dopurl$+chr$(34)+" > "+outfile$
+break
+url$="x:\tool\tear.exe "
+url$=url$+chr$(34)
+url$=url$+"http://baza4/?customer="
+url$=url$+customer$
+url$=url$+"&board="
+url$=url$+board$
+url$=url$+"&level=update&update[act]="
+' длинный dopurl "мажет память"'
+url$=url$+dopurl$
+url$=url$+chr$(34)
+url$=url$+" > "
+url$=url$+outfile$
+' messagebox str$(len(url$))
 
 open path$+"dbq.bat" for output as #1
 	print #1,"chcp 1251"
@@ -21,6 +34,7 @@ close #1
 
 s1$ = chr$(34)+path$+"dbq.bat"+chr$(34)
 WinCall s1$,MinimizedNoFocus,done%
+
 kill path$+"dbq.bat"
 
 goto bu_endscript

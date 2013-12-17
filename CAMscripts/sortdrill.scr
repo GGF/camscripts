@@ -26,6 +26,7 @@ sd_noform:
 
 'Добавление контрольных сверловок
 ' слой сверловки
+
 if drill <> -1 then
 	setlayer@ drill
 	layer_alloff@ 1
@@ -129,6 +130,7 @@ if drill <> -1 then
 end if
 'Добавление контрольных сверловок
 ' слой сверловки
+
 if mill <> -1 then
 	setlayer@ mill
 	layer_alloff@ 1

@@ -393,11 +393,11 @@ setup_fmtunit@ 0,1
 setup_fmtdigits@ 0,3,3
 setup_fmtmode@ 0,0
 setup_fmtzero@ 0,0
-if rcn <> -1 then exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_rc.gbr"
-if rsn <> -1 then exportgbrfile@ RsnMir,-1,Outpath$+"\"+name$+"_rs.gbr"
-exportgbrfile@ TargLayer,-1,Outpath$+"\"+name$+"_targ.gbr"
+if rcn <> -1 then exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_comp.gbr"
+if rsn <> -1 then exportgbrfile@ RsnMir,-1,Outpath$+"\"+name$+"_solder.gbr"
+exportgbrfile@ TargLayer,-1,Outpath$+"\"+name$+"_target.gbr"
 if mpp <> -1 then
-	OPEN Outpath$+"\"+name$+"_rc.inf" for output as #1
+	OPEN Outpath$+"\"+name$+"_comp.inf" for output as #1
 	print #1, "[Setup]"
 	print #1, using "DI=##.##",Thickness#
 	if Block=Small then 
@@ -409,7 +409,7 @@ if mpp <> -1 then
 	end if
 	close #1
 
-	OPEN Outpath$+"\"+name$+"_rs.inf" for output as #1
+	OPEN Outpath$+"\"+name$+"_solder.inf" for output as #1
 	print #1, "[Setup]"
 	print #1, "DI=",Thickness#
 	if Block=Small then 
@@ -421,7 +421,7 @@ if mpp <> -1 then
 	end if
 	close #1
 
-	OPEN Outpath$+"\"+name$+"_targ.inf" for output as #1
+	OPEN Outpath$+"\"+name$+"_target.inf" for output as #1
 	print #1, "[Setup]"
 	print #1, "DI=",Thickness#
 	if Block=Small then 
@@ -478,11 +478,13 @@ end if
 layer_alloff@ 1
 SizeX#= vismaxx! 
 SizeY#= vismaxy! 
-if SizeX# < SizeY# and  SizeY# < 270 then 
-	MessageBox  "Блок слишком мал", "Ошибка",ERROR 
-	DPPerror =1
-	return
-elseif SizeX# < 270 then
+if SizeX# < SizeY# then
+	if SizeY# < 270.0 then 
+		MessageBox  "Блок слишком мал", "Ошибка",ERROR 
+		DPPerror =1
+		return
+	end if
+elseif SizeX# < 270.0 then
 	MessageBox  "Блок слишком мал", "Ошибка",ERROR 
 	DPPerror =1
 	return
