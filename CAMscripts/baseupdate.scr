@@ -17,7 +17,7 @@ url$=url$+customer$
 url$=url$+"&board="
 url$=url$+board$
 url$=url$+"&level=update&update[act]="
-' длинный dopurl "мажет память"'
+' длинный dopurl "мажет память"' 21-02-2014 но я полечил отрезав от гапсов лишние знаки после запятой
 url$=url$+dopurl$
 url$=url$+chr$(34)
 url$=url$+" > "

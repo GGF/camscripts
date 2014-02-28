@@ -141,18 +141,18 @@ else
 		markreper = 1
 		X% = X#
 		dx = X% mod 10
-		if( dx > 0 ) then
-			dx% = X#/10+1
+		if( dx = 0 ) then
+			dx% = X%/10
 		else 
-			dx% = X#/10
+			dx% = X%/10+1
 		end if
 		X#=dx%*10.0
 		Y% = Y#
 		dx = Y% mod 10
-		if( dx > 0 ) then
-			dx% = Y#/10+1
+		if( dx = 0 ) then
+			dx% = Y%/10
 		else
-			dx% = Y#/10
+			dx% = Y%/10+1
 		end if
 		Y#=dx%*10.0
 	else 

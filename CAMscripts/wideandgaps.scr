@@ -22,7 +22,9 @@ for lay=comp to Highestlayer!
 		'axy@ min_spacing_loc1_x!,min_spacing_loc1_y!
 		'view_close@
 		wide$ = str$(Dcodesizex!)
+		wide$ = left$(wide$,instr(1,wide$,".")+3)
 		gap$ = str$(min_spacing_size!)
+		gap$ = left$(gap$,instr(1,gap$,".")+3)
 		' coord$ = "("+str$(min_spacing_loc1_x!)+","+str$(min_spacing_loc1_y!)+")-("+str$(min_spacing_loc2_x!)+","+str$(min_spacing_loc2_y!)+")"
 		if lay=comp then
 			num$ = "1"

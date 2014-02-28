@@ -157,8 +157,8 @@ wincall Command$
 
 ' записать данные в базу
 ' длинный dopurl "мажет память"'
-dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)
-'+"&sostav="+sostav$+"&drillsostav="+drillsostav$
+dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)+"&drillsostav="+drillsostav$
+'+"&sostav="+sostav$
 outfile$="cx.bat"
 
 !include "baseupdate.scr"

@@ -181,6 +181,81 @@ DeleteForm #1
 
 if Canceled% = 1 then goto mkrfrz_endscript
 
+	noform:
+
+	print_msg "Идет процесс... Ждите!!!"
+
+' развернуть если вертикальное
+if vert% <> 1 then
+	'view_all@
+	layer_alloff@ 0
+	edit_rotate@
+	setsnap@ 0
+	edit_selectall2@ 
+	axy@ 0,Y%
+	back@
+	end@
+	edit_move@
+	edit_selectall2@ 
+	axy@ 0,Y%
+	axy@ 0.0000,0.0000
+	back@
+	temp = Y%
+	Y% = X%
+	X% = temp
+	vert% = 1
+	
+	' поменять сжаттие местами'
+	temp# = scalex#
+	scalex# = scaley#
+	scaley# = temp#
+end if
+' --- конец развернуть --- '
+
+
+'1. создание файлов заголовка, должны быть до сверления под фрезеровку потому что вычисляется Z
+if 1=1 then
+	' вычисление отступов для многослоек
+	nullx# = 99.375
+	nully# = 277.375
+
+	if mpp <> -1 then
+		if prob% = 1 then
+			Z#=yprob#+15
+			xprob# = xprob#-30
+		else
+			Z# = yprob#
+		end if
+	end if 
+
+	fr = 1
+	head$= path$ + "headerf.hdr"
+	gosub createheader 
+	fr=0
+
+	if mpp <> -1 and prob% = 3 then
+		xprob# = 34.375
+		Z# = (Y%-350)/2+45
+	end if 
+
+	hh = 4; ' 4 шпинделя
+	head$= path$ + "header4.hdr"
+	gosub createheader 
+
+	if mpp <> -1 and prob% = 3 then
+		xprob# = 29.375
+		Z# = (Y%-350)/2+60
+	end if 
+
+	head$= path$ + "header2.hdr"
+	nullx# = -151.5
+	nully# = 193
+	hh = 2; ' 2 шпинделя
+	gosub createheader 
+end if
+' -- конец файлов заголовка -- '
+
+if drs > 0 then
 for drlay = 1 to drs
 	if drr(drlay) = 0 then
 		drill = -1
@@ -233,78 +308,12 @@ for drlay = 1 to drs
 		end if
 	end if
 
-	noform:
-
-	print_msg "Идет процесс... Ждите!!!"
-
-	' развернуть если вертикальное
-	if vert% <> 1 then
-		'view_all@
-		layer_alloff@ 0
-		edit_rotate@
-		setsnap@ 0
-		edit_selectall2@ 
-		axy@ 0,Y%
-		back@
-		end@
-		edit_move@
-		edit_selectall2@ 
-		axy@ 0,Y%
-		axy@ 0.0000,0.0000
-		back@
-		temp = Y%
-		Y% = X%
-		X% = temp
-		vert% = 1
-	end if
-	' --- конец развернуть --- '
+	' Добавить сверловку под фрезеровку если двусторонняя
+	' а вот если многослойная добавлять под фрезеровку отвертия, так как они не должны сжиматься'
+	' вот вопрос как убрать со старых файлов?'
 	
-
-	'1. создание файлов заголовка, должны быть до сверления под фрезеровку потому что вычисляется Z
+	' для начала создадим доп слой в любом случае'
 	if 1=1 then
-		' вычисление отступов для многослоек
-		nullx# = 99.375
-		nully# = 277.375
-
-		if mpp <> -1 then
-			if prob% = 1 then
-				Z#=yprob#+15
-				xprob# = xprob#-30
-			else
-				Z# = yprob#
-			end if
-		end if 
-
-		fr = 1
-		head$= path$ + "headerf.hdr"
-		gosub createheader 
-		fr=0
-
-		if mpp <> -1 and prob% = 3 then
-			xprob# = 34.375
-			Z# = (Y%-350)/2+45
-		end if 
-
-		hh = 4; ' 4 шпинделя
-		head$= path$ + "header4.hdr"
-		gosub createheader 
-
-		if mpp <> -1 and prob% = 3 then
-			xprob# = 29.375
-			Z# = (Y%-350)/2+60
-		end if 
-
-		head$= path$ + "header2.hdr"
-		nullx# = -151.5
-		nully# = 193
-		hh = 2; ' 2 шпинделя
-		gosub createheader 
-	end if
-	' -- конец файлов заголовка -- '
-
-
-	' Добавить свееерловку под фрезеровку если двусторонняя
-	if mpp = -1 then
 		'Highest tool table number
 		HighestNCT%=-1
 		setlayer@ 1
@@ -335,11 +344,15 @@ for drlay = 1 to drs
 		edit_layer@ dopdrill,-2,-2,21,0
 		nc_assign_tool_table_to_layer@ dopdrill,doptable
 		nc_set_layer_rank@ dopdrill,1
+	end if
+	' создали доп слой
+
+	if mpp = -1 then
 		setlayer@ dopdrill
 		layer_alloff@ 1
 		nc_add_drill_hit@
 		setsnap@ 0
-' 1-04-2013 сделал 17 вместо 20'
+		' 1-04-2013 сделал 17 вместо 20'
 		if Z# < Y% then
 			axy@ 17.0000,Z#
 		end if
@@ -351,6 +364,42 @@ for drlay = 1 to drs
 		end if
 		if Z#+45+90+45 < Y% then
 			axy@ 17.0000,Z#+45+90+45
+		end if
+		back@
+		edit_move@
+		edit_selectall2@ 
+		movetolayer@ drill
+		back@
+	else
+		' это если многослойка
+		' удалить отверстия, но они уже сжаты'
+		setlayer@ drill
+		layer_alloff@ 1
+		edit_delete@
+		edit_group@
+		axy@ 10.0000-5.0,Z#-5.0
+		axy@ 10.0000+5.0,Z#+45+90+45+5.0
+		back@
+		delete_edits@ 4,1
+		back@
+	end if
+	' теперь если это excelon или многослойка поставим отверстия в 10 мм от края для фрезеровки'
+	if mpp<>-1 then
+		setlayer@ dopdrill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+		if Z# < Y% then
+			axy@ 10.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 10.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 10.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 10.0000,Z#+45+90+45
 		end if
 		back@
 		edit_move@
@@ -441,76 +490,47 @@ for drlay = 1 to drs
 
 	' экселон
 	if drill <> -1 and ex2exist then
-		if sz485x585 = 1 then
-			' повернуть немного 10-09-2012 16;21
-			setlayer@ drill
+		' поворот нужен был в сентябре 2012 сейчас в январе 2014 нужен ли не знаю, я пожалуй закоментирую'
+		'		if sz485x585 = 1 then
+		'			' повернуть немного 10-09-2012 16;21
+		'			setlayer@ drill
+		'			layer_alloff@ 1
+		'			edit_rotate@
+		'			setsnap@ 1
+		'			setrot100angle@ 3
+		'			edit_selectall2@ 
+		'			setsnap@ 0
+		'			axy@ 25.0000,25.0000
+		'			setsnap@ 1
+		'			back@
+		'		end if
+		
+		' тут нужно еще раз просверлить отверстия под грибы, но только если ДПП, потому что если делать это выше то на микронике грибы сверлятся'
+		if mpp=-1 then
+			setlayer@ dopdrill
 			layer_alloff@ 1
-			edit_rotate@
-			setsnap@ 1
-			setrot100angle@ 3
-			edit_selectall2@ 
+			nc_add_drill_hit@
 			setsnap@ 0
-			axy@ 25.0000,25.0000
-			setsnap@ 1
+			if Z# < Y% then
+				axy@ 10.0000,Z#
+			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45
+			end if
+			if Z#+45+90 < Y% then
+				axy@ 10.0000,Z#+45+90
+			end if
+			if Z#+45+90+45 < Y% then
+				axy@ 10.0000,Z#+45+90+45
+			end if
+			back@
+			edit_move@
+			edit_selectall2@ 
+			movetolayer@ drill
 			back@
 		end if
-' доп для фрезеровки'
-		break
-		if dopdrill = -1 then
-			'Highest tool table number
-			HighestNCT%=-1
-			setlayer@ 1
-			for lay=1 to Highestlayer!
-			  setlayer@ lay
-			  if Layertype! = 21 and Tooltable! > HighestNCT% then 
-				HighestNCT%=Tooltable!
-			  end if
-			next
-			for tab = HighestNCT%+1 to 100
-				'set_nc_table@ tab
-				'if dbq_tooltable! = tab then
-					nc_delete_table@ tab
-				'end if
-			next
-			dopdrill = Blanklayer!
-			doptable = HighestNCT%+1
-			nc_delete_table@ doptable
-			nc_add_table@ doptable
-			nc_set_table_type@ doptable,3
-			nc_set_table_name@ doptable,"Dop Drill Tool"
-			nc_add_tool@ doptable,1
-			nc_set_tool_id@ doptable,1,1
-			nc_set_tool_type@ doptable,1,3
-			nc_set_tool_size@ doptable,1,3.0000
-			'util_nced@
-			setsnap@ 0
-			edit_layer@ dopdrill,-2,-2,21,0
-			nc_assign_tool_table_to_layer@ dopdrill,doptable
-			nc_set_layer_rank@ dopdrill,1
-		end if
-		setlayer@ dopdrill
-		layer_alloff@ 1
-		nc_add_drill_hit@
-		setsnap@ 0
-		if Z# < Y% then
-			axy@ 10.0000,Z#
-		end if
-		if Z#+45 < Y% then
-			axy@ 10.0000,Z#+45
-		end if
-		if Z#+45+90 < Y% then
-			axy@ 10.0000,Z#+45+90
-		end if
-		if Z#+45+90+45 < Y% then
-			axy@ 10.0000,Z#+45+90+45
-		end if
-		back@
-		edit_move@
-		edit_selectall2@ 
-		movetolayer@ drill
-		back@
+		''
 		setlayer@ drill
-' end доп для фрезеровки'
 		' вывод 
 		expdrl_generate_Header@ 1
 		export_XYmodal@ 1,0
@@ -541,7 +561,6 @@ for drlay = 1 to drs
 		''
 		'drillPCB_out@ drill,path$+drillname$+"1.ex2"
 		mill_out@ drill,path$+drillname$+suffix$+"1.ex2" ' для плат в металлизированной фрезеровкой'
-
 	end if
 
 	'6. дополнение файла сверловки
@@ -611,6 +630,7 @@ for drlay = 1 to drs
 		end if
 	end if
 next
+end if
 ' конец сверловок '
 
 if mis>0 then
@@ -624,7 +644,6 @@ if mis>0 then
 			tablefile$ = tablepath$+"\tables4.lst"
 			selected_layer = mi(frezlay)
 			GOSUB corecttool
-			break
 			'4. Настройка вывода mill mashine
 			setup_fmtype@ 2,7
 			'mill машина - SIEB & MEYER 3000
@@ -718,7 +737,6 @@ if mis>0 then
 			exelonfile1$ = path$+drillnamef$+"1.fx2" 
 			exelonfile$ = path$+drillnamef$+".fx2" 
 			gosub editexelon
-			break
 		end if
 	next
 end if
@@ -749,7 +767,6 @@ goto mkrfrz_endscript
 
 ' подпрограмма корекции параметров инструментов'
 corecttool:
-break
 lines%=0
 
 OPEN tablefile$ FOR INPUT as #1
@@ -795,7 +812,7 @@ next
 for i=1 to number
 	nc_set_tool_id@ table,numbers(i),i
 next
-break
+
 'end renumber'
 for i=1 to number 
 	toolref = numbers(i)
