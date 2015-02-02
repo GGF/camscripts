@@ -11,6 +11,12 @@ layer_alloff@ 0
 X# = vismaxx! - visminx!
 Y# = vismaxy! - visminy!
 
+' 16-01-2015 когда добавились в двусторонних 5мм  с каждой стороны нужно правильно считать размер заготовки'
+if dbminx!=-5 then
+	X#=X#-10
+	Y#=Y#-10
+end if
+
 setlayer@ comp
 layer_alloff@ 1
 util_copper@
@@ -18,7 +24,7 @@ copper@ 0.1,161,1,1.0
 sc#=copperarea!
 if mpp =-1 then 
 	' двусторон€€ плата - вычесть лишнюю площадь
-	lc#=(2*X#+2*Y#)*2.5 ' периметр на 2.5 мм
+	lc#=(2*X#+2*Y#)*7.5 ' периметр на 2.5 мм
 	sc# = sc#-lc#
 end if
 
@@ -29,7 +35,7 @@ copper@ 0.1,161,1,1.0
 ss#=copperarea!
 if mpp =-1 then 
 	' двусторон€€ плата - вычесть лишнюю площадь
-	lc#=(2*X#+2*Y#)*2.5 ' периметр на 2.5 мм
+	c#=(2*X#+2*Y#)*7.5 ' периметр на 2.5 мм
 	ss# = ss#-lc#
 end if
 
@@ -48,7 +54,15 @@ if mpp=-1 then
 	bigsize#=bigsize#-35
 	auarea# = ss#+sc#-(2*X#+2*Y#)*2.5*2 -(2.0*minsize#*13.0+bigsize#*13.0)*2.0
 else
-	auarea# = ss#+sc#-(minsize#*20.0*2+(bigsize#-40.0)*20.0)*2
+	if X#=230 then
+		auarea# = ss#+sc#-28260
+	elseif X#=280 then
+		auarea# = ss#+sc#-33200
+	else
+		auarea# = ss#+sc#-57800
+	end if
+	' числа получены имперически на CAM350'
+	'-(minsize#*20.0*2+(bigsize#-40.0)*20.0)*2
 end if
 'auarea% = auarea#/100
 auarea# = auarea#/100.0/100.0

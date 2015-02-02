@@ -17,7 +17,13 @@ tablepath$="x:\tool\camscripts"
 
 X% = dbmaxx!
 Y% = dbmaxy!
+' 16-01-2015 когда добавились в двусторонних 5мм  с каждой стороны нужно правильно считать размер заготовки'
+if dbminx!=-5 then
+	X%=X%-5
+	Y%=Y%-5
+end if
 if X%<Y% then vert%=1
+tochnovert%=-1
 yprob# = (Y%-210)/2.0
 prob% = 1
 drillnew = -1
@@ -34,6 +40,35 @@ if drillname$ <> "" then goto noform
 
 !INCLUDE "getpathandname.scr"
 !include "layersset.scr"
+
+' проверка на поворот, если в 0,0 есть флешь d10 значит точно не надо поворачивать, и если в 0,dbmaxx! есть то тоже точно не надо
+
+setlayer@ comp
+layer_alloff@ 1
+query_dcode@
+axy@ 0,0
+back@
+if Activedcode!=10 then
+	tochnovert%=10;
+	vert%=0
+else
+	query_dcode@
+	axy@ dbmaxx!,0
+	back@
+	if Activedcode!=10 then
+		tochnovert=10;
+		vert%=1
+	else
+		tochnovert%=abs(X%-Y%)*100/X% ' процентное отношение сторон'
+		
+		' не известно точно ли меньше 10 процентов будем спрашивать'
+		
+	end if
+end if
+
+
+
+
 
 ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки
 
@@ -156,13 +191,15 @@ if mpp <> -1 then
 	AddForm #1, 35, 4, "Y",input,yprob#
 else
 	xprob# = 10
-	AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
+	if tochnovert%<9 then
+		AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
+	end if
 	AddForm #1, 40, 0, "fr-20/10?",check,frr
 
 end if
 AddForm #1, 0, 1, "Сверловки:",print
 for i = 1 to drs
-	shiftx = 20+(i-1)*20
+	shiftx = 13+(i-1)*(55/drs)
 	drr(i) = 1
 	AddForm #1, shiftx, 1, dr$(i),check,drr(i)
 next
@@ -287,7 +324,7 @@ for drlay = 1 to drs
 			axy@ 0,0
 			back@
 		end if
-
+break
 		if mk2exist then
 			open path$+drillname$+".mk2.old" for APPEND as #1
 				print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
@@ -490,77 +527,83 @@ for drlay = 1 to drs
 
 	' экселон
 	if drill <> -1 and ex2exist then
-		' поворот нужен был в сентябре 2012 сейчас в январе 2014 нужен ли не знаю, я пожалуй закоментирую'
-		'		if sz485x585 = 1 then
-		'			' повернуть немного 10-09-2012 16;21
-		'			setlayer@ drill
-		'			layer_alloff@ 1
-		'			edit_rotate@
-		'			setsnap@ 1
-		'			setrot100angle@ 3
-		'			edit_selectall2@ 
-		'			setsnap@ 0
-		'			axy@ 25.0000,25.0000
-		'			setsnap@ 1
-		'			back@
-		'		end if
-		
-		' тут нужно еще раз просверлить отверстия под грибы, но только если ДПП, потому что если делать это выше то на микронике грибы сверлятся'
-		if mpp=-1 then
-			setlayer@ dopdrill
-			layer_alloff@ 1
-			nc_add_drill_hit@
-			setsnap@ 0
-			if Z# < Y% then
-				axy@ 10.0000,Z#
+		drext$="mx1"
+drex2:
+			' поворот нужен был в сентябре 2012 сейчас в январе 2014 нужен ли не знаю, я пожалуй закоментирую'
+			'		if sz485x585 = 1 then
+			'			' повернуть немного 10-09-2012 16;21
+			'			setlayer@ drill
+			'			layer_alloff@ 1
+			'			edit_rotate@
+			'			setsnap@ 1
+			'			setrot100angle@ 3
+			'			edit_selectall2@ 
+			'			setsnap@ 0
+			'			axy@ 25.0000,25.0000
+			'			setsnap@ 1
+			'			back@
+			'		end if
+			
+			' тут нужно еще раз просверлить отверстия под грибы, но только если ДПП, потому что если делать это выше то на микронике грибы сверлятся'
+			if mpp=-1 and drext$="ex2" then
+				setlayer@ dopdrill
+				layer_alloff@ 1
+				nc_add_drill_hit@
+				setsnap@ 0
+				if Z# < Y% then
+					axy@ 10.0000,Z#
+				end if
+				if Z#+45 < Y% then
+					axy@ 10.0000,Z#+45
+				end if
+				if Z#+45+90 < Y% then
+					axy@ 10.0000,Z#+45+90
+				end if
+				if Z#+45+90+45 < Y% then
+					axy@ 10.0000,Z#+45+90+45
+				end if
+				back@
+				edit_move@
+				edit_selectall2@ 
+				movetolayer@ drill
+				back@
 			end if
-			if Z#+45 < Y% then
-				axy@ 10.0000,Z#+45
-			end if
-			if Z#+45+90 < Y% then
-				axy@ 10.0000,Z#+45+90
-			end if
-			if Z#+45+90+45 < Y% then
-				axy@ 10.0000,Z#+45+90+45
-			end if
-			back@
-			edit_move@
-			edit_selectall2@ 
-			movetolayer@ drill
-			back@
+			''
+			setlayer@ drill
+			' вывод 
+			expdrl_generate_Header@ 1
+			export_XYmodal@ 1,0
+			nc_exp_drill_t00@ 0
+			expdrl_generate_Tools@ 1
+			setup_fmtype@ 1,5
+			setup_fmtunit@ 1,1
+			setup_fmtdigits@ 1,3,3
+			setup_fmtmode@ 1,0
+			nc_exp_drilltool_infeed@ 0
+			nc_exp_drilltool_retract@ 0
+			nc_exp_drilltool_RPMs@ 0
+			nc_exp_drilltool_MaxHits@ 0
+			nc_exp_drill_Exc_decimals@ 1
+			nc_exp_drill_Exc_toolingoffset@ 1
+			''
+			setup_fmtype@ 2,5
+			setup_fmtunit@ 2,1
+			setup_fmtdigits@ 2,3,3
+			setup_fmtmode@ 2,0
+			setup_fmtzero@ 2,2
+			nc_exp_mill_IncludeDrills@ 1
+			nc_exp_mill_Exc_decimals@ 1
+			nc_exp_mill_Exc_toolingoffset@ 1
+			nc_exp_milltool_infeed@ 0
+			nc_exp_milltool_retract@ 0
+			nc_exp_milltool_RPMs@ 0
+			''
+			'drillPCB_out@ drill,path$+drillname$+"1.ex2"
+			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
+		if drext$="mx1" then
+			drext$="ex2"
+			goto drex2
 		end if
-		''
-		setlayer@ drill
-		' вывод 
-		expdrl_generate_Header@ 1
-		export_XYmodal@ 1,0
-		nc_exp_drill_t00@ 0
-		expdrl_generate_Tools@ 1
-		setup_fmtype@ 1,5
-		setup_fmtunit@ 1,1
-		setup_fmtdigits@ 1,3,3
-		setup_fmtmode@ 1,0
-		nc_exp_drilltool_infeed@ 0
-		nc_exp_drilltool_retract@ 0
-		nc_exp_drilltool_RPMs@ 0
-		nc_exp_drilltool_MaxHits@ 0
-		nc_exp_drill_Exc_decimals@ 1
-		nc_exp_drill_Exc_toolingoffset@ 1
-		''
-		setup_fmtype@ 2,5
-		setup_fmtunit@ 2,1
-		setup_fmtdigits@ 2,3,3
-		setup_fmtmode@ 2,0
-		setup_fmtzero@ 2,2
-		nc_exp_mill_IncludeDrills@ 1
-		nc_exp_mill_Exc_decimals@ 1
-		nc_exp_mill_Exc_toolingoffset@ 1
-		nc_exp_milltool_infeed@ 0
-		nc_exp_milltool_retract@ 0
-		nc_exp_milltool_RPMs@ 0
-		''
-		'drillPCB_out@ drill,path$+drillname$+"1.ex2"
-		mill_out@ drill,path$+drillname$+suffix$+"1.ex2" ' для плат в металлизированной фрезеровкой'
 	end if
 
 	'6. дополнение файла сверловки
@@ -607,6 +650,10 @@ for drlay = 1 to drs
 		end if
 		
 		if ex2exist then
+			exelonfile1$ = path$+drillname$+suffix$+"1.ex2"
+			exelonfile$ =  path$+drillname$+suffix$+".ex2"
+			schfile1$ = path$+drillname$+suffix$+"1.sch"
+			schfile$ = path$+drillname$+suffix$+".sch"
 			if mpp <> -1 then
 				if sz485x585 = 1 then
 					STX# = 242.42
@@ -614,21 +661,36 @@ for drlay = 1 to drs
 				else
 					STX# = X%/2.0
 					STY# = 66.0
+					'wincall "copy "+exelonfile1$+" "+schfile1$
+					open exelonfile1$ for input as #1
+					open schfile1$ for output as #2
+					do
+						line input #1,s$
+						print #2,s$
+					loop until EOF(1) = 1
+					close #1
+					close #2
 				end if
 			else
 				STX# = X%/2.0
 				STY# = -6.25
 			end if
 			
-			exelonfile1$ = path$+drillname$+suffix$+"1.ex2"
-			exelonfile$ =  path$+drillname$+suffix$+".ex2"
 			gosub editexelon
 			open path$+drillname$+suffix$+".prl" for output as #2
 				print #2,"T,O"
 				print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$+suffix$
 			close #2
+			if fileexists(schfile1$) then
+				STY#=70
+				exelonfile1$ = schfile1$
+				exelonfile$ = schfile$
+				gosub editexelon
+			end if
 		end if
 	end if
+	edit_removelyr@ dopdrill
+	break
 next
 end if
 ' конец сверловок '
@@ -737,6 +799,13 @@ if mis>0 then
 			exelonfile1$ = path$+drillnamef$+"1.fx2" 
 			exelonfile$ = path$+drillnamef$+".fx2" 
 			gosub editexelon
+			
+			if fileexists(path$+drillnamef$+"1.mx1") then
+				frezy(1) = 0
+				exelonfile1$ = path$+drillnamef$+"1.mx1" 
+				exelonfile$ = path$+drillnamef$+".mx1" 
+				gosub editexelon
+			end if
 		end if
 	next
 end if

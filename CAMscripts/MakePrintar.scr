@@ -1,3 +1,12 @@
+'11.04.2014
+'Добавлено сжатие таблицы апертур для ДПП
+'Отредактирован сдвиг на 61 мм вверх для заготовок ДПП шириной по Y от 180 до 250 мм
+'22.04.2014
+'Установлен минимальный размер ДПП 300 мм
+'25.04.2014 и 28.04.2014
+'Устновлены параметры экспорта gbr файлов: позитив, без зеркала
+
+
 '---- constants ------
 Block=-1
 Small=0
@@ -84,12 +93,13 @@ if CustExist=0 then
 	AddForm #1,0,1, "Будет создан каталог "+OutCustom$,PRINT
 end if
 if BrdExist then
-	AddForm #1,0,2,"Каталог "+ Outpath$ + "существует. Файлы в нем будут переписаны." ,PRINT
+	AddForm #1,0,2,"Каталог "+ Outpath$ + " существует. Файлы в нем будут переписаны." ,PRINT
 else
 	AddForm #1,0,2,"Файлы будут записаны в каталог "+ Outpath$,PRINT
 end if
 
 AddForm #1, 10, 4, "Толщина платы: ",input,Thickness#
+ClearMrk=1
 AddForm #1, 10, 5, "Очищать маркировку автоматически", Check, ClearMrk
 DisplayForm #1
 Canceled% = formcancel(1)
@@ -289,14 +299,16 @@ back@
 
 wo_erasing:
 
+'------------------  сжимаем таблицу и добавляем аппертуру для прицелов 
+aptable_compress@
+update_dcodebar@
+TargApr = Highestdcode! + 1
+set_aperture@ TargApr,"Donut rnd od:2.4 id:2.0"
+setdcode@ TargApr
+update_dcodebar@
+
 '----------------- добавляем прицелы, если их нет на маркировке
 if NoSilkTargets then 
-	aptable_compress@
-	update_dcodebar@
-	set_aperture@ 1007,"Donut rnd od:2.4 id:2.0"
-	setdcode@ 1007
-	update_dcodebar@
-	TargApr=Activedcode!
 	if OneSide=-1 then
 		setlayer@ rcn
 		layer_alloff@ 1
@@ -380,7 +392,7 @@ end if
 back@
 '--------------------------- экспорт файлов 
 OutputFiles:
-Thickness# = Thickness#+0.85
+
 if CustExist=0 then
 	MKDIR OutCustom$
 end if
@@ -393,57 +405,50 @@ setup_fmtunit@ 0,1
 setup_fmtdigits@ 0,3,3
 setup_fmtmode@ 0,0
 setup_fmtzero@ 0,0
-if rcn <> -1 then exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_comp.gbr"
+if rcn <> -1 then 
+	set_layermirrorstate@ rcn, 0
+	layer_setimagepolarity@ rcn, 0
+	exportgbrfile@ rcn,-1,Outpath$+"\"+name$+"_comp.gbr"
+end if
 if rsn <> -1 then exportgbrfile@ RsnMir,-1,Outpath$+"\"+name$+"_solder.gbr"
 exportgbrfile@ TargLayer,-1,Outpath$+"\"+name$+"_target.gbr"
+
+'----------определяем толщину заготвки и название набора прицелов----------------
+Thickness# = Thickness#+0.85
 if mpp <> -1 then
-	OPEN Outpath$+"\"+name$+"_comp.inf" for output as #1
+	if Block=Small then
+		SetFiducials$="SET=MPP230"
+	elseif Block = Middle then
+		SetFiducials$="SET=MPP280"
+	else
+		SetFiducials$="SET=MPP485"
+	end if
+else
+	setlayer@ 1
+	SetFiducials$=FMTUSING$("SET=DPP###x###",Vismaxy!-Visminy!,Vismaxx!-Visminx!)
+end if
+'------------------------выводим inf файлы---------------------------
+DIM side$(2)
+side$(0)="_comp.inf"
+side$(1)="_solder.inf"
+side$(2)="_target.inf"
+for i=0 to 2
+	if (i=0 and rcn=-1) or (i=1 and rsn=-1) then next
+	OPEN Outpath$+"\"+name$+side$(i) for output as #1
 	print #1, "[Setup]"
 	print #1, using "DI=##.##",Thickness#
-	if Block=Small then 
-		print #1, "SET=MPP230"
-	elseif Block = Middle then
-		print #1, "SET=MPP280"
-	else
-		print #1, "SET=MPP485"
+	print #1, SetFiducials$
+	if mpp = -1 then
+		print #1,";Targets:"
+		print #1, using ";Left bottom ##.## , ##.##",TargLeftX#, TargBotY# 
+		print #1, using ";Left top ##.## , ##.##",TargLeftX#, TargTopY# 
+		print #1, using ";Right top ##.## , ##.##",TargRightX#, TargTopY# 
+		print #1, using ";Right bottom ##.## , ##.##",TargRightX#, TargBotY# 
 	end if
 	close #1
+next
+'-------------------------------------------------------
 
-	OPEN Outpath$+"\"+name$+"_solder.inf" for output as #1
-	print #1, "[Setup]"
-	print #1, "DI=",Thickness#
-	if Block=Small then 
-		print #1, "SET=MPP230"
-	elseif Block = Middle then
-		print #1, "SET=MPP280"
-	else
-		print #1, "SET=MPP485"
-	end if
-	close #1
-
-	OPEN Outpath$+"\"+name$+"_target.inf" for output as #1
-	print #1, "[Setup]"
-	print #1, "DI=",Thickness#
-	if Block=Small then 
-		print #1, "SET=MPP230"
-	elseif Block = Middle then
-		print #1, "SET=MPP280"
-	else
-		print #1, "SET=MPP485"
-	end if
-	close #1
-else
-	OPEN Outpath$+"\"+name$+"inf.txt" for output as #1
-	print #1,"Targets:"
-	print #1, using "DI=##.##",Thickness# 
-	print #1, using "Left bottom ##.## , ##.##",TargLeftX#, TargBotY# 
-	print #1, using "Left top ##.## , ##.##",TargLeftX#, TargTopY# 
-	print #1, using "Right top ##.## , ##.##",TargRightX#, TargTopY# 
-	print #1, using "Right bottom ##.## , ##.##",TargRightX#, TargBotY# 
-	close #1
-end if
-
-'--------------------------- 
 FinishMSG:
 Finish$="Файлы были сохранены в "+Outpath$+CR!
 if ClearMrk then
@@ -478,14 +483,9 @@ end if
 layer_alloff@ 1
 SizeX#= vismaxx! 
 SizeY#= vismaxy! 
-if SizeX# < SizeY# then
-	if SizeY# < 270.0 then 
-		MessageBox  "Блок слишком мал", "Ошибка",ERROR 
-		DPPerror =1
-		return
-	end if
-elseif SizeX# < 270.0 then
-	MessageBox  "Блок слишком мал", "Ошибка",ERROR 
+'if (SizeX# < 300) AND (SizeY# < 300) then
+if (SizeX# < 280) AND (SizeY# < 280) then
+	MessageBox  "Блок слишком мал"+CR!+"Ширина блока должна быть не менее 300 мм", "Ошибка",ERROR 
 	DPPerror =1
 	return
 end if
@@ -658,7 +658,7 @@ back@
 '-------------------- сдвиг ---------------------
 continueDPP:
 YmoveDPP#=0
-if SizeY# < 250.0 then
+if (SizeY# > 180.0) AND (SizeY# < 250.0) then
 	YmoveDPP# = YmoveDPP#+61.0
 end if
 XmoveDPP#= 310.0-SizeX#/2.0
@@ -672,6 +672,9 @@ TargLeftX# =TargLeftX# + XmoveDPP#
 TargRightX#=TargRightX#+ XmoveDPP#
 TargBotY# = TargBotY#+YmoveDPP#
 TargTopY# = TargTopY#+YmoveDPP#
+'---------- сжимаем таблицу апертур ----------------------------
+aptable_compress@
+update_dcodebar@
 return
 '---------------------
 

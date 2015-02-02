@@ -14,9 +14,13 @@
 ' 10-02-2011 - попытка вписать заготовки до 299'
 ' 29-03-2011 - Пленка AGFA 29'x23'
 ' 29-11-2012 - правильный порядок вывода негативов'
+' 15-01-2015 - добавить 5 мм на космсолдер '
 
 ' Расстояние между шаблонами в мм
 ' иметь в виду, кроме того что оно ставится между шаблонами еще и от краев такое же расстояние
+
+util_camed@
+
 spacing# = 10
 
 plenka% = 2 ' 1 - AGFA 2-KODAK
@@ -68,6 +72,7 @@ setgridsnap@ 0
 setsnap@ 0
 
 !include "getpathandname.scr"
+!include "layersset.scr"
 
 pathgbx$ = path$+"gerber"
 mkdir pathgbx$
@@ -84,6 +89,28 @@ edit_selectall2@
 explode_FillCustPoly@ -1 
 back@
 
+' добавление 5мм на компсолдер'
+break
+if mpp <> -1 then
+	dcode5 = blankdcode!
+	edit_aperture@ dcode5,1,5.0000,5.0000,88,""
+	update_dcodebar@
+	setlayer@ comp
+	layer_alloff@ 1
+	Setdcode@ dcode5
+	Add_rectangle@
+	axy@ -2.5,-2.5
+	axy@ vismaxx!+2.5,vismaxy!+2.5
+	back@
+	setlayer@ solder
+	layer_alloff@ 1
+	Setdcode@ dcode5
+	Add_rectangle@
+	axy@ -2.5,-2.5
+	axy@ vismaxx!+2.5,vismaxy!+2.5
+	back@
+end if
+break
 
 '9. Вывод герберов
 print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
@@ -389,7 +416,8 @@ endsortn:
 'close #1
 ' конец вывода'
 
-
+' изза добавенных 5мм нужно на первом для многослоек уменьшить расстояние между'
+spacingtemp# = spacing#
 for ii=1 to i step num
 	setlayer@ play(ii) 
 	layer_alloff@ 1
@@ -397,6 +425,11 @@ for ii=1 to i step num
 		if (ii+iii-1)<=i then setlayer@ play(ii+iii-1)	
 	next
 	panlay = blanklayer!
+	if lay=1 and mpp<>-1 then
+		spacing# = spacing#-10
+	else 
+		spacing# = spacingtemp#
+	end if
 	gosub panel
 	set_layermirrorstate@ panlay,0 '0-not 1-yes
 	layer_setimagepolarity@ panlay,0 'positiv

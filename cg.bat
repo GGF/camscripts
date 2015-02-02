@@ -15,9 +15,18 @@ if not exist %fl%:\8000pos\ mkdir %fl%:\8000pos\
 if not exist %fl%:\8000neg\ mkdir %fl%:\8000neg\
 if not exist %fl%:\AGFA8000pos\ mkdir %fl%:\AGFA8000pos\
 if not exist %fl%:\AGFA8000neg\ mkdir %fl%:\AGFA8000neg\
-move "Z:\На Рисование\8000pos\*" %fl%:\8000pos\
-move "Z:\На Рисование\8000neg\*" %fl%:\8000neg\
-move "Z:\На Рисование\AGFA8000pos\*" %fl%:\AGFA8000pos\
-move "Z:\На Рисование\AGFA8000neg\*" %fl%:\AGFA8000neg\
+rem move "Z:\На Рисование\8000pos\*" %fl%:\8000pos\
+rem move "Z:\На Рисование\8000neg\*" %fl%:\8000neg\
+rem move "Z:\На Рисование\AGFA8000pos\*" %fl%:\AGFA8000pos\
+rem move "Z:\На Рисование\AGFA8000neg\*" %fl%:\AGFA8000neg\
+copy /v "Z:\На Рисование\8000pos\*" %fl%:\8000pos\
+copy /v "Z:\На Рисование\8000neg\*" %fl%:\8000neg\
+copy /v "Z:\На Рисование\AGFA8000pos\*" %fl%:\AGFA8000pos\
+copy /v "Z:\На Рисование\AGFA8000neg\*" %fl%:\AGFA8000neg\
+del /q "Z:\На Рисование\8000pos\*"
+del /q "Z:\На Рисование\8000neg\*"
+del /q "Z:\На Рисование\AGFA8000pos\*"
+del /q "Z:\На Рисование\AGFA8000neg\*"
+
 :endcg
 pause

@@ -47,7 +47,11 @@ edit_layer@ mc,2,2,11,0,"mc.gbx"
 importgbrfile@ mc,0.0000,0.0000,path$+"gerber\pos_mc.gbx"
 kill path$+"gerber\pos_mc.gbx"
 setsnap@ 1
-setup_fmtype@ 0,1
+mcv = blanklayer!
+edit_layer@ mcv,15,15,16,0,"mcv"
+importgbrfile@ mcv,0.0000,0.0000,path$+"gerber\neg_mcv.gbx"
+kill path$+"gerber\neg_mcv.gbx"
+setsnap@ 1
 c = blanklayer!
 edit_layer@ c,2,2,0,0,"c.gbx"
 importgbrfile@ c,0.0000,0.0000,path$+"gerber\pos_c.gbx"
@@ -64,6 +68,11 @@ s = blanklayer!
 edit_layer@ s,3,3,3,0,"s.gbx"
 importgbrfile@ s,0.0000,0.0000,path$+"gerber\pos_s.gbx"
 kill path$+"gerber\pos_s.gbx"
+setsnap@ 1
+msv = blanklayer!
+edit_layer@ msv,13,13,17,0,"msv"
+importgbrfile@ msv,0.0000,0.0000,path$+"gerber\neg_msv.gbx"
+kill path$+"gerber\neg_msv.gbx"
 setsnap@ 1
 ms = blanklayer!
 edit_layer@ ms,3,3,12,0,"ms.gbx"

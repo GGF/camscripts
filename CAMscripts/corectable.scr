@@ -74,7 +74,7 @@ for lay = Nextlay to Highestlayer!
 			if d#(index)=toolsize! then exit for
 		next
 		' не нашли - игнорируем
-		if index>lines% then goto 40
+		if index>lines% then goto notoolintable
 		' в зависимости от единиц измерения устанавливаем параметры
 		if units! = 1 then
 			nc_set_tool_infeed@ table,toolref,if#(index)*10/6

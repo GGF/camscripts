@@ -135,9 +135,9 @@ elseif mrr%=1 then
 	X# = 305.0
 	Y# = 230.0
 else
-	X#=mX#+techfield#*2
+	X#=mX#+techfield#*2.0
 	Y#=mY#+techfield#+bigtechfield#
-	if (X#>270 OR Y#>270) AND ( rcn <> -1 OR rsn <> -1) then
+	if (X#>300 OR Y#>300) AND ( rcn <> -1 OR rsn <> -1) then
 		markreper = 1
 		X% = X#
 		dx = X% mod 10
@@ -162,7 +162,7 @@ end if
 
 ' проверка на влезаемость в рамку, актуально только для рамок с заданным размером'
 if mY# > (Y#-techfield#-bigtechfield#) or mX# > (X#-techfield#*2.0) then 
-	MessageBox "Не влезает в рамку."
+	MessageBox "Не влезает в рамку. x="+str$(mX#)+" y="+str$(my#)
 	goto 550
 end if
 
@@ -272,8 +272,10 @@ util_camed@
 view_SuppressGrphcs@ 1
 
 openlibitem@ 1,"RZM"
+edit_aperture@ 10,1,0.1000,0.1000,10,""
 edit_aperture@ 37,6,5.1000,5.1000,0,"RZM" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
 edit_aperture@ 88,1,5.0000,5.0000,88,""
+edit_aperture@ 89,1,10.0000,10.0000,89,""
 edit_aperture@ 73,1,2.6000,2.6000,73,""
 edit_aperture@ 19,1,0.8000,0.8000,19,""
 edit_aperture@ 14,1,0.3000,0.3000,14,""
@@ -348,11 +350,26 @@ update_layerbar@
 ' Draw 
 '
 200
+'add reper 0,0 чтоб знать где угол поворота, ну будем знать где флешь D10
+Setdcode@ 10
+Add_flash@
+axy@ 0,0
+back@
+
+' draw ramk'
 Setdcode@ 88
 Add_rectangle@
 axy@ 0,0
 axy@ X#,Y#
-Back@
+back@
+Add_rectangle@
+axy@ -2.5,-2.5
+axy@ X#+2.5,Y#+2.5
+back@
+Add_rectangle@
+axy@ -5,-5
+axy@ X#+5,Y#+5
+back@
 'добавить линию наверху (6-12-02)
 Add_line@
 axy@ 0,Y#-5
@@ -635,7 +652,7 @@ util_copper@
 copper@ 0.1,161,1,0.75
 sc#=sc#+copperarea!
 ' удаление лишней площади
-lc#=(2*X#+2*Y#)*2.5 ' периметр на 2.5 мм
+lc#=(2*X#+2*Y#)*7.5 ' периметр на 2.5 мм + 5 мм
 sc#=sc#-lc#
 
 'solder
@@ -821,7 +838,6 @@ layer_renumber@
 layer_alloff@ 0
 'view_all@
 'view_redraw@
-
 
 'разворот
 if vert%=1 then
