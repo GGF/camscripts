@@ -4,8 +4,10 @@
 '22.04.2014
 'Установлен минимальный размер ДПП 300 мм
 '25.04.2014 и 28.04.2014
-'Устновлены параметры экспорта gbr файлов: позитив, без зеркала
-
+'Установлены параметры экспорта gbr файлов: позитив, без зеркала
+'2.03.2015
+'Удаление слишком широкой рамки ДПП (т. к. иначе не находит прицелы)
+'
 
 '---- constants ------
 Block=-1
@@ -101,6 +103,10 @@ end if
 AddForm #1, 10, 4, "Толщина платы: ",input,Thickness#
 ClearMrk=1
 AddForm #1, 10, 5, "Очищать маркировку автоматически", Check, ClearMrk
+WideBorderDPP=0
+if mpp = -1 then
+	AddForm #1, 10, 6, "Редактировать рамку ДПП", Check, WideBorderDPP
+end if
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -488,6 +494,21 @@ if (SizeX# < 280) AND (SizeY# < 280) then
 	MessageBox  "Блок слишком мал"+CR!+"Ширина блока должна быть не менее 300 мм", "Ошибка",ERROR 
 	DPPerror =1
 	return
+end if
+'-------удаление слишком широкой рамки на ДПП ----
+layer_alloff@ 0
+if WideBorderDPP AND (visminx!<0) AND (visminy!<0) then
+for i=1 to 2
+	For lay = 0 to Highestlayer! 
+		setlayer@ lay
+		edit_delete@
+		axy@ SizeX#,SizeY#
+		back@
+	next
+	SizeX#= vismaxx! 
+	SizeY#= vismaxy! 
+	layer_alloff@ 0
+next
 end if
 '----------------- rotate and move 
 if SizeX# < SizeY# then 

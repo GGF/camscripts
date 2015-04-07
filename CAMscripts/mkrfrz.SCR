@@ -69,7 +69,6 @@ end if
 
 
 
-
 ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки
 
 
@@ -284,9 +283,18 @@ if 1=1 then
 		Z# = (Y%-350)/2+60
 	end if 
 
+break
 	head$= path$ + "header2.hdr"
-	nullx# = -151.5
-	nully# = 193
+	'nullx# = -151.5
+	'nully# = 193
+	'07-04-2015 изменение для базы'
+	nullx#=-181.5
+	xprob#=-X%/2.0
+	nully#=-6.25
+	if mpp=-1 then
+		Z#=0
+	end if
+	'07-04-2015'
 	hh = 2; ' 2 шпинделя
 	gosub createheader 
 end if
@@ -683,6 +691,9 @@ drex2:
 			close #2
 			if fileexists(schfile1$) then
 				STY#=70
+				if sz280x395 = 1 then
+					STY#=66
+				end if
 				exelonfile1$ = schfile1$
 				exelonfile$ = schfile$
 				gosub editexelon
@@ -925,7 +936,7 @@ createheader:
 open head$ for output as #1
 print #1,"%%3000"
 if vert%=1 then 
-	if mpp = -1 then
+	if mpp = -1 and hh<>2 then
 '		zz%=((Y%-180)/2+5)/10
 		zz%=((Y%-180)/2)/10
 		Z#=zz%*10

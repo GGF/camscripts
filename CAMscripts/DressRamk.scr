@@ -161,7 +161,7 @@ else
 end if
 
 ' проверка на влезаемость в рамку, актуально только для рамок с заданным размером'
-if mY# > (Y#-techfield#-bigtechfield#) or mX# > (X#-techfield#*2.0) then 
+if (mr%=1 or mrr%=1) and (mY# > (Y#-techfield#-bigtechfield#) or mX# > (X#-techfield#*2.0)) then 
 	MessageBox "Не влезает в рамку. x="+str$(mX#)+" y="+str$(my#)
 	goto 550
 end if
