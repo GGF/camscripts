@@ -193,7 +193,7 @@ else
 	if tochnovert%<9 then
 		AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
 	end if
-	AddForm #1, 40, 0, "fr-20/10?",check,frr
+	'AddForm #1, 40, 0, "fr-20/10?",check,frr
 
 end if
 AddForm #1, 0, 1, "Сверловки:",print
@@ -288,12 +288,9 @@ break
 	'nullx# = -151.5
 	'nully# = 193
 	'07-04-2015 изменение для базы'
-	nullx#=-181.5
-	xprob#=-X%/2.0
+	nullx#=-X%/2.0 '-181.5
+	xprob#=0;
 	nully#=-6.25
-	if mpp=-1 then
-		Z#=0
-	end if
 	'07-04-2015'
 	hh = 2; ' 2 шпинделя
 	gosub createheader 
@@ -393,28 +390,28 @@ break
 	' создали доп слой
 
 	if mpp = -1 then
-		setlayer@ dopdrill
-		layer_alloff@ 1
-		nc_add_drill_hit@
-		setsnap@ 0
-		' 1-04-2013 сделал 17 вместо 20'
-		if Z# < Y% then
-			axy@ 17.0000,Z#
-		end if
-		if Z#+45 < Y% then
-			axy@ 17.0000,Z#+45
-		end if
-		if Z#+45+90 < Y% then
-			axy@ 17.0000,Z#+45+90
-		end if
-		if Z#+45+90+45 < Y% then
-			axy@ 17.0000,Z#+45+90+45
-		end if
-		back@
-		edit_move@
-		edit_selectall2@ 
-		movetolayer@ drill
-		back@
+'		setlayer@ dopdrill
+'		layer_alloff@ 1
+'		nc_add_drill_hit@
+'		setsnap@ 0
+'		' 1-04-2013 сделал 17 вместо 20'
+'		if Z# < Y% then
+'			axy@ 17.0000,Z#
+'		end if
+'		if Z#+45 < Y% then
+'			axy@ 17.0000,Z#+45
+'		end if
+'		if Z#+45+90 < Y% then
+'			axy@ 17.0000,Z#+45+90
+'		end if
+'		if Z#+45+90+45 < Y% then
+'			axy@ 17.0000,Z#+45+90+45
+'		end if
+'		back@
+'		edit_move@
+'		edit_selectall2@ 
+'		movetolayer@ drill
+'		back@
 	else
 		' это если многослойка
 		' удалить отверстия, но они уже сжаты'
@@ -428,6 +425,44 @@ break
 		delete_edits@ 4,1
 		back@
 	end if
+
+	' экселон
+	if drill <> -1 and ex2exist then
+		drext$="mx1"
+			''
+			setlayer@ drill
+			' вывод 
+			expdrl_generate_Header@ 1
+			export_XYmodal@ 1,0
+			nc_exp_drill_t00@ 0
+			expdrl_generate_Tools@ 1
+			setup_fmtype@ 1,5
+			setup_fmtunit@ 1,1
+			setup_fmtdigits@ 1,3,3
+			setup_fmtmode@ 1,0
+			nc_exp_drilltool_infeed@ 0
+			nc_exp_drilltool_retract@ 0
+			nc_exp_drilltool_RPMs@ 0
+			nc_exp_drilltool_MaxHits@ 0
+			nc_exp_drill_Exc_decimals@ 1
+			nc_exp_drill_Exc_toolingoffset@ 1
+			''
+			setup_fmtype@ 2,5
+			setup_fmtunit@ 2,1
+			setup_fmtdigits@ 2,3,3
+			setup_fmtmode@ 2,0
+			setup_fmtzero@ 2,2
+			nc_exp_mill_IncludeDrills@ 1
+			nc_exp_mill_Exc_decimals@ 1
+			nc_exp_mill_Exc_toolingoffset@ 1
+			nc_exp_milltool_infeed@ 0
+			nc_exp_milltool_retract@ 0
+			nc_exp_milltool_RPMs@ 0
+			''
+			'drillPCB_out@ drill,path$+drillname$+"1.ex2"
+			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
+	end if
+
 	' теперь если это excelon или многослойка поставим отверстия в 10 мм от края для фрезеровки'
 	if mpp<>-1 then
 		setlayer@ dopdrill
@@ -452,7 +487,8 @@ break
 		movetolayer@ drill
 		back@
 	end if
-' конец сверления отв под фрезеровку '
+	' конец сверления отв под фрезеровку '
+
 
 	if drill <> -1 and mk4exist then
 		tablefile$ = tablepath$+"\tables4.lst"
@@ -494,6 +530,33 @@ break
 		Expmill_generate_Header@ 1
 
 	end if
+	
+
+	' поставим отверстия в 10 мм от края для фрезеровки, если не ставили раньше'
+	if mpp=-1 then
+		setlayer@ dopdrill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+		if Z# < Y% then
+			axy@ 10.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 10.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 10.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 10.0000,Z#+45+90+45
+		end if
+		back@
+		edit_move@
+		edit_selectall2@ 
+		movetolayer@ drill
+		back@
+	end if
+	' конец сверления отв под фрезеровку '
 
 	if drill <> -1 and mk2exist then
 		tablefile$ = tablepath$+"\tables2.lst"
@@ -535,47 +598,7 @@ break
 
 	' экселон
 	if drill <> -1 and ex2exist then
-		drext$="mx1"
-drex2:
-			' поворот нужен был в сентябре 2012 сейчас в январе 2014 нужен ли не знаю, я пожалуй закоментирую'
-			'		if sz485x585 = 1 then
-			'			' повернуть немного 10-09-2012 16;21
-			'			setlayer@ drill
-			'			layer_alloff@ 1
-			'			edit_rotate@
-			'			setsnap@ 1
-			'			setrot100angle@ 3
-			'			edit_selectall2@ 
-			'			setsnap@ 0
-			'			axy@ 25.0000,25.0000
-			'			setsnap@ 1
-			'			back@
-			'		end if
-			
-			' тут нужно еще раз просверлить отверстия под грибы, но только если ДПП, потому что если делать это выше то на микронике грибы сверлятся'
-			if mpp=-1 and drext$="ex2" then
-				setlayer@ dopdrill
-				layer_alloff@ 1
-				nc_add_drill_hit@
-				setsnap@ 0
-				if Z# < Y% then
-					axy@ 10.0000,Z#
-				end if
-				if Z#+45 < Y% then
-					axy@ 10.0000,Z#+45
-				end if
-				if Z#+45+90 < Y% then
-					axy@ 10.0000,Z#+45+90
-				end if
-				if Z#+45+90+45 < Y% then
-					axy@ 10.0000,Z#+45+90+45
-				end if
-				back@
-				edit_move@
-				edit_selectall2@ 
-				movetolayer@ drill
-				back@
-			end if
+		drext$="ex2"
 			''
 			setlayer@ drill
 			' вывод 
@@ -608,10 +631,6 @@ drex2:
 			''
 			'drillPCB_out@ drill,path$+drillname$+"1.ex2"
 			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
-		if drext$="mx1" then
-			drext$="ex2"
-			goto drex2
-		end if
 	end if
 
 	'6. дополнение файла сверловки
@@ -943,12 +962,15 @@ if vert%=1 then
 		if Z#<=0 then Z#=10
 		xprob# = 10
 	end if
-	if fr = 1 AND frr = 1 then
-		xprob# = 17
-	end if
+'	if fr = 1 AND frr = 1 then
+'		xprob# = 17
+'	end if
 	print #1, USING "M47, ###*###  ##";X%;Y%;Z#
 	nx# = nullx#-xprob#
 	ny# = nully#-Z#
+	if mpp = -1 and hh=2 then
+		ny# = nully#
+	end if
 	if prob% = 2 AND fr <> 1 AND hh = 2 then
 		if sz230x395 = 1 then
 			nx#=-115
@@ -985,9 +1007,9 @@ else
 		if Z#<=0 then Z#=10
 		xprob# = 10
 	end if
-	if fr = 1 AND frr = 1 then
-		xprob# = 17
-	end if
+'	if fr = 1 AND frr = 1 then
+'		xprob# = 17
+'	end if
 	print #1, USING "M47, ###*###  ##";Y%;X%;Z#
 	nx# = nullx#-xprob#+Y%
 	ny# = nully#-Z#

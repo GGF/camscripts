@@ -61,6 +61,11 @@ elseif ms > -1 then
 	xpl# = vismaxx! - visminx!
 	ypl# = vismaxy! - visminy!
 end if
+' округлить до десятых'
+xpl% = xpl#*10.0
+ypl% = ypl#*10.0
+xpl# = xpl%/10.0
+ypl# = ypl%/10.0
 
 !include "getdate.scr"
 

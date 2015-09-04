@@ -1,0 +1,13 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 V7.0 (Build 187) Date:  Mon Aug 31 16:13:03 2015
+util_camed@
+layer_alloff@ 1
+edit_move@
+setsnap@ 0
+edit_selectall2@ 
+axy@ Visminx!,Visminy!
+setsnap@ 0
+axy@ 2.0000,2.0000
+setsnap@ 1
+back@
+view_redraw@
