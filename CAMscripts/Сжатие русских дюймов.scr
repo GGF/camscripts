@@ -4,6 +4,7 @@ dim sel(Numlayers!+1)
 OpenForm #1,40,Numlayers!,"—жатие слоев из русских дюймов (с) Sch'arapoff", character, okcancel
 for lay=netxlay to highestlayer!
 	setlayer@ lay
+	sel(lay+1) = 1
 	AddForm #1, 0, lay, layername!,check,sel(lay+1)
 next
 DisplayForm #1

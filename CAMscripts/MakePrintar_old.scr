@@ -7,10 +7,7 @@
 'Установлены параметры экспорта gbr файлов: позитив, без зеркала
 '2.03.2015
 'Удаление слишком широкой рамки ДПП (т. к. иначе не находит прицелы)
-'13.01.2016
-'плевательницы на технологических полях
-'15.02.2016
-'исправлена ошибка - координаты прицелов после поворота
+'
 
 '---- constants ------
 Block=-1
@@ -46,20 +43,6 @@ Targets#(Pferd,X,Left)=32.5
 Targets#(Pferd,Y,Bot)=25.0
 Targets#(Pferd,X,Right)=452.5
 Targets#(Pferd,Y,Top)=560.0
-
-DIM RotatedTargets#(Pferd,Y,Top)
-RotatedTargets#(Small,X,Left)=137.5
-RotatedTargets#(Small,Y,Bot)=93.5
-RotatedTargets#(Small,X,Right)=482.5
-RotatedTargets#(Small,Y,Top)=258.5
-RotatedTargets#(Middle,X,Left)=137.5
-RotatedTargets#(Middle,Y,Bot)=32.5
-RotatedTargets#(Middle,X,Right)=482.5
-RotatedTargets#(Middle,Y,Top)=247.5
-RotatedTargets#(Pferd,X,Left)=42.5
-RotatedTargets#(Pferd,Y,Bot)=32.5
-RotatedTargets#(Pferd,X,Right)=577.5
-RotatedTargets#(Pferd,Y,Top)=452.5
 
 OneSide = -1
 ClearMrk = 0
@@ -107,7 +90,7 @@ if rcn=-1 and rsn = -1 then
 end if
 
 
-OpenForm #1,60,8,"Получение файлов для Printar", character, okcancel
+OpenForm #1,60,7,"Получение файлов для Printar", character, okcancel
 if CustExist=0 then
 	AddForm #1,0,1, "Будет создан каталог "+OutCustom$,PRINT
 end if
@@ -116,14 +99,13 @@ if BrdExist then
 else
 	AddForm #1,0,2,"Файлы будут записаны в каталог "+ Outpath$,PRINT
 end if
+
 AddForm #1, 10, 4, "Толщина платы: ",input,Thickness#
 ClearMrk=1
 AddForm #1, 10, 5, "Очищать маркировку автоматически", Check, ClearMrk
-AddSpitoon=0
-AddForm #1, 10, 6, "Добавить плевательницу на технологическом поле", Check, AddSpitoon
-WideBorderDPP=1
+WideBorderDPP=0
 if mpp = -1 then
-	AddForm #1, 10, 7, "Редактировать рамку ДПП", Check, WideBorderDPP
+	AddForm #1, 10, 6, "Редактировать рамку ДПП", Check, WideBorderDPP
 end if
 DisplayForm #1
 Canceled% = formcancel(1)
@@ -146,7 +128,7 @@ if mpp = -1 then
 	if DPPerror then
 		goto endofscript
 	else 
-		goto MakeSpitoons
+		goto OutputFiles
 	end if
 end if
 
@@ -182,7 +164,6 @@ else
 	Print "Странный размер по X :", vismaxx!
 	goto endofscript
 end if
-
 '-------------------- пытаемся определить есть ли прицелы на маркировке
 if OneSide = -1 then 
 	setlayer@ rcn
@@ -415,42 +396,6 @@ else
 	axy@ 17.5,0.0
 end if
 back@
-'--------------------------- плевательницы
-MakeSpitoons:
-if AddSpitoon then
-	if mpp = -1 then
-		SpitoonY#=TargTopY#+5
-		SpitoonX1#=TargLeftX#+15
-		SpitoonX2#=TargRightX#-15
-	else
-		SpitoonY#=RotatedTargets#(Block,Y,Top)+4
-		SpitoonX1#=RotatedTargets#(Block,X,Left)+15
-		SpitoonX2#=RotatedTargets#(Block,X,Right)-15
-	end if
-	Apr = Highestdcode! + 1
-	set_aperture@ Apr,"Round d:0.15"
-	setdcode@ Apr
-	update_dcodebar@
-	DIM MarkLayers#(1)
-	MarkLayers#(0)=rcn
-	if rsn <> -1 then
-		MarkLayers#(1)=RsnMir
-	else 
-		MarkLayers#(1)=-1
-	end if
-	for a#=0 to 1
-		if MarkLayers#(a#)<> -1 then
-			setlayer@ MarkLayers#(a#)
-			add_line@
-			for b#=0 to 10
-				axy@ SpitoonX1#,SpitoonY#+b#*0.5
-				axy@ SpitoonX2#,SpitoonY#+b#*0.5
-				back@
-			next
-			back@
- 		end if
-	next
-end if
 '--------------------------- экспорт файлов 
 OutputFiles:
 

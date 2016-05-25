@@ -42,27 +42,29 @@ if drillname$ <> "" then goto noform
 !include "layersset.scr"
 
 ' проверка на поворот, если в 0,0 есть флешь d10 значит точно не надо поворачивать, и если в 0,dbmaxx! есть то тоже точно не надо
-
-setlayer@ comp
-layer_alloff@ 1
-query_dcode@
-axy@ 0,0
-back@
-if Activedcode!=10 then
-	tochnovert%=10;
-	vert%=0
-else
+if comp<>-1 then
+	setlayer@ comp
+	layer_alloff@ 1
 	query_dcode@
-	axy@ dbmaxx!,0
+	axy@ 0,0
 	back@
+	break
 	if Activedcode!=10 then
-		tochnovert=10;
-		vert%=1
+		tochnovert%=10;
+		vert%=0
 	else
-		tochnovert%=abs(X%-Y%)*100/X% ' процентное отношение сторон'
-		
-		' не известно точно ли меньше 10 процентов будем спрашивать'
-		
+		query_dcode@
+		axy@ dbmaxx!,0
+		back@
+		if Activedcode!=10 then
+			tochnovert=10;
+			vert%=1
+		else
+			tochnovert%=abs(X%-Y%)*100/X% ' процентное отношение сторон'
+			
+			' не известно точно ли меньше 10 процентов будем спрашивать'
+			
+		end if
 	end if
 end if
 
@@ -428,7 +430,12 @@ break
 
 	' экселон
 	if drill <> -1 and ex2exist then
-		drext$="mx1"
+			tablefile$ = tablepath$+"\tables4.lst"
+			selected_layer = drill
+			minimafr = 1
+			GOSUB corecttool
+			minimafr = -1
+			drext$="mx1"
 			''
 			setlayer@ drill
 			' вывод 
@@ -598,6 +605,10 @@ break
 
 	' экселон
 	if drill <> -1 and ex2exist then
+			minimafr = 1
+			GOSUB corecttool
+			minimafr = -1
+
 		drext$="ex2"
 			''
 			setlayer@ drill
@@ -788,6 +799,9 @@ if mis>0 then
 			kill path$+drillnamef$+"1.frz"
 
 			' экселон фрезеровка
+			minimafr = 1
+			GOSUB corecttool
+			minimafr = -1
 			setup_fmtype@ 2,5
 			setup_fmtunit@ 2,1
 			setup_fmtdigits@ 2,3,3
@@ -944,6 +958,18 @@ freza:
 		ts# = 1 ' проверка на маленькие фрезы'
 	end if
 	nc_set_tool_feedrate@ table,toolref,ts#*10/6 'преобразование
+	'25-05-2016 корекция фидрейта для Плюритек и Минима'
+	if minimafr=1 then
+		if ts#=1 then
+			nc_set_tool_feedrate@ table,toolref,4 
+		end if
+		if ts#=2 then
+			nc_set_tool_feedrate@ table,toolref,15 
+		end if
+		if ts#=3 then
+			nc_set_tool_feedrate@ table,toolref,16 
+		end if
+	end if
 notoolintable:
 next
 
