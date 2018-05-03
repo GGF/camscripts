@@ -1081,10 +1081,6 @@ auarea# = auarea% / 100
 !INCLUDE tablepath$+"createcoppers.scr"
 ' это для обязательного создания
 
-' Вывод сверловок
-drillname$ = name$
-'!INCLUDE tablepath$+"mkrfrz.SCR"
-
 ' Сохранение gerber
 if ger%=1 then
 	!INCLUDE tablepath$+"creategbx.SCR"

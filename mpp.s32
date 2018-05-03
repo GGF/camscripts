@@ -1,0 +1,63 @@
+*Sheet1
+A1
+A1
+A1
+
+A 12,
+B 12,
+1 ,2
+2 ,1
+3 ,1
+4 ,1
+5 ,1
+6 ,1
+7 ,1
+8 ,1
+9 ,1
+10 ,1
+11 ,1
+12 ,1
+13 ,1
+14 ,1
+15 ,1
+16 ,1
+17 ,1
+18 ,2
+A1 ,Z 180
+B1 ,Z 345
+A2 ,WZ 
+B2 ,WZ 
+A3 ,WZ 
+B3 ,WZ 
+A4 ,WZ 
+B4 ,WZ 
+A5 ,WZ 
+B5 ,WZ 
+A6 ,WZ 
+B6 ,WZ 
+A7 ,WZ 
+B7 ,WZ 
+A8 ,WZ 
+B8 ,WZ 
+A9 ,WZ 
+B9 ,WZ 
+A10 ,WZ 
+B10 ,WZ 
+A11 ,WZ 
+B11 ,WZ 
+A12 ,WZ 
+B12 ,WZ 
+A13 ,WZ 
+B13 ,WZ 
+A14 ,WZ 
+B14 ,WZ 
+A15 ,WZ 
+B15 ,WZ 
+A16 ,WZ 
+B16 ,WZ 
+A17 ,WZ 
+B17 ,WZ 
+A18 ,b (min(A2:A17)+max(A2:A17))/2
+B18 ,b (min(B2:B17)+max(B2:B17))/2
+A19 , A18/A1
+B19 , B18/B1

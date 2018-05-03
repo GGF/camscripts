@@ -6,6 +6,8 @@ end if
 
 !include "layersset.scr"
 
+break
+
 Setlayer@ comp
 layer_alloff@ 0
 X# = vismaxx! - visminx!
@@ -79,12 +81,14 @@ if drill <> -1 then
 		if tooltype! = 2 then
 			frezcomment$ = "-פנוחא"
 		end if
-		drillsostav$ = drillsostav$ + str$(toolsize!) + "|" + str$(Lyrdrillcount!)+frezcomment$+"x"
-		if toolused! and tooltype! <> 2 then
-			if toolsize! <= 0.6 then
-				smalldrill = smalldrill + Lyrdrillcount!
-			else
-				bigdrill = bigdrill + Lyrdrillcount!
+		if toolused! then
+			drillsostav$ = drillsostav$ + FMTUSING$("##.##",toolsize!) + "|" + str$(Lyrdrillcount!)+frezcomment$+"x"
+			if tooltype! <> 2 then
+				if toolsize! <= 0.6 then
+					smalldrill = smalldrill + Lyrdrillcount!
+				else
+					bigdrill = bigdrill + Lyrdrillcount!
+				end if
 			end if
 		end if
 	next

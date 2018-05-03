@@ -24,21 +24,19 @@ if dbminx!=-5 then
 end if
 if X%<Y% then vert%=1
 tochnovert%=-1
+yprob# = (Y%-210)/2.0
+prob% = 1
 drillnew = -1
 dopdrill = -1
 scalex# = 1
 scaley# = 1
 
-xprob# = 10 ' все! это пробивка для фрезеровки
-yprob# = (Y%-180)/2.0
+xprob# = 10 ' двустороняя
 mk2exist = 1 ' есть двухшпиндельная сверловка
 mk4exist = 1 ' есть четырехшпиндельная сверловка
-ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки// 07-04-2017 удрвл вывод в надевании
 noform% = 1
 
 if drillname$ <> "" then goto noform
-noform% = -1
-
 
 !INCLUDE "getpathandname.scr"
 !include "layersset.scr"
@@ -70,6 +68,15 @@ if comp<>-1 then
 	end if
 end if
 
+
+
+
+ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки
+
+
+noform% = -1
+xprob# = 40 ' многослойка
+
 ' определение имени
 if fileexists(path$+"copper.rpt") then 
 	open path$+"copper.rpt" for input as #1
@@ -84,74 +91,80 @@ else
 	drillname$ = name$
 end if
 
+' Если имя начинается с цифры - поменять или добавить
+
 ' вычисление кэфициэнтов
-if 1=1 then
-	if mpp = -1 then
-		s32name$ = "dpp.s32"
-	else
-		s32name$ = "mpp"+str$(layers)+".s32"
-		if not fileexists(path$+s32name$) then
-			s32name$ = "mpp.s32"
-		end if
-	end if
-
-	dim xscal#(30)
-	dim yscal#(30)
-	xmin# = 1000
-	Ymin# = 1000
-	xmax# = 0
-	ymax# = 0
-
-	if fileexists(path$+s32name$) then 
-		open path$+S32name$ for input as #1
-			do UNTIL EOF (1)
-			input #1,hhh$
-			if left$(hhh$,1) = "A" then
-				num# = val(MID$(hhh$,2))
-				input #1,hhh$
-				xscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
-			end if
-			if left$(hhh$,1) = "B" then
-				num# = val(MID$(hhh$,2))
-				input #1,hhh$
-				yscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
-			end if
-			LOOP
-		close #1
-		for num%=2 to layers%+1
-			if ymin# > yscal#(num%) AND yscal#(num%)>0 then
-				ymin# = yscal#(num%)
-			end if
-			if ymax# < yscal#(num%) AND yscal#(num%)>0 then
-				ymax# = yscal#(num%)
-			end if
-			if xmin# > xscal#(num%) AND xscal#(num%)>0 then
-				xmin# = xscal#(num%)
-			end if
-			if xmax# < xscal#(num%) AND xscal#(num%)>0 then
-				xmax# = xscal#(num%)
-			end if
-		next
-		scalex# = (xmin#+xmax#)/2.0/xscal#(1)
-		scaley# = (ymin#+ymax#)/2.0/yscal#(1)
+if mpp = -1 then
+	s32name$ = "dpp.s32"
+else
+	s32name$ = "mpp"+str$(layers)+".s32"
+	if not fileexists(path$+s32name$) then
+		s32name$ = "mpp.s32"
 	end if
 end if
-' Конец вычисления коэффициэнтов'
+
+dim xscal#(30)
+dim yscal#(30)
+xmin# = 1000
+Ymin# = 1000
+xmax# = 0
+ymax# = 0
+
+if fileexists(path$+s32name$) then 
+	open path$+S32name$ for input as #1
+		do UNTIL EOF (1)
+		input #1,hhh$
+		if left$(hhh$,1) = "A" then
+			num# = val(MID$(hhh$,2))
+			input #1,hhh$
+			xscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
+		end if
+		if left$(hhh$,1) = "B" then
+			num# = val(MID$(hhh$,2))
+			input #1,hhh$
+			yscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
+		end if
+		LOOP
+	close #1
+	for num%=2 to layers%+1
+		if ymin# > yscal#(num%) AND yscal#(num%)>0 then
+			ymin# = yscal#(num%)
+		end if
+		if ymax# < yscal#(num%) AND yscal#(num%)>0 then
+			ymax# = yscal#(num%)
+		end if
+		if xmin# > xscal#(num%) AND xscal#(num%)>0 then
+			xmin# = xscal#(num%)
+		end if
+		if xmax# < xscal#(num%) AND xscal#(num%)>0 then
+			xmax# = xscal#(num%)
+		end if
+	next
+	scalex# = (xmin#+xmax#)/2.0/xscal#(1)
+	scaley# = (ymin#+ymax#)/2.0/yscal#(1)
+end if
 
 ' самая новая пробивка
-if mpp <> -1 then
-	if X% = 280 and Y% = 395 then
-		sz280x395 = 1
-	end if
+if X% = 280 and Y% = 395 and mpp <> -1 then
+	prob% = 2
+	sz280x395 = 1
+	xprob#=10
+	yprob#=107.5
+end if
 
-	if X% = 485 and Y% = 585 then
-		sz485x585 = 1
-		mk2exist = 0 ' нет двухшпиндельной сверловки
-	end if
+if X% = 485 and Y% = 585 and mpp <> -1 then
+	prob% = 2
+	sz485x585 = 1
+	xprob#=10
+	yprob#=202.5
+	mk2exist = 0 ' нет двухшпиндельной сверловки
+end if
 
-	if X% = 230 and Y% = 395 then
-		sz230x395 = 1
-	end if
+if X% = 230 and Y% = 395 and mpp <> -1 then
+	prob% = 2
+	sz230x395 = 1
+	xprob#=10
+	yprob#=107.5
 end if
 
 if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
@@ -166,12 +179,25 @@ OpenForm #1,70,7,"Сверловка и фрезеровка (с) Sch'arapoff", character, okcancel
 if mpp <> -1 then
 	frr=0
 	vert% = 1
+	'AddForm #1, 0, 32, "Старая пробивка?",check,prob% ' вычисляется выше потому закоментарил
+	select case prob%
+		case 1
+			AddForm #1, 0, 0, "Старая пробивка!!!",print
+		case 3 
+			AddForm #1, 0, 0, "Новая пробивка!!!",print
+		case 2
+			AddForm #1, 0, 0, "Суперновая пробивка!!!",print
+	end select
+	AddForm #1, 0, 4, "X",input,xprob#
+	AddForm #1, 35, 4, "Y",input,yprob#
 else
+	xprob# = 10
 	if tochnovert%<9 then
 		AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
 	end if
-end if
+	'AddForm #1, 40, 0, "fr-20/10?",check,frr
 
+end if
 AddForm #1, 0, 1, "Сверловки:",print
 for i = 1 to drs
 	shiftx = 13+(i-1)*(55/drs)
@@ -193,8 +219,9 @@ DeleteForm #1
 
 if Canceled% = 1 then goto mkrfrz_endscript
 
-noform:
-print_msg "Идет процесс... Ждите!!!"
+	noform:
+
+	print_msg "Идет процесс... Ждите!!!"
 
 ' развернуть если вертикальное
 if vert% <> 1 then
@@ -226,8 +253,17 @@ end if
 
 '1. создание файлов заголовка, должны быть до сверления под фрезеровку потому что вычисляется Z
 if 1=1 then
+	' вычисление отступов для многослоек
+	nullx# = 99.375
+	nully# = 277.375
+
 	if mpp <> -1 then
-		Z# = yprob#
+		if prob% = 1 then
+			Z#=yprob#+15
+			xprob# = xprob#-30
+		else
+			Z# = yprob#
+		end if
 	end if 
 
 	fr = 1
@@ -235,11 +271,29 @@ if 1=1 then
 	gosub createheader 
 	fr=0
 
+	if mpp <> -1 and prob% = 3 then
+		xprob# = 34.375
+		Z# = (Y%-350)/2+45
+	end if 
+
 	hh = 4; ' 4 шпинделя
 	head$= path$ + "header4.hdr"
 	gosub createheader 
 
+	if mpp <> -1 and prob% = 3 then
+		xprob# = 29.375
+		Z# = (Y%-350)/2+60
+	end if 
+
+break
 	head$= path$ + "header2.hdr"
+	'nullx# = -151.5
+	'nully# = 193
+	'07-04-2015 изменение для базы'
+	nullx#=-X%/2.0 '-181.5
+	xprob#=0;
+	nully#=-6.25
+	'07-04-2015'
 	hh = 2; ' 2 шпинделя
 	gosub createheader 
 end if
@@ -277,7 +331,7 @@ for drlay = 1 to drs
 			axy@ 0,0
 			back@
 		end if
-
+break
 		if mk2exist then
 			open path$+drillname$+".mk2.old" for APPEND as #1
 				print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
@@ -336,10 +390,33 @@ for drlay = 1 to drs
 		nc_set_layer_rank@ dopdrill,1
 	end if
 	' создали доп слой
-	
-	' это если многослойка
-	' удалить отверстия, ведь они уже сжаты'
-	if mpp <> -1 then
+
+	if mpp = -1 then
+'		setlayer@ dopdrill
+'		layer_alloff@ 1
+'		nc_add_drill_hit@
+'		setsnap@ 0
+'		' 1-04-2013 сделал 17 вместо 20'
+'		if Z# < Y% then
+'			axy@ 17.0000,Z#
+'		end if
+'		if Z#+45 < Y% then
+'			axy@ 17.0000,Z#+45
+'		end if
+'		if Z#+45+90 < Y% then
+'			axy@ 17.0000,Z#+45+90
+'		end if
+'		if Z#+45+90+45 < Y% then
+'			axy@ 17.0000,Z#+45+90+45
+'		end if
+'		back@
+'		edit_move@
+'		edit_selectall2@ 
+'		movetolayer@ drill
+'		back@
+	else
+		' это если многослойка
+		' удалить отверстия, но они уже сжаты'
 		setlayer@ drill
 		layer_alloff@ 1
 		edit_delete@
@@ -351,8 +428,7 @@ for drlay = 1 to drs
 		back@
 	end if
 
-	' минима
-	'07-04-2017 это минима, на ней не сверлятся отверстия для фрезеровки потому что на ней и фрезеруется
+	' экселон
 	if drill <> -1 and ex2exist then
 			tablefile$ = tablepath$+"\tables4.lst"
 			selected_layer = drill
@@ -390,32 +466,34 @@ for drlay = 1 to drs
 			nc_exp_milltool_retract@ 0
 			nc_exp_milltool_RPMs@ 0
 			''
+			'drillPCB_out@ drill,path$+drillname$+"1.ex2"
 			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
 	end if
 
 	' теперь если это excelon или многослойка поставим отверстия в 10 мм от края для фрезеровки'
-	'7-04-2017 теперь добавляем для всех видов сверловки потому, что все сверлятся на двух штифтах'
-	setlayer@ dopdrill
-	layer_alloff@ 1
-	nc_add_drill_hit@
-	setsnap@ 0
-	if Z# < Y% then
-		axy@ 10.0000,Z#
+	if mpp<>-1 then
+		setlayer@ dopdrill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+		if Z# < Y% then
+			axy@ 10.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 10.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 10.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 10.0000,Z#+45+90+45
+		end if
+		back@
+		edit_move@
+		edit_selectall2@ 
+		movetolayer@ drill
+		back@
 	end if
-	if Z#+45 < Y% then
-		axy@ 10.0000,Z#+45
-	end if
-	if Z#+45+90 < Y% then
-		axy@ 10.0000,Z#+45+90
-	end if
-	if Z#+45+90+45 < Y% then
-		axy@ 10.0000,Z#+45+90+45
-	end if
-	back@
-	edit_move@
-	edit_selectall2@ 
-	movetolayer@ drill
-	back@
 	' конец сверления отв под фрезеровку '
 
 
@@ -459,6 +537,33 @@ for drlay = 1 to drs
 		Expmill_generate_Header@ 1
 
 	end if
+	
+
+	' поставим отверстия в 10 мм от края для фрезеровки, если не ставили раньше'
+	if mpp=-1 then
+		setlayer@ dopdrill
+		layer_alloff@ 1
+		nc_add_drill_hit@
+		setsnap@ 0
+		if Z# < Y% then
+			axy@ 10.0000,Z#
+		end if
+		if Z#+45 < Y% then
+			axy@ 10.0000,Z#+45
+		end if
+		if Z#+45+90 < Y% then
+			axy@ 10.0000,Z#+45+90
+		end if
+		if Z#+45+90+45 < Y% then
+			axy@ 10.0000,Z#+45+90+45
+		end if
+		back@
+		edit_move@
+		edit_selectall2@ 
+		movetolayer@ drill
+		back@
+	end if
+	' конец сверления отв под фрезеровку '
 
 	if drill <> -1 and mk2exist then
 		tablefile$ = tablepath$+"\tables2.lst"
@@ -544,7 +649,6 @@ for drlay = 1 to drs
 	print_msg "Идет корректировка файлов." + CR! + "Это долгий процесс." + CR! + "Ждите!!!"
 
 	if drill <> -1 then
-		'Вернем коректировку к оригинальной'
 		tablefile$ = tablepath$+"\tables4.lst"
 		selected_layer = drill
 		GOSUB corecttool
@@ -627,27 +731,7 @@ for drlay = 1 to drs
 		end if
 	end if
 	edit_removelyr@ dopdrill
-	
-	' это если ДПП
-	' удалить дополнительные отверстия'
-	if mpp = -1 then
-		setlayer@ drill
-		layer_alloff@ 1
-		edit_delete@
-		if Z# < Y% then
-			axy@ 10.0000,Z#
-		end if
-		if Z#+45 < Y% then
-			axy@ 10.0000,Z#+45
-		end if
-		if Z#+45+90 < Y% then
-			axy@ 10.0000,Z#+45+90
-		end if
-		if Z#+45+90+45 < Y% then
-			axy@ 10.0000,Z#+45+90+45
-		end if
-		back@
-	end if
+	break
 next
 end if
 ' конец сверловок '
@@ -769,7 +853,6 @@ if mis>0 then
 		end if
 	next
 end if
-
 '8. удаление лишних файлов
 head$= path$ + "header4.hdr"
 kill head$
@@ -787,28 +870,12 @@ view_redraw@
 
 ' записать данные в базу
 dopurl$="mkrfrz"+"&customer="+customer$+"&board="+board$+"&drillname="+drillname$+"&mpp="+str$(mpp)+"&sizex="+str$(X%)+"&sizey="+str$(Y%)+"&path="+path$
-outfile$=chr$(34)+path$+"cx.bat"+chr$(34)
+outfile$="cx.bat"
 
 !include "baseupdate.scr"
 
 
-' закончить, дальше идут подпрограммы '
-' закрыть текущий без сохранения'
-if Version! > 7 then 
-	setquit@ 
-else 
-	open path$+"closecam.bat" for output as #1
-		print #1,"chcp 1251"
-		print #1,"for /f "+chr$(34)+"usebackq tokens=2"+chr$(34)+" %%a in (`tasklist ^| find "+chr$(34)+"camnt95"+chr$(34)+"`) do ("
-		print #1,"tasklist /v /fi "+chr$(34)+"PID eq %%a"+chr$(34)+" | find "+chr$(34)+"\"+shortfilename$+chr$(34)+" /c >nul "
-		print #1,"if errorlevel 1 taskkill /PID %%a /F"
-		print #1,")"
-		print #1,"erase /f /q "+chr$(34)+path$+"closecam.bat"+chr$(34)
-	close #1
-
-	s1$ = chr$(34)+path$+"closecam.bat"+chr$(34)
-	WinExec s1$,MinimizedNoFocus
-end if
+' закончить, дальше подпрограммы'
 goto mkrfrz_endscript
 
 ' подпрограмма корекции параметров инструментов'
@@ -913,21 +980,24 @@ createheader:
 
 open head$ for output as #1
 print #1,"%%3000"
-' двусторонние вычисление высоты первой кнопки для фрезеровки кратной 10'
-if mpp = -1 then
-	zz%=((Y%-180)/2)/10
-	Z#=zz%*10
-	if Z#<=0 then Z#=10
-	xprob# = 10
-end if
-
-print #1, USING "M47, ###*###  ##";X%;Y%;Z#
-
-' сверловки для многослоек'
-if fr <> 1 then
-	if hh = 2 then
-		ny#=-6.25
-		nx# = -X%/2.0
+if vert%=1 then 
+	if mpp = -1 and hh<>2 then
+'		zz%=((Y%-180)/2+5)/10
+		zz%=((Y%-180)/2)/10
+		Z#=zz%*10
+		if Z#<=0 then Z#=10
+		xprob# = 10
+	end if
+'	if fr = 1 AND frr = 1 then
+'		xprob# = 17
+'	end if
+	print #1, USING "M47, ###*###  ##";X%;Y%;Z#
+	nx# = nullx#-xprob#
+	ny# = nully#-Z#
+	if mpp = -1 and hh=2 then
+		ny# = nully#
+	end if
+	if prob% = 2 AND fr <> 1 AND hh = 2 then
 		if sz230x395 = 1 then
 			nx#=-115
 			ny#=70
@@ -941,10 +1011,7 @@ if fr <> 1 then
 			ny#=85
 		end if
 	end if
-	if hh=4 then
-		'07-04-2017 двусторонние будут делаться на штифтах'
-		ny# = 100.75 ' это высилялось как y координата нижнего штифта минус 6.25
-		nx# = 270-X%/2.0 ' это x координата штифта
+	if prob% = 2 AND fr <> 1 AND hh=4 then
 		if sz230x395 = 1 then
 			nx#=150
 			ny#=203.0
@@ -958,15 +1025,22 @@ if fr <> 1 then
 			ny#=115
 		end if
 	end if
+	print #1, USING "X##.###Y##.###M50";nx#;ny#
 else
-	'Фрезеровка'
-	nullx# = 99.375
-	nully# = 277.375
-	nx# = nullx#-xprob#
+	if mpp = -1 then
+		zz%=(X%-180)/2/10
+		Z#=zz%*10
+		if Z#<=0 then Z#=10
+		xprob# = 10
+	end if
+'	if fr = 1 AND frr = 1 then
+'		xprob# = 17
+'	end if
+	print #1, USING "M47, ###*###  ##";Y%;X%;Z#
+	nx# = nullx#-xprob#+Y%
 	ny# = nully#-Z#
+	print #1, USING "X##.###Y###.###M50M60";nx#;ny#
 end if
-
-print #1, USING "X##.###Y##.###M50";nx#;ny#
 close #1
 
 return

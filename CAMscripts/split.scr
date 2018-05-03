@@ -12,6 +12,20 @@ dim vias(10)
 dim dril(10)
 dim mill(10)
 dim brd(10)
+dim inames$(14)
+dim internal(140)
+
+
+for i=1 to 14
+	inames$(i) = ""
+	for j=1 to 10
+		if internal((i-1)*10+j) = 0 then
+			internal((i-1)*10+j) = lay
+		end if
+	next 
+next
+
+
 
 ' номера по порядку '
 'layer_renumber@
@@ -36,6 +50,31 @@ For lay = Nextlay to Highestlayer!
 	elseif layertype! = 3 then 
 		sold(isold) = lay
 		isold = isold +1
+	elseif layertype!=1 then 
+		' internal'
+		'break
+		iinternal = iinternal + 1
+		for i=1 to 14
+			if inames$(i) = "" then
+				inames$(i) = layername!
+				internal((i-1)*10+1) = lay
+				i=14
+				'exit for
+			else
+				if inames$(i) = layername! then
+					for j=2 to 10
+						if internal((i-1)*10+j) = 0 then
+							internal((i-1)*10+j) = lay
+							'exit for
+							i=10
+							j=14
+						end if
+					next 
+					'exit for
+				end if
+			end if
+		next
+		
 	elseif layertype!=11 then 
 		masc(imasc) = lay
 		imasc = imasc + 1
@@ -79,6 +118,35 @@ next
 
 ' и опять по порядку'
 layer_renumber@
+
+' теперь сливаем internal'
+if iinternal > 0 then
+	for i=1 to 14
+		'break
+		if inames$(i) <> "" then
+			setlayer@ internal((i-1)*10+1)
+			inames$(i) = inames$(i) + "-" + str$(internal((i-1)*10+1)) 
+			layer_alloff@ 1
+			for j=2 to 10
+				'break
+				if internal((i-1)*10+j) <> 0 then
+					setlayer@ internal((i-1)*10+j)
+					inames$(i) = inames$(i) + "-" + str$(internal((i-1)*10+j)) 
+				else 
+					j=10'exit for
+				end if
+			next
+			lay = blanklayer!
+			edit_layer@ lay,12,12,1,1,inames$(i) ' номер,цвет,цвет,тип,onoff,name '
+			edit_move@
+			edit_selectall2@ 
+			movetolayer@ lay
+			MessageBox "internal - "+inames$(i)
+		else
+			i=14'exit for
+		end if
+	next
+end if
 
 ' теперь сливаем comp'
 if icomp > 0 then

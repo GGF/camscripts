@@ -1,0 +1,215 @@
+#CRONTAB FILE 
+# Classic crontab format:
+# Minutes Hours Days Months WeekDays Years Command
+# see 'example.tab'
+
+#( close_s32
+NoLog
+WatchHotKey: "{ESC}"
+Rule: WIN-ACTIVE: "Spreadsheet*" 
+Action:
+WIN-CLOSE: "Spreadsheet*" 
+)#
+
+#( activate_coordinate_cam350_v7
+NoLog
+WatchHotKey: "{TAB}"
+Rule: WIN-ACTIVE: "CAM350 V 7*" 
+Action:
+S" Cam 7 Tab pressed" TYPE CR
+PAUSE: 250
+WIN-CLICK: "CAM350 V 7*" "/\d:\d/"
+\ SEND-KEYS: "{TAB}"
+)#
+
+#( goto_ok_ondrill_incam350
+NoLog
+\ NoActive
+WatchHotKey: "{ENTER}"
+Rule: WIN-ACTIVE: "*(с) Sch*" 
+Action:
+WIN-EXIST: "*CAM350*"
+IF
+	S" Sch'арапов Enter pressed" TYPE CR
+	WIN-CLICK: "*(с) Sch*" "OK"
+THEN
+)#
+
+#( activate_coordinate_cam350_after_v7
+VARIABLE x
+VARIABLE y
+VARIABLE b
+VARIABLE r
+NoLog
+WatchHotKey: "{TAB}"
+Rule: WIN-ACTIVE: "*CAM350/DFMS*" 
+Action:
+\ условие только для WIN-HWND. IF для стека
+S" Cam 10-12 Tab pressed" TYPE CR
+WIN-EXIST: "*CAM350/DFMS*"
+IF
+	FOR-CHILD-WINDOWS: "BCGPStatusBar*"
+		WIN-CHILD-HWND WIN-RECT x ! y ! r ! b !
+		r @ 250 - x !
+		b @ 10 - y !
+		x @ y @ MOUSE-MOVE
+		MOUSE-LBDCLK
+	;FOR-CHILD-WINDOWS
+THEN
+)#
+
+#( send_to_baza
+NoLog
+WatchHotKey: "^s"
+Rule: WIN-ACTIVE: "Total*" 
+Action:
+	PAUSE: 800
+	SEND-KEYS: "^1" \ включим англ раскладку
+	SEND-KEYS: "{HOME}" \ поднимем курсор на верх каталога
+	WIN-INPUT-TEXT: "DO-LOOP" "Количество раз" "1" 0 0=
+	IF
+		S>NUM
+		0 
+		DO 
+			\ отображаем подсказку
+			I 1 + \ к счетчику добавляем один и оставляем на стеке
+			THINT: "Стартовала задача %QUOTE%%CUR-TASK-NAME% %0 esPICK% этап %QUOTE%" 5
+			PAUSE: 500
+			WIN-ACTIVATE: "Total*" \ это для того чтобы переходить с экселя
+			SEND-KEYS: "{DOWN}" \ на один файл вниз
+			SEND-KEYS: "{ENTER}" \ запустить
+			PAUSE: 2000
+			WIN-ACTIVATE: "*Excel*" \ перейти к экселю
+			PAUSE: 200
+			SEND-KEYS: "@{F8}" \ вызвать окно макросов
+			PAUSE: 200
+			SEND-KEYS: "{TAB}" \ перейти к списку
+			PAUSE: 200
+			SEND-KEYS: "{PGDN}"
+			PAUSE: 200
+			SEND-KEYS: "{ENTER}" \ запустить третий
+			PAUSE: 12000 \ дождаться завершения
+			WIN-ACTIVATE: "*Excel*" \ перейти к экселю
+			SEND-KEYS: "^{F4}" \ закрыть файл
+			PAUSE: 500
+			SEND-KEYS: "{RIGHT}" \ не сохраняя
+			SEND-KEYS: "{ENTER}"
+		LOOP
+	ELSE
+		MSG: "Пока!"
+	THEN
+)#
+
+#( runNprog
+NoLog
+NoActive
+Action:
+13 0 DO
+	\ отображаем подсказку
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINT: "Стартовала задача 01-03-2018%QUOTE%%CUR-TASK-NAME% %0 esPICK% этап %QUOTE%" 5
+	PAUSE: 200
+	WIN-ACTIVATE: "Total*" \ это для того чтобы переходить с экселя
+	SEND-KEYS: "{DOWN}" \ на один файл вниз
+	SEND-KEYS: "{ENTER}" \ запустить 
+	PAUSE: 500
+	WIN-ACTIVATE: "*Excel*" \ перейти к экселю
+	SEND-KEYS: "^{F4}" \ закрыть файл
+	PAUSE: 2500
+LOOP
+	WIN-ACTIVATE: "Total*" \ это для того чтобы переходить с экселя
+)#
+
+
+#( inserttime
+NoLog
+WatchHotKey: "@W"
+Action:
+PAUSE: 800
+SEND-KEYS: "^(+0)"
+PAUSE: 200
+SEND-KEYS: "%hh%:%mm%"
+)#
+
+#( insertdate
+NoLog
+WatchHotKey: "@{0x51}"
+Action:
+PAUSE: 500
+SEND-KEYS: "%DD%-%MM%-%YYYY%"
+)#
+
+#( birthday_for_baza3
+RunMissed
+Time: 31 7 * * 1-5 *
+Action:
+StartIn: "G:\Dropbox\soft\util" 
+ShowNormal   NormalPriority
+START-APP: G:\Dropbox\soft\util\birthdays.bat
+)#
+
+#( remember_5min
+NoLog
+NoActive
+Action:
+5 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 5 минут"
+)#
+
+#( remember_10min
+NoLog
+NoActive
+Action:
+10 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 10 минут"
+)#
+
+#( remember_15min
+NoLog
+NoActive
+Action:
+15 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 15 минут"
+)#
+
+#( remember_20min
+NoLog
+NoActive
+Action:
+20 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 20 минут"
+)#
+
+#( remember_25min
+NoLog
+NoActive
+Action:
+25 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 25 минут"
+)#
+
+#( remember_30min
+NoLog
+NoActive
+Action:
+30 0 DO
+	I 1 + \ к счетчику добавляем один и оставляем на стеке
+	THINTW: "Идёт %0 esPICK% минута" 60
+LOOP
+REMINDER: "Прошло 30 минут"
+)#
