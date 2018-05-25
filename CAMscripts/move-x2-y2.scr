@@ -1,5 +1,4 @@
-' Advanced CAM Technologies Macro Revision: 1.0
-' CAM350 V7.0 (Build 187) Date:  Mon Aug 31 16:13:03 2015
+' —местить всЄ в точку 2,2
 util_camed@
 layer_alloff@ 1
 edit_move@

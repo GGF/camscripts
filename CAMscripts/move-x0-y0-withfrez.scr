@@ -1,0 +1,24 @@
+' Сместить всё в точку 0,0 без учета фрезеровки - удобно для скрипта одевания рамки на двусторонние
+!include "layersset.scr"
+
+MessageBox "Move it all to ZERO? Mua-ha-ha!","Go to Hell",YESNO,MacroEnd%
+if MacroEnd% <> 6 then end
+
+
+
+util_camed@
+' ноль определим по контуру'
+setlayer@ brd
+layer_alloff@ 1
+x# = Visminx!
+y# = Visminy!
+layer_alloff@ 0
+edit_move@
+setsnap@ 0
+edit_selectall2@ 
+axy@ x#,y#
+setsnap@ 0
+axy@ 0,0
+setsnap@ 1
+back@
+view_redraw@

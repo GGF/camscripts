@@ -78,7 +78,7 @@ for %%i in (*pos*AGFA.gbx) do set /a n+=1 & ren %%i %nname%%u%%%~ni.gbx & copy /
 for %%i in (*neg*AGFA.gbx) do set /a n+=1 & ren %%i %nname%%u%%%~ni.gbx & copy /Y %nname%%u%%%~ni.gbx "z:\на рисование\AGFA8000neg"
 if %n% == 0 goto end
 set urlq="http://baza4/?level=update&update[act]=phototemplates&user=%username%&filenames=%n%+%gdir%"
-echo @tear.exe %urlq% >dbq.bat
+echo @d:\bat\tear.exe %urlq% >dbq.bat
 call .\dbq.bat
 :end
 del /q .\dbq.bat

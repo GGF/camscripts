@@ -1,5 +1,5 @@
 if layersset <> 1 then 
-	dim int(30)
+	dim int(50)
 	' сверловок - фрезеровок'
 	dim dr(10)
 	dim mi(10)
@@ -35,6 +35,7 @@ if layersset <> 1 then
 		if Layerblank! then 
 			edit_removelyr@ lay
 		end if
+		int(lay)=-1
 	next
 	layer_renumber@
 	

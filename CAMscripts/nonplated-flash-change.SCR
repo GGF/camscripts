@@ -1,0 +1,99 @@
+util_camed@
+setgridsnap@ 0
+setsnap@ 0
+
+MessageBox "It may change all your LIFE! Are you sure?","Go to Hell",YESNO,MacroEnd%
+if MacroEnd% <> 6 then end
+
+!INCLUDE "getpathandname.scr"
+!include "layersset.scr"
+
+if mis>0 then
+	' выгнать'
+	'4. Настройка вывода mill mashine
+	setup_fmtype@ 2,7
+	'mill машина - SIEB & MEYER 3000
+	setup_fmtunit@ 2,1
+	'mill mashine - metric
+	setup_fmtdigits@ 2,3,3
+	'mill mashine - 3.3 digit
+	setup_fmtmode@ 2,0
+	'mill mashine - absolute
+	setup_fmtzero@ 2,2
+	'mill mashine - zero none
+'	head$= path$ + "headerf.hdr"
+'	mill_sethdrfile@ head$
+	'header file
+	nc_exp_drill_Exc_toolingoffset@ 0
+	nc_exp_mill_Exc_decimals@ 1
+	nc_exp_mill_IncludeDrills@ 1
+	Expmill_generate_Header@ 1
+	nc_exp_milltool_infeed@ 1
+	nc_exp_milltool_retract@ 1
+	nc_exp_milltool_RPMs@ 1
+
+	'5. Собственно вывод фрезеровки
+	millPCB_out@ mill,path$+"nonplate.coords"
+end if
+
+
+' включить только сигнальные слои'
+
+
+if comp<>-1 then
+	setlayer@ comp
+else
+	if solder <>-1 then
+		setlayer@ solder
+	else
+		' чо за хрень? Где все?'
+		goto mkrfrz_endscript
+	end if
+end if
+
+layer_alloff@ 1
+
+if mpp <> -1 then
+	for i=1 to mpp
+		setlayer@ int(i)
+	next
+end if
+
+' если до того не включили нижний'
+if solder <>-1 then
+	setlayer@ solder
+end if
+
+open path$+"nonplate.coords" for input as #1
+do
+	line input #1,s$
+	
+	if left$(s$,1) = "X" then
+		' получить обе координаты'
+		posyinstr% = instr(1,s$,"Y")
+		x# = val(mid$(s$,2,posyinstr%-1))
+		y# = val(mid$(s$,posyinstr%+1))
+		' MessageBox	s$+"---"+str$(x#)+"---"+str$(y#)+"---"+mid$(s$,posyinstr%+1)+"---"+str$(instr(1,s$,"Y"))
+		' поменять
+		change_dcode@
+		setsnap@ 1
+		seteditflash@ 1
+		seteditdraw@ 0
+		edit_group@
+		edit_cross@
+		axy@ x#-0.1,y#-0.1
+		axy@ x#+0.1,y#+0.1
+		back@
+		edit_chgdcode@ 19
+	end if
+
+loop until EOF(1) = 1
+'
+close #1
+kill path$+"nonplate.coords"
+
+goto mkrfrz_endscript
+
+
+mkrfrz_endscript:
+end
