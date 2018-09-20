@@ -149,13 +149,13 @@ if tempdrlname$ <> "" then
 	name$=tempdrlname$
 end if
 open path$+"copper.rpt" for output as #1
-print #1,name$
-print #1,"COMP - ",sc#
-print #1,"SOLDER - ",ss#
-print #1,X#
-print #1,Y#
-print #1,board$
-print #1,customer$
+print #1, name$
+print #1, "COMP - ",sc#
+print #1, "SOLDER - ",ss#
+print #1, USING "###.###"; X#
+print #1, USING "###.###"; Y#
+print #1, board$
+print #1, customer$
 print #1, USING "###.###"; zsizex#
 print #1, USING "###.###"; zsizey# 
 print #1, mpp
@@ -165,6 +165,9 @@ print #1, smalldrill
 print #1, bigdrill
 print #1, sostav$
 print #1, drillsostav$
+print #1, USING "###.###"; xpl#
+print #1, USING "###.###"; ypl#
+
 close #1
 
 ' записать файл приложения с площадями'

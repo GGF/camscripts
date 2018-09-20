@@ -1,0 +1,6 @@
+layer_renumber@
+For lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	edit_layer@ lay,3,3,-2,-2
+	if Layerblank! then edit_removelyr@ lay
+next

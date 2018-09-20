@@ -1,7 +1,10 @@
 !include "layersset.scr"
 
-X#=dbmaxx!+10
-Y#=dbmaxy!+10
+XX%=dbmaxx!+10
+X#=XX%
+YY%=dbmaxy!+10
+Y#=YY%
+break
 ' Для координат контрольных отверстий
 dim xc#(100)
 dim yc#(100)
@@ -83,10 +86,11 @@ if drill <> -1 then
 		set_current_toolref@ imindrill
 		nc_add_drill_hit@
 		set_nc_plated_add_drill@ 1
-		axy@ 10.0000,10.0000
-		axy@ 10.0000,15.0000
-		axy@ 10.0000,378.7500
-		axy@ 10.0000,383.7500
+		break
+		axy@ 10.0000,25.0000
+		axy@ 10.0000,30.0000
+		axy@ 10.0000,365.0000
+		axy@ 10.0000,370.0000
 		axy@ 30.0000,383.7500
 		axy@ 35.0000,383.7500
 		axy@ 32.5000,11.2500
@@ -225,4 +229,3 @@ For lay = Nextlay to Highestlayer!
 	end if
 
 next
-4

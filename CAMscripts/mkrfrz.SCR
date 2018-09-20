@@ -677,6 +677,8 @@ if mis>0 then
 			if sz485x585 =1 then
 				' 10-08-2012 Соковнин сказал что большие всегда на плите будут фрезероваться.'
 				head$= path$ + "header4.hdr"
+				' 14-06-2018 выяснилось что когда-то для 4 поменялся заголовок, а фрезеровке то нужно старый, там дописал
+				head$= path$ + "headerf.hdr"
 			else
 				head$= path$ + "headerf.hdr"
 			end if
@@ -919,6 +921,12 @@ if mpp = -1 then
 	Z#=zz%*10
 	if Z#<=0 then Z#=10
 	xprob# = 10
+else
+	if sz485x585 = 1 then
+	' 4-06-2018'
+		Z#=202.5
+		xprob# = 10
+	end if
 end if
 
 print #1, USING "M47, ###*###  ##";X%;Y%;Z#
