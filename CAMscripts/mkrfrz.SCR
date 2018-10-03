@@ -167,6 +167,10 @@ if mpp <> -1 then
 	frr=0
 	vert% = 1
 else
+	' На кондукторах нужно выбирать
+	if (comp% = -1 AND solder% = -1) then
+		tochnovert% = 0
+	end if
 	if tochnovert%<9 then
 		AddForm #1, 0, 0, "Расположение вертикальное?",check,vert%
 	end if
