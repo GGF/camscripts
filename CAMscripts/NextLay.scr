@@ -1,0 +1,6 @@
+if Nextlayer! <> -1 then
+	setlayer@ Nextlayer!
+	layer_alloff@ 1
+	view_redraw@
+end if
+

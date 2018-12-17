@@ -41,7 +41,8 @@ SET "ccd=%ccd:я=ja%"
 
 rem Собираем имя для подстановки вначале из 1 первых букв блока и 6 последних блока
 for /f "delims=\; tokens=4" %%i in ("%ccd%") do set name=%%i
-set nname=%name:~0,1%
+if /i %name:~-6% NEQ %name% set nname=%name:~0,1%
+
 for /f "delims=\; tokens=4" %%i in ("%ccd%") do set name=%%i
 set nname=%nname%%name:~-6%_cam.pcb
 if not exist %nname% ren cam.pcb %nname%

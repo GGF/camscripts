@@ -32,6 +32,68 @@ edit_layer@ mill,4,4,-2,-2
 
 BREAK
 
+' сделаем наборы слоёв'
+' Первый сигнальные по кнопке 2'
+layerset_add@ 2,2,"Signals" ' этот есть всегда
+layerset_setdrill@ 2,-1
+layerset_setlyr@ 2,1,comp
+pos=2
+if mpp>0 then
+	for i=1 to mpp
+		layerset_setlyr@ 2,pos,int(i)
+		pos = pos+1
+	next
+end if
+layerset_setlyr@ 2,pos,solder
+layerset_add@ 3,2,"Masks" ' второй параметр всегда 2 - users layers set  '
+layerset_setdrill@ 3,-1
+layerset_setlyr@ 3,1,mc
+layerset_setlyr@ 3,2,ms
+layerset_add@ 4,2,"Silks"
+layerset_setdrill@ 4,-1
+if rc <> -1 then
+	layerset_setlyr@ 4,1,rc
+	layerset_setlyr@ 4,2,rs
+elseif rs <> -1 then
+	layerset_setlyr@ 4,1,rs
+else
+	layerset_setlyr@ 4,1,rcn
+	layerset_setlyr@ 4,2,rsn
+end if
+layerset_add@ 5,2,"Drils"
+layerset_setdrill@ 5,-1
+layerset_setlyr@ 5,1,drill
+layerset_setlyr@ 5,2,mill
+layerset_add@ 6,2,"Border"
+layerset_setdrill@ 6,-1
+layerset_setlyr@ 6,1,brd
+layerset_add@ 7,2,"Internals"
+layerset_setdrill@ 7,-1
+pos=1
+if mpp>0 then
+	for i=1 to mpp
+		layerset_setlyr@ 7,pos,int(i)
+		pos = pos+1
+	next
+end if
+if mcv <> -1 then
+	layerset_add@ 8,2,"Vias"
+	layerset_setdrill@ 8,-1
+	layerset_setlyr@ 8,1,mcv
+	layerset_setlyr@ 8,2,msv
+else
+	layerset_add@ 8,2,"CS"
+	layerset_setdrill@ 8,-1
+	layerset_setlyr@ 8,1,comp
+	layerset_setlyr@ 8,2,solder
+end if
+layerset_add@ 9,2,"Comp"
+layerset_setdrill@ 9,-1
+layerset_setlyr@ 9,1,comp
+layerset_add@ 10,2,"Solder"
+layerset_setdrill@ 10,-1
+layerset_setlyr@ 10,1,solder
+set_layer_ords@
 
 'reodrer layer
 pos = 0

@@ -1,0 +1,54 @@
+' Advanced CAM Technologies Macro Revision: 1.0
+' CAM350 V7.0 (Build 187) Date:  Fri Nov 02 10:53:54 2018
+util_camed@
+gap# = 0.200
+OpenForm #1,70,3,"Проверка DRC (с) Sch'arapoff 2018", character, okcancel
+AddForm #1, 0, 1, "Зазор :",input,gap#
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
+
+if Canceled% = 1 then
+	exit
+end if
+
+!INCLUDE "getpathandname.scr"
+
+layerset_setThruDrill@ drilllayer!
+util_drc@
+drc_seterrorfile@ path$+"errors.drc"
+drc_Set_Trk2Trk_Test@ 0,1
+drc_Set_Trk2Pad_Test@ 0,1
+drc_Set_Pad2Pad_Test@ 0,1
+drc_Set_Trk2Trk_Val@ 0,gap#
+drc_Set_Trk2Pad_Val@ 0,gap#
+drc_Set_Pad2Pad_Val@ 0,gap#
+drc_Set_Pad2MaskTop_Test@ 0,1
+drc_Set_Pad2MaskBot_Test@ 0,1
+drc_Set_Drill2Pad_Test@ 0,1
+drc_Set_DrillWOPad_Test@ 0,1
+drc_Set_PadWODrill_Test@ 0,1
+drc_Set_Drill2Mask_Drill_Lyr@ 0,drilllayer!,-1,0
+drc_Set_Drill2Mask_Mask_Lyr@ 0,-1,37,0
+drc_Set_Drill2Pad_Drill_Lyr@ 0,drilllayer!,-1,0
+drc_Set_Drill2Pad_Pad_Lyr@ 0,-1,32,0
+drc_Set_SpChk_Drill_Lyr@ 0,drilllayer!,-1,0
+drc_Set_SpChk_Copper_Lyr@ 0,2,-1,0
+
+layer_alloff@ 1
+x# = Visminx!
+y# = Visminy!
+
+view_all@
+view_zoomout@
+axy@ (Vismaxx!-x#)/2,(Vismaxy!-y#)/2
+end@
+axy@ x#-10,y#-10
+axy@ Vismaxx!+10,Vismaxy!+10
+drc_deleteall@ 
+drc_NetlistExtract@ 
+drc_Run_Pass@ 0
+' The following command should be executed only if nets do NOT already exist!
+' explode_allnets@ 
+end@
+find_drc@

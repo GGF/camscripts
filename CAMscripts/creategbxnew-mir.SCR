@@ -49,20 +49,21 @@ DeleteForm #1
 
 if Canceled% = 1 then end
 
+' 7-11-2018 поменял х-у, повернул пленку
 if plenka% = 2 then
 	' пленка KODAK 20 на 24 дюйма (508 на 609.6 мм)
-	fsizex# = 508.0
-	fsizey# = 609.6
-	prefix$ = "_KODAK"
+	fsizey# = 508.0
+	fsizex# = 609.6
+	prefix$ = ""
 else
 '	' пленка AGFA 23 на 29 дюйма (584.2 на 736.6 мм)
 '	fsizex# = 584.2
 '	fsizey# = 736.6
 '	prefix$ = "_AGFA"
 	' пленка AGFA 20 на 26 дюйма (508 на 660.4 мм)
-	fsizex# = 508.0
-	fsizey# = 660.4
-	prefix$ = "_AGFA"
+	fsizey# = 508.0
+	fsizex# = 660.4
+	prefix$ = ""
 end if
 
 'messagebox str$(fsizex#)
@@ -115,8 +116,8 @@ break
 '9. Вывод герберов
 print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
 setup_fmtype@ 0,1
-setup_fmtunit@ 0,0
-setup_fmtdigits@ 0,2,4
+setup_fmtunit@ 0,1 ' 07-11-2018 metric
+setup_fmtdigits@ 0,5,3 ' 7-11-2018 '
 setup_fmtmode@ 0,0
 setup_fmtzero@ 0,0
 internal = 1;
@@ -155,7 +156,10 @@ end if
 
 n1 = nx1*ny1
 n2 = nx2*ny2
+
 rot = n1<n2
+' messagebox str$(nx1)+" "+str$(nx2)+" "+str$(ny1)+" "+str$(ny2)+" "+str$(rot)
+
 if n1<1 then n1=1
 if n2<1 then n2=1
 
@@ -177,8 +181,8 @@ else
 	ny = ny1
 	num = n1
 end if
+' messagebox str$(num)
 
-'messagebox str$(nx1)+" "+str$(nx2)+" "+str$(ny1)+" "+str$(ny2)+" "+str$(num)
 
 
 'if num<2 then
@@ -431,9 +435,9 @@ for ii=1 to i step num
 		spacing# = spacingtemp#
 	end if
 	gosub panel
-	set_layermirrorstate@ panlay,0 '0-not 1-yes
+	set_layermirrorstate@ panlay,1 '0-not 1-yes
 	layer_setimagepolarity@ panlay,0 'positiv
-	exportgbrfile@ panlay,-1,pathgbx$+"pos_"+str$(lay)+prefix$+".gbx"
+	exportgbrfile@ panlay,-1,pathgbx$+"p"+str$(lay)+prefix$+".gbx"
 ' 18-07-2012 - Перестали рисоать негативы наружных слоев'
 '	if lay=1 and mpp<>-1 then
 '		set_layermirrorstate@ panlay,0 '0-not 1-yes
@@ -452,9 +456,9 @@ if neg <> -1 then
 		next
 		panlay = blanklayer!
 		gosub panel
-		set_layermirrorstate@ panlay,0 '0-not 1-yes
-		layer_setimagepolarity@ panlay,0 'negative исправлено на позитив для нормального рисования
-		exportgbrfile@ panlay,-1,pathgbx$+"neg_"+str$(lay)+prefix$+".gbx"
+		set_layermirrorstate@ panlay,1 '0-not 1-yes
+		layer_setimagepolarity@ panlay,1 'negative исправлено на позитив для нормального рисования '07-11-2018 для нового плоттера снова
+		exportgbrfile@ panlay,-1,pathgbx$+"n"+str$(lay)+prefix$+".gbx"
 		lay = lay+1
 	next
 end if

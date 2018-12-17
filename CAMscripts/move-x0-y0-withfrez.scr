@@ -8,7 +8,11 @@ if MacroEnd% <> 6 then end
 
 util_camed@
 ' ноль определим по контуру'
-setlayer@ brd
+if brd <> -1 then
+	setlayer@ brd
+else
+	setlayer@ mc
+end if
 layer_alloff@ 1
 x# = Visminx!
 y# = Visminy!
