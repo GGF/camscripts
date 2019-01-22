@@ -1,10 +1,16 @@
 ' Сместить всё в точку 0,0 без учета фрезеровки - удобно для скрипта одевания рамки на двусторонние
 !include "layersset.scr"
 
-MessageBox "Move it all to ZERO? Mua-ha-ha!","Go to Hell",YESNO,MacroEnd%
-if MacroEnd% <> 6 then end
+'MessageBox "Move it all to ZERO? Mua-ha-ha!","Go to Hell",YESNO,MacroEnd%
+OpenForm #1,50,2,"Go to Hell! (с) Sch'arapoff 2019", character, okcancel
+AddForm #1, 0, 0, "Move it all to ZERO? Mua-ha-ha!!!!",Print
+AddForm #1, 0, 1, "x:",input,xpl#
+AddForm #1, 25, 1, "y:",input,ypl#
+DisplayForm #1
+Canceled% = formcancel(1)
+DeleteForm #1
 
-
+if Canceled% = 1 then end
 
 util_camed@
 ' ноль определим по контуру'
@@ -22,7 +28,7 @@ setsnap@ 0
 edit_selectall2@ 
 axy@ x#,y#
 setsnap@ 0
-axy@ 0,0
+axy@ xpl#,ypl#
 setsnap@ 1
 back@
 view_redraw@
