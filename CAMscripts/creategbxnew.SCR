@@ -23,7 +23,7 @@ util_camed@
 
 spacing# = 10
 
-plenka% = 2 ' 1 - AGFA 2-KODAK
+plenka% = 1 ' 1 - AGFA 2-KODAK
 
 layer_alloff@ 0
 view_close@
@@ -39,8 +39,11 @@ end if
 sizex=(vismaxx_tshape!-visminx_tshape!)
 sizey=(vismaxy_tshape!-visminy_tshape!)
 
+closefile% = 1
+
 OpenForm #1,45,5,"вывод герберов на всю пленку (с) Sch'arapoff 2011", character, okcancel
 AddForm #1, 0, 0, "Этот Макрос вывод герберы на всю пленку!",Print
+AddForm #1, 33, 1, "Закрыть?",check,closefile%
 AddForm #1, 0, 1, "Пленка",choice,plenka%,"AGFA 20x26", "KODAK 20x24"
 AddForm #1, 0, 4, "Промежуток",input,spacing#
 DisplayForm #1
@@ -59,9 +62,12 @@ else
 '	fsizex# = 584.2
 '	fsizey# = 736.6
 '	prefix$ = "_AGFA"
-	' пленка AGFA 20 на 26 дюйма (508 на 660.4 мм)
+'	' пленка AGFA 20 на 26 дюйма (508 на 660.4 мм)
+'	fsizex# = 508.0
+'	fsizey# = 660.4
+	' пленка AGFA 20 на 24 дюйма (508 на 609.6 мм)
 	fsizex# = 508.0
-	fsizey# = 660.4
+	fsizey# = 609.6
 	prefix$ = "_AGFA"
 end if
 
@@ -462,19 +468,21 @@ end if
 close_msg
 ' закончить, дальше идут подпрограммы '
 ' закрыть текущий без сохранения'
-if Version! > 7 then 
-	setquit@ 
-else 
-	open path$+"closecam.bat" for output as #1
-		print #1,"chcp 1251"
-		print #1,"for /f "+chr$(34)+"usebackq tokens=2"+chr$(34)+" %%a in (`tasklist ^| find "+chr$(34)+"camnt95"+chr$(34)+"`) do ("
-		print #1,"tasklist /v /fi "+chr$(34)+"PID eq %%a"+chr$(34)+" /fo list | find "+chr$(34)+"pcb"+chr$(34)+" | find "+chr$(34)+"\"+shortfilename$+chr$(34)+" /c >nul && taskkill /PID %%a /F"
-		print #1,")"
-		print #1,"erase /f /q "+chr$(34)+path$+"closecam.bat"+chr$(34)
-	close #1
+if closefile% then 
+	if Version! > 7 then 
+		setquit@ 
+	else 
+		open path$+"closecam.bat" for output as #1
+			print #1,"chcp 1251"
+			print #1,"for /f "+chr$(34)+"usebackq tokens=2"+chr$(34)+" %%a in (`tasklist ^| find "+chr$(34)+"camnt95"+chr$(34)+"`) do ("
+			print #1,"tasklist /v /fi "+chr$(34)+"PID eq %%a"+chr$(34)+" /fo list | find "+chr$(34)+"pcb"+chr$(34)+" | find "+chr$(34)+"\"+shortfilename$+chr$(34)+" /c >nul && taskkill /PID %%a /F"
+			print #1,")"
+			print #1,"erase /f /q "+chr$(34)+path$+"closecam.bat"+chr$(34)
+		close #1
 
-	s1$ = chr$(34)+path$+"closecam.bat"+chr$(34)
-	WinExec s1$,MinimizedNoFocus
+		s1$ = chr$(34)+path$+"closecam.bat"+chr$(34)
+		WinExec s1$,MinimizedNoFocus
+	end if
 end if
 end
 
