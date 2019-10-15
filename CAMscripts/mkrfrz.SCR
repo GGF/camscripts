@@ -159,6 +159,11 @@ if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
 	if MacroEnd% = 2 then end
 end if
 
+if scalex#>1.001 or scalex# < 0.998 or scaley#>1.001 or scaley#<0.998 then
+	messagebox "Нафиг такую сверловку, не буду сжимать, вне зависимости от выбора!!!",OKCANCEL,MacroEnd%
+	end
+end if
+
 frr = 0
 closefile% = 1
 

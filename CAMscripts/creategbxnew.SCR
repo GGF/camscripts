@@ -23,7 +23,7 @@ util_camed@
 
 spacing# = 10
 
-plenka% = 1 ' 1 - AGFA 2-KODAK
+plenka% = 2 ' 1 - AGFA 2-KODAK
 
 layer_alloff@ 0
 view_close@
