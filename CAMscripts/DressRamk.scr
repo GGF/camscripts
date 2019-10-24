@@ -142,7 +142,8 @@ elseif mrr%=1 then
 else
 	X#=mX#+techfield#*2.0
 	Y#=mY#+techfield#+bigtechfield#
-	if (X#>300 OR Y#>300) AND ( rcn <> -1 OR rsn <> -1) then
+	' коругление размеров рамки для принтара было 300 мм, но теперь принтара нет и я поставил 500 чтоб не мешало.
+	if (X#>500 OR Y#>500) AND ( rcn <> -1 OR rsn <> -1) then
 		markreper = 1
 		X% = X#
 		dx = X% mod 10
@@ -163,6 +164,8 @@ else
 	else 
 		markreper=-1
 	end if
+	' 21-10-2019 теперь опять есть принтар и я ставлю 200 просто markreper, для маски чтоб прицеливать маркировку
+	markreper = 1
 end if
 
 ' проверка на влезаемость в рамку, актуально только для рамок с заданным размером'
