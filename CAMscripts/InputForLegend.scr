@@ -16,10 +16,10 @@ textxscale@ 100
 textvertical@ 0
 textfont@ "SIMPLE.EFN"
 dim int(16)
-'Получение пути файла
+'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 !include "getpathandname.scr"
 
-'ввод пик файлов
+'пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 setup_fmtype@ 0,1
 rc = blanklayer!
 edit_layer@ rc,15,15,7,0,"rc.gbx"
@@ -90,6 +90,7 @@ back@
 
 
 'select reper D-code
+setsnap@ 1
 Setdcode@ 233
 
 

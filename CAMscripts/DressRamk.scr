@@ -82,6 +82,8 @@ YY% = 1
 ger%=0
 mins%=1
 
+aliquottwenty% = 0 ' катность размеров рамки 20
+
 25
 OpenForm #1,70,9,"Рамка на ДПП (с) Sch'arapoff 2005", character, okcancel
 AddForm #1, 0, 0, "Этот Макрос Делает рамку для ДПП! Поставь плату в точку (0,0)!!!",Print
@@ -90,9 +92,9 @@ AddForm #1, 0, 2, "Вычислять wide'n'gaps? (Долго для сложных)",check,mins%
 
 'AddForm #1, 0, 3, "Gerber-ы выводить?",check,ger%
 'AddForm #1, 25, 3, "Minimum?",check,mr%
-'AddForm #1, 45, 3, "Ориентация?",check,orient%
 AddForm #1, 0, 3, "Minimum?",check,mr%
-AddForm #1, 30, 3, "230х305?",check,mrr%
+AddForm #1, 25, 3, "230х305?",check,mrr%
+AddForm #1, 50, 3, "Кратно 20?",check,aliquottwenty%
 
 AddForm #1, 0, 4, "Габарит",print
 AddForm #1, 10, 4, "x:",input,xpl#
@@ -135,34 +137,34 @@ end if
 
 if mr%=1 then
 	X# = 180.0
-	Y# = 170.0
+'	Y# = 170.0
+	Y# = 160.0 ' теперь делаем кратными 20 для маркировки
 elseif mrr%=1 then
 	X# = 305.0
 	Y# = 230.0
 else
 	X#=mX#+techfield#*2.0
 	Y#=mY#+techfield#+bigtechfield#
-	' коругление размеров рамки для принтара было 300 мм, но теперь принтара нет и я поставил 500 чтоб не мешало.
-	if (X#>500 OR Y#>500) AND ( rcn <> -1 OR rsn <> -1) then
-		markreper = 1
+	' округление размеров рамки для принтара было 300 мм, но теперь принтара нет и я поставил 500 чтоб не мешало.
+'	if (X#>500 OR Y#>500) AND ( rcn <> -1 OR rsn <> -1) then
+' 28-10-2019 делаем кратное 20
+	if aliquottwenty% = 1  then
 		X% = X#
-		dx = X% mod 10
+		dx = X% mod 20
 		if( dx = 0 ) then
-			dx% = X%/10
+			dx% = X%/20
 		else 
-			dx% = X%/10+1
+			dx% = X%/20+1
 		end if
-		X#=dx%*10.0
+		X#=dx%*20.0
 		Y% = Y#
-		dx = Y% mod 10
+		dx = Y% mod 20
 		if( dx = 0 ) then
-			dx% = Y%/10
+			dx% = Y%/20
 		else
-			dx% = Y%/10+1
+			dx% = Y%/20+1
 		end if
-		Y#=dx%*10.0
-	else 
-		markreper=-1
+		Y#=dx%*20.0
 	end if
 	' 21-10-2019 теперь опять есть принтар и я ставлю 200 просто markreper, для маски чтоб прицеливать маркировку
 	markreper = 1
@@ -786,20 +788,21 @@ axy@ X#-(techfield#-5),Y#-bigtechfield#+5+5
 axy@ X#-(techfield#-5),techfield#
 back@
 ' add printar drill'
-if markreper=1 then 
-	nc_add_tool@ 1,3
-	nc_set_tool_id@ 1,3,3
-	nc_set_tool_type@ 1,3,3
-	nc_set_tool_size@ 1,3,3.0000
-	nc_set_tool_infeed@ 1,3,26.0*10/6
-	nc_set_tool_outfeed@ 1,3,45.0*10/6
-	nc_set_tool_rpms@ 1,3,28.0*1000
-	set_current_toolref@ 3
-	nc_add_drill_hit@
-	axy@ (X#-230.0)/2.0,9 ' потому как именно в 9 мм и с расстоянием 230 в середину  '
-	axy@ (X#-230.0)/2.0+230.0,9
-	back@
-end if
+' Printar больше нет 28-10-2019
+' if markreper=1 then 
+	' nc_add_tool@ 1,3
+	' nc_set_tool_id@ 1,3,3
+	' nc_set_tool_type@ 1,3,3
+	' nc_set_tool_size@ 1,3,3.0000
+	' nc_set_tool_infeed@ 1,3,26.0*10/6
+	' nc_set_tool_outfeed@ 1,3,45.0*10/6
+	' nc_set_tool_rpms@ 1,3,28.0*1000
+	' set_current_toolref@ 3
+	' nc_add_drill_hit@
+	' axy@ (X#-230.0)/2.0,9 ' потому как именно в 9 мм и с расстоянием 230 в середину  '
+	' axy@ (X#-230.0)/2.0+230.0,9
+	' back@
+' end if
 
 'name drill
 view_close@

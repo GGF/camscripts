@@ -106,6 +106,9 @@ if "%pname%" == "" (
       copy gerber\pos_ms.gbx %name%_bot\REF.gbr
       copy gerber\pos_rc.gbx %name%_top\%name%_top.gbr
       copy gerber\pos_rs.gbx %name%_bot\%name%_bot.gbr
+      rem Если какой-то маркировки нет - удалим лишний каталог
+      if not exist %name%_bot\%name%_bot.gbr rmdir /s /q %name%_bot
+      if not exist %name%_top\%name%_top.gbr rmdir /s /q %name%_top
       rmdir /s /q gerber
     )
   )
