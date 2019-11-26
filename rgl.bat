@@ -41,14 +41,19 @@ SET "ccd=%ccd:ю=ju%"
 SET "ccd=%ccd:я=ja%" 
 
 rem разберем путь
-for /f "delims=\; tokens=1,2,4,5,6" %%i in ("%ccd%") do (
+for /f "delims=\; tokens=1,2,3,4,5,6" %%i in ("%ccd%") do (
   set disk=%%i
-  set customer=%%j
-  set nname=%%k
-  set pname=%%l
-  set legend=%%m
+  set customers=%%j
+  set customer=%%k
+  rem Децимальный номер
+  set nname=%%l
+  rem Папка дольше децимального (варианты Legend, Printar, gerber, atg, Запуски, Мастерплаты)
+  set pname=%%m
+  rem Еще дальше
+  set ppname=%%n
 )
 
+rem создадим коротко имя для проекта
 echo %nname%
 set name=%nname:~0,1%
 set name=%name%%nname:~-6%
@@ -58,7 +63,7 @@ rem Проверка уровня
 rem диск не тот - закончили
 if /i not "%disk%" == "z:" goto end
 rem не в заказчиках - тоже не работаем
-if /i not "%customer%" == "zakazchiki" goto end
+if /i not "%customers%" == "zakazchiki" goto end
 rem прямо в заказчиках - с какой платой работать то?
 if "%nname%" == "" goto end
 rem где мы?
@@ -67,7 +72,7 @@ if "%pname%" == "" (
   rem выгнать gerber
   rem %1 -Mx:\tool\camscripts\creategbx-and-close.scr
   if not exist Legend (
-    echo "Создали и перешли в папку с легендой"
+    echo "Создали папку с легендой"
     mkdir Legend
   )
   echo "перешли в папку с легендой"
@@ -84,10 +89,10 @@ if "%pname%" == "" (
 ) else (
   echo "Мы в легенде или глубже, если не в легенде, то уходим"
   if /i not "%pname%" == "legend" goto end
-  if not "%legend%" == "" (
-    echo "Мы в папке готовых"
+  if not "%ppname%" == "" (
+    echo "Мы в папке готовых name_top или name_bot"
     rem имя как имя проекта
-    echo %pname%
+    echo %ppname%
 
     rem В маске метки
     rename pos_m*.* REF.gbr
@@ -96,7 +101,7 @@ if "%pname%" == "" (
     rename brd*.* LAYER.gbr
 
     rem  В маркировке - маркировка
-    rename pos_r*.* %pname%.gbr
+    rename pos_r*.* %ppname%.gbr
   ) else (
     echo "Скорее всего мы в папке легенды, если уже готовы герберы, то скопировать и переименовать "
     if exist "gerber" (
@@ -111,6 +116,9 @@ if "%pname%" == "" (
       if not exist %name%_top\%name%_top.gbr rmdir /s /q %name%_top
       rmdir /s /q gerber
     )
+    rem И скопировать на диск М
+    xcopy %name%_bot m:\Legend\%customer%\%nname%\%name%_bot\
+    xcopy %name%_top m:\Legend\%customer%\%nname%\%name%_top\
   )
 )
 

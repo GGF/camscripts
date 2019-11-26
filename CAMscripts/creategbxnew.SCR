@@ -242,29 +242,36 @@ for lay = Nextlay to Highestlayer!
 		i=i+1
 		rs = lay
 		' 08-11-2019 дальше выключил вывод маркировок, потому что быстро рисует легенда.
-	' elseif layertype! = 16 then 'refdes top
-	' 	if layername! = "mcv" then
-	' 		nlaytype(j) = 1
-	' 		mcv=lay
-	' 	else
+	 elseif layertype! = 16 then 'refdes top
+	 	if layername! = "mcv" then
+	 		nlaytype(j) = 1
+	 		mcv=lay
+	 	neg = 1
+	 	nlay(j)=lay
+	 	j=j+1
+	 	else
 	' 		nlaytype(j) = 4
 	' 		rcn=lay
-	' 	end if
-	' 	neg = 1
-	' 	nlay(j)=lay
-	' 	j=j+1
-	' elseif layertype! = 17 then 'reefdes BOT
-	' 	if layername! = "msv" then
-	' 		msv=lay
-	' 		nlaytype(j) = 1 ' вторые по приоритету и всегда парные, о! будут первыми, так как внутренние могут быть непарными '
-	' 	else
+	'			neg = 1
+	'			nlay(j)=lay
+	'			j=j+1
+	 	end if
+	elseif layertype! = 17 then 'reefdes BOT
+	 	if layername! = "msv" then
+	 		msv=lay
+	 		nlaytype(j) = 1 ' вторые по приоритету и всегда парные, о! будут первыми, так как внутренние могут быть непарными '
+			neg = 1
+			nlay(j)=lay
+			j=j+1
+		 	gosub mirror
+ 	else
 	' 		rsn=lay
 	' 		nlaytype(j) = 4
-	' 	end if
-	' 	neg = 1
-	' 	nlay(j)=lay
-	' 	j=j+1
-	' 	gosub mirror
+	'			neg = 1
+	'			nlay(j)=lay
+	'			j=j+1
+	'		 	gosub mirror
+	 	end if
 	elseif layertype! = 19 then 'PASTE TOP
 		play(i)=lay
 		playtype(i) = 5

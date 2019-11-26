@@ -44,9 +44,33 @@ setsnap@ 1
 brd = blanklayer!
 edit_layer@ brd,6,6,6,0,"brd.brd"
 
+' убрать остальные выгнанные файлы - меньше мусора богу аккуратности
+kill path$+"..\gerber\brd.brd"
+kill path$+"..\gerber\neg_i1.gbx"
+kill path$+"..\gerber\neg_i2.gbx"
+kill path$+"..\gerber\neg_i3.gbx"
+kill path$+"..\gerber\neg_i4.gbx"
+kill path$+"..\gerber\neg_i5.gbx"
+kill path$+"..\gerber\neg_i6.gbx"
+kill path$+"..\gerber\neg_i7.gbx"
+kill path$+"..\gerber\neg_i8.gbx"
+kill path$+"..\gerber\neg_i9.gbx"
+kill path$+"..\gerber\neg_i10.gbx"
+kill path$+"..\gerber\neg_i11.gbx"
+kill path$+"..\gerber\neg_i12.gbx"
+kill path$+"..\gerber\neg_i13.gbx"
+kill path$+"..\gerber\neg_i14.gbx"
+kill path$+"..\gerber\neg_i15.gbx"
+kill path$+"..\gerber\pos_rc.gbx"
+kill path$+"..\gerber\pos_rs.gbx"
+kill path$+"..\gerber\pos_mc.gbx"
+kill path$+"..\gerber\pos_ms.gbx"
+
+
+
 update_dcodebar@ 
 layer_alloff@ 0
-view_all@
+'view_all@
 
 'draw border
 break
@@ -80,12 +104,13 @@ setsnap@ 1
 setlayer@ s
 layer_alloff@ 1
 setlayer@ rs
-view_all@
+'view_all@
 edit_mirv@
-view_all@
+'view_all@
 setsnap@ 0
 edit_selectall2@ 
-axy@ vismaxx!/2.0,vismaxy!/2.0
+'axy@ vismaxx!/2.0,vismaxy!/2.0
+axy@ Dbmaxx!/2.0,Dbmaxy!/2.0
 back@
 
 
@@ -94,9 +119,13 @@ setsnap@ 1
 Setdcode@ 233
 
 
-'show all 
-layer_alloff@ 0
+' вызвать расцветку слоёв
+macro_play "colorandreorder.scr"
+
+'show mark
+layerset_view@ 4
 view_all@
+view_redraw@
 
 550
 end
