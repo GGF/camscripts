@@ -6,8 +6,8 @@ dim d#(200)'diametr
 dim if#(200)'in feed
 dim of#(200)'out feed
 dim r#(200)'rpms
-dim numbers(200) ' использованые номера сверел
-dim sizes#(200) ' использованые номера сверел
+dim numbers(200) ' РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹Рµ РЅРѕРјРµСЂР° СЃРІРµСЂРµР»
+dim sizes#(200) ' РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹Рµ РЅРѕРјРµСЂР° СЃРІРµСЂРµР»
 dim frezy(200)
 dim drr(10)
 dim mir(10)
@@ -17,7 +17,7 @@ tablepath$="x:\tool\camscripts"
 
 X% = dbmaxx!
 Y% = dbmaxy!
-' 16-01-2015 когда добавились в двусторонних 5мм  с каждой стороны нужно правильно считать размер заготовки'
+' 16-01-2015 РєРѕРіРґР° РґРѕР±Р°РІРёР»РёСЃСЊ РІ РґРІСѓСЃС‚РѕСЂРѕРЅРЅРёС… 5РјРј  СЃ РєР°Р¶РґРѕР№ СЃС‚РѕСЂРѕРЅС‹ РЅСѓР¶РЅРѕ РїСЂР°РІРёР»СЊРЅРѕ СЃС‡РёС‚Р°С‚СЊ СЂР°Р·РјРµСЂ Р·Р°РіРѕС‚РѕРІРєРё'
 if dbminx!=-5 then
 	X%=X%-5
 	Y%=Y%-5
@@ -29,11 +29,11 @@ dopdrill = -1
 scalex# = 1
 scaley# = 1
 
-xprob# = 10 ' все! это пробивка для фрезеровки
+xprob# = 10 ' РІСЃРµ! СЌС‚Рѕ РїСЂРѕР±РёРІРєР° РґР»СЏ С„СЂРµР·РµСЂРѕРІРєРё
 yprob# = (Y%-180)/2.0
-mk2exist = 1 ' есть двухшпиндельная сверловка
-mk4exist = 1 ' есть четырехшпиндельная сверловка
-ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки// 07-04-2017 удрвл вывод в надевании
+mk2exist = 0 ' 18-02-2020 Р±РѕР»СЊС€Рµ РЅРµС‚ ' РµСЃС‚СЊ РґРІСѓС…С€РїРёРЅРґРµР»СЊРЅР°СЏ СЃРІРµСЂР»РѕРІРєР°
+mk4exist = 0 ' 18-02-2020 Р±РѕР»СЊС€Рµ РЅРµС‚ ' РµСЃС‚СЊ С‡РµС‚С‹СЂРµС…С€РїРёРЅРґРµР»СЊРЅР°СЏ СЃРІРµСЂР»РѕРІРєР°
+ex2exist = 1 ' РµСЃС‚СЊ СЃРІРµСЂР»РѕРІРєР° РґР»СЏ СЌРєСЃРµР»РѕРЅР° СЃРїРµС†РёР°Р»СЊРЅРѕ РЅРёР¶Рµ РїРµСЂРµС…РѕРґР° РјРёРјРѕ С„РѕСЂРјС‹ С‡С‚РѕР±С‹ РїСЂР°РІРёР»СЊРЅРѕ СЂР°Р±РѕС‚Р°Р»Рѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ s32 РІ РЅР°РґРµРІР°РЅРёРё СЂР°РјРєРё// 07-04-2017 СѓРґСЂРІР» РІС‹РІРѕРґ РІ РЅР°РґРµРІР°РЅРёРё
 noform% = 1
 
 if drillname$ <> "" then goto noform
@@ -43,7 +43,7 @@ noform% = -1
 !INCLUDE "getpathandname.scr"
 !include "layersset.scr"
 
-' проверка на поворот, если в 0,0 есть флешь d10 значит точно не надо поворачивать, и если в 0,dbmaxx! есть то тоже точно не надо
+' РїСЂРѕРІРµСЂРєР° РЅР° РїРѕРІРѕСЂРѕС‚, РµСЃР»Рё РІ 0,0 РµСЃС‚СЊ С„Р»РµС€СЊ d10 Р·РЅР°С‡РёС‚ С‚РѕС‡РЅРѕ РЅРµ РЅР°РґРѕ РїРѕРІРѕСЂР°С‡РёРІР°С‚СЊ, Рё РµСЃР»Рё РІ 0,dbmaxx! РµСЃС‚СЊ С‚Рѕ С‚РѕР¶Рµ С‚РѕС‡РЅРѕ РЅРµ РЅР°РґРѕ
 if comp<>-1 then
 	setlayer@ comp
 	layer_alloff@ 1
@@ -62,15 +62,15 @@ if comp<>-1 then
 			tochnovert=10;
 			vert%=1
 		else
-			tochnovert%=abs(X%-Y%)*100/X% ' процентное отношение сторон'
+			tochnovert%=abs(X%-Y%)*100/X% ' РїСЂРѕС†РµРЅС‚РЅРѕРµ РѕС‚РЅРѕС€РµРЅРёРµ СЃС‚РѕСЂРѕРЅ'
 			
-			' не известно точно ли меньше 10 процентов будем спрашивать'
+			' РЅРµ РёР·РІРµСЃС‚РЅРѕ С‚РѕС‡РЅРѕ Р»Рё РјРµРЅСЊС€Рµ 10 РїСЂРѕС†РµРЅС‚РѕРІ Р±СѓРґРµРј СЃРїСЂР°С€РёРІР°С‚СЊ'
 			
 		end if
 	end if
 end if
 
-' определение имени
+' РѕРїСЂРµРґРµР»РµРЅРёРµ РёРјРµРЅРё
 if fileexists(path$+"copper.rpt") then 
 	open path$+"copper.rpt" for input as #1
 		input #1,drillname$
@@ -84,7 +84,7 @@ else
 	drillname$ = name$
 end if
 
-' вычисление кэфициэнтов
+' РІС‹С‡РёСЃР»РµРЅРёРµ РєСЌС„РёС†РёСЌРЅС‚РѕРІ
 if 1=1 then
 	if mpp = -1 then
 		s32name$ = "dpp.s32"
@@ -136,9 +136,9 @@ if 1=1 then
 		scaley# = (ymin#+ymax#)/2.0/yscal#(1)
 	end if
 end if
-' Конец вычисления коэффициэнтов'
+' РљРѕРЅРµС† РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЌС„С„РёС†РёСЌРЅС‚РѕРІ'
 
-' самая новая пробивка
+' СЃР°РјР°СЏ РЅРѕРІР°СЏ РїСЂРѕР±РёРІРєР°
 if mpp <> -1 then
 	if X% = 280 and Y% = 395 then
 		sz280x395 = 1
@@ -146,7 +146,7 @@ if mpp <> -1 then
 
 	if X% = 485 and Y% = 585 then
 		sz485x585 = 1
-		mk2exist = 0 ' нет двухшпиндельной сверловки
+		mk2exist = 0 ' РЅРµС‚ РґРІСѓС…С€РїРёРЅРґРµР»СЊРЅРѕР№ СЃРІРµСЂР»РѕРІРєРё
 	end if
 
 	if X% = 230 and Y% = 395 then
@@ -155,12 +155,12 @@ if mpp <> -1 then
 end if
 
 if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
-	messagebox "Странные коэффициэнты сжатия X="+str$(scalex#)+", Y="+str$(scaley#),"Уверены?",OKCANCEL,MacroEnd%
+	messagebox "Couriosity scale koeff X="+str$(scalex#)+", Y="+str$(scaley#),"Are you shure?",OKCANCEL,MacroEnd%
 	if MacroEnd% = 2 then end
 end if
 
 if scalex#>1.001 or scalex# < 0.998 or scaley#>1.001 or scaley#<0.998 then
-	messagebox "Нафиг такую сверловку, не буду сжимать, вне зависимости от выбора!!!","Сброшу в единицу?",OKCANCEL,MacroEnd%
+	messagebox "I shell not scaling!!!","Must be only one!",OKCANCEL,MacroEnd%
 	if MacroEnd% = 2 then end
 	scalex#=1
 	scaley#=1
@@ -170,38 +170,38 @@ frr = 0
 closefile% = 1
 
 DPP:
-OpenForm #1,70,7,"Сверловка и фрезеровка (с) Sch'arapoff", character, okcancel
+OpenForm #1,70,7,"Mill and drill (c) Sch'arapoff", character, okcancel
 if mpp <> -1 then
 	frr=0
 	vert% = 1
 else
-	' На кондукторах нужно выбирать
+	' РќР° РєРѕРЅРґСѓРєС‚РѕСЂР°С… РЅСѓР¶РЅРѕ РІС‹Р±РёСЂР°С‚СЊ
 	if (comp% = -1 AND solder% = -1) then
 		tochnovert% = 0
 	end if
 	if tochnovert%<9 then
-		AddForm #1, 0, 0, "Вертикально?",check,vert%
+		AddForm #1, 0, 0, "Vertical?",check,vert%
 	end if
 end if
 
-AddForm #1, 57, 0, "Закрыть?",check,closefile%
+AddForm #1, 50, 0, "Close after end?",check,closefile%
 
 
-AddForm #1, 0, 1, "Сверловки:",print
+AddForm #1, 0, 1, "Drills:",print
 for i = 1 to drs
 	shiftx = 13+(i-1)*(55/drs)
 	drr(i) = 1
 	AddForm #1, shiftx, 1, dr$(i),check,drr(i)
 next
-AddForm #1, 0, 2, "Фрезеровки:",print
+AddForm #1, 0, 2, "Mills:",print
 for i = 1 to mis
 	shiftx = 20+(i-1)*20
 	mir(i) = 1
 	AddForm #1, shiftx, 2, mi$(i),check,mir(i)
 next
-AddForm #1, 0, 3, "Имя (для сверловки)",input,drillname$
-AddForm #1,0, 5, "масштаб X", input,scalex#
-AddForm #1,35, 5, "масштаб Y", input,scaley#
+AddForm #1, 0, 3, "Name (for drill)",input,drillname$
+AddForm #1,0, 5, "scale X", input,scalex#
+AddForm #1,35, 5, "scale Y", input,scaley#
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -209,9 +209,9 @@ DeleteForm #1
 if Canceled% = 1 then goto mkrfrz_endscript
 
 noform:
-print_msg "Идет процесс... Ждите!!!"
+print_msg "I am working... wait!!!"
 
-' развернуть если вертикальное
+' СЂР°Р·РІРµСЂРЅСѓС‚СЊ РµСЃР»Рё РІРµСЂС‚РёРєР°Р»СЊРЅРѕРµ
 if vert% <> 1 then
 	'view_all@
 	layer_alloff@ 0
@@ -231,15 +231,15 @@ if vert% <> 1 then
 	X% = temp
 	vert% = 1
 	
-	' поменять сжаттие местами'
+	' РїРѕРјРµРЅСЏС‚СЊ СЃР¶Р°С‚С‚РёРµ РјРµСЃС‚Р°РјРё'
 	temp# = scalex#
 	scalex# = scaley#
 	scaley# = temp#
 end if
-' --- конец развернуть --- '
+' --- РєРѕРЅРµС† СЂР°Р·РІРµСЂРЅСѓС‚СЊ --- '
 
 
-'1. создание файлов заголовка, должны быть до сверления под фрезеровку потому что вычисляется Z
+'1. СЃРѕР·РґР°РЅРёРµ С„Р°Р№Р»РѕРІ Р·Р°РіРѕР»РѕРІРєР°, РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РґРѕ СЃРІРµСЂР»РµРЅРёСЏ РїРѕРґ С„СЂРµР·РµСЂРѕРІРєСѓ РїРѕС‚РѕРјСѓ С‡С‚Рѕ РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ Z
 if 1=1 then
 	if mpp <> -1 then
 		Z# = yprob#
@@ -250,15 +250,15 @@ if 1=1 then
 	gosub createheader 
 	fr=0
 
-	hh = 4; ' 4 шпинделя
+	hh = 4; ' 4 С€РїРёРЅРґРµР»СЏ
 	head$= path$ + "header4.hdr"
 	gosub createheader 
 
 	head$= path$ + "header2.hdr"
-	hh = 2; ' 2 шпинделя
+	hh = 2; ' 2 С€РїРёРЅРґРµР»СЏ
 	gosub createheader 
 end if
-' -- конец файлов заголовка -- '
+' -- РєРѕРЅРµС† С„Р°Р№Р»РѕРІ Р·Р°РіРѕР»РѕРІРєР° -- '
 
 if drs > 0 then
 for drlay = 1 to drs
@@ -275,17 +275,17 @@ for drlay = 1 to drs
 			drillnew = Blanklayer!
 			setlayer@ drill
 			layer_alloff@ 1
-			' сместить
+			' СЃРјРµСЃС‚РёС‚СЊ
 			edit_move@
 			edit_selectall2@
 			axy@ 0,0
 			axy@ -X%/2,-Y%/2
 			back@
-			' сжать
+			' СЃР¶Р°С‚СЊ
 			edit_scale@ drill,drillnew,scalex#*100000000,scaley#*100000000
 			' layer_alloff@ 0
 			drill = drillnew
-			' сместить на место
+			' СЃРјРµСЃС‚РёС‚СЊ РЅР° РјРµСЃС‚Рѕ
 			edit_move@
 			edit_selectall2@
 			axy@ -X%/2,-Y%/2
@@ -295,29 +295,29 @@ for drlay = 1 to drs
 
 		if mk2exist then
 			open path$+drillname$+".mk2.old" for APPEND as #1
-				print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
+				print #1,"Р­С‚РѕС‚ С„Р°Р№Р»С‹ Р±С‹Р»Рё СЃР¶Р°С‚С‹ РЎРђРњ СЃСЂРµРґСЃС‚РІР°РјРё. РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РІС‹РІРµСЃС‚Рё РЅРѕРІС‹Р№!!!"
 				print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
 			close #1
 		end if
 		if mk4exist then
 			open path$+drillname$+".mk4.old" for APPEND  as #1
-				print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
+				print #1,"Р­С‚РѕС‚ С„Р°Р№Р»С‹ Р±С‹Р»Рё СЃР¶Р°С‚С‹ РЎРђРњ СЃСЂРµРґСЃС‚РІР°РјРё. РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РІС‹РІРµСЃС‚Рё РЅРѕРІС‹Р№!!!"
 				print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
 			close #1
 		end if
 		if ex2exist then
 			open path$+drillname$+".ex2.old" for APPEND  as #1
-				print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
+				print #1,"Р­С‚РѕС‚ С„Р°Р№Р»С‹ Р±С‹Р»Рё СЃР¶Р°С‚С‹ РЎРђРњ СЃСЂРµРґСЃС‚РІР°РјРё. РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РІС‹РІРµСЃС‚Рё РЅРѕРІС‹Р№!!!"
 				print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
 			close #1
 		end if
 	end if
 
-	' Добавить сверловку под фрезеровку если двусторонняя
-	' а вот если многослойная добавлять под фрезеровку отвертия, так как они не должны сжиматься'
-	' вот вопрос как убрать со старых файлов?'
+	' Р”РѕР±Р°РІРёС‚СЊ СЃРІРµСЂР»РѕРІРєСѓ РїРѕРґ С„СЂРµР·РµСЂРѕРІРєСѓ РµСЃР»Рё РґРІСѓСЃС‚РѕСЂРѕРЅРЅСЏСЏ
+	' Р° РІРѕС‚ РµСЃР»Рё РјРЅРѕРіРѕСЃР»РѕР№РЅР°СЏ РґРѕР±Р°РІР»СЏС‚СЊ РїРѕРґ С„СЂРµР·РµСЂРѕРІРєСѓ РѕС‚РІРµСЂС‚РёСЏ, С‚Р°Рє РєР°Рє РѕРЅРё РЅРµ РґРѕР»Р¶РЅС‹ СЃР¶РёРјР°С‚СЊСЃСЏ'
+	' РІРѕС‚ РІРѕРїСЂРѕСЃ РєР°Рє СѓР±СЂР°С‚СЊ СЃРѕ СЃС‚Р°СЂС‹С… С„Р°Р№Р»РѕРІ?'
 	
-	' для начала создадим доп слой в любом случае'
+	' РґР»СЏ РЅР°С‡Р°Р»Р° СЃРѕР·РґР°РґРёРј РґРѕРї СЃР»РѕР№ РІ Р»СЋР±РѕРј СЃР»СѓС‡Р°Рµ'
 	if 1=1 then
 		'Highest tool table number
 		HighestNCT%=-1
@@ -350,10 +350,10 @@ for drlay = 1 to drs
 		nc_assign_tool_table_to_layer@ dopdrill,doptable
 		nc_set_layer_rank@ dopdrill,1
 	end if
-	' создали доп слой
+	' СЃРѕР·РґР°Р»Рё РґРѕРї СЃР»РѕР№
 	
-	' это если многослойка
-	' удалить отверстия, ведь они уже сжаты'
+	' СЌС‚Рѕ РµСЃР»Рё РјРЅРѕРіРѕСЃР»РѕР№РєР°
+	' СѓРґР°Р»РёС‚СЊ РѕС‚РІРµСЂСЃС‚РёСЏ, РІРµРґСЊ РѕРЅРё СѓР¶Рµ СЃР¶Р°С‚С‹'
 	if mpp <> -1 then
 		setlayer@ drill
 		layer_alloff@ 1
@@ -366,8 +366,8 @@ for drlay = 1 to drs
 		back@
 	end if
 
-	' минима
-	'07-04-2017 это минима, на ней не сверлятся отверстия для фрезеровки потому что на ней и фрезеруется
+	' РјРёРЅРёРјР°
+	'07-04-2017 СЌС‚Рѕ РјРёРЅРёРјР°, РЅР° РЅРµР№ РЅРµ СЃРІРµСЂР»СЏС‚СЃСЏ РѕС‚РІРµСЂСЃС‚РёСЏ РґР»СЏ С„СЂРµР·РµСЂРѕРІРєРё РїРѕС‚РѕРјСѓ С‡С‚Рѕ РЅР° РЅРµР№ Рё С„СЂРµР·РµСЂСѓРµС‚СЃСЏ
 	if drill <> -1 and ex2exist then
 			tablefile$ = tablepath$+"\tables4.lst"
 			selected_layer = drill
@@ -377,7 +377,7 @@ for drlay = 1 to drs
 			drext$="mx1"
 			''
 			setlayer@ drill
-			' вывод 
+			' РІС‹РІРѕРґ 
 			expdrl_generate_Header@ 1
 			export_XYmodal@ 1,0
 			nc_exp_drill_t00@ 0
@@ -405,11 +405,11 @@ for drlay = 1 to drs
 			nc_exp_milltool_retract@ 0
 			nc_exp_milltool_RPMs@ 0
 			''
-			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
+			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' РґР»СЏ РїР»Р°С‚ РІ РјРµС‚Р°Р»Р»РёР·РёСЂРѕРІР°РЅРЅРѕР№ С„СЂРµР·РµСЂРѕРІРєРѕР№'
 	end if
 
-	' теперь если это excelon или многослойка поставим отверстия в 10 мм от края для фрезеровки'
-	'7-04-2017 теперь добавляем для всех видов сверловки потому, что все сверлятся на двух штифтах'
+	' С‚РµРїРµСЂСЊ РµСЃР»Рё СЌС‚Рѕ excelon РёР»Рё РјРЅРѕРіРѕСЃР»РѕР№РєР° РїРѕСЃС‚Р°РІРёРј РѕС‚РІРµСЂСЃС‚РёСЏ РІ 10 РјРј РѕС‚ РєСЂР°СЏ РґР»СЏ С„СЂРµР·РµСЂРѕРІРєРё'
+	'7-04-2017 С‚РµРїРµСЂСЊ РґРѕР±Р°РІР»СЏРµРј РґР»СЏ РІСЃРµС… РІРёРґРѕРІ СЃРІРµСЂР»РѕРІРєРё РїРѕС‚РѕРјСѓ, С‡С‚Рѕ РІСЃРµ СЃРІРµСЂР»СЏС‚СЃСЏ РЅР° РґРІСѓС… С€С‚РёС„С‚Р°С…'
 	setlayer@ dopdrill
 	layer_alloff@ 1
 	nc_add_drill_hit@
@@ -431,7 +431,7 @@ for drlay = 1 to drs
 	edit_selectall2@ 
 	movetolayer@ drill
 	back@
-	' конец сверления отв под фрезеровку '
+	' РєРѕРЅРµС† СЃРІРµСЂР»РµРЅРёСЏ РѕС‚РІ РїРѕРґ С„СЂРµР·РµСЂРѕРІРєСѓ '
 
 
 	if drill <> -1 and mk4exist then
@@ -439,11 +439,11 @@ for drlay = 1 to drs
 		selected_layer = drill
 		GOSUB corecttool
 
-	' чтобы влючить фрезеровку поставил сюда текст из фрезеровки
+	' С‡С‚РѕР±С‹ РІР»СЋС‡РёС‚СЊ С„СЂРµР·РµСЂРѕРІРєСѓ РїРѕСЃС‚Р°РІРёР» СЃСЋРґР° С‚РµРєСЃС‚ РёР· С„СЂРµР·РµСЂРѕРІРєРё
 
-	'4. Настройка вывода mill mashine
+	'4. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° mill mashine
 		setup_fmtype@ 2,7
-		'mill машина - SIEB & MEYER 3000
+		'mill РјР°С€РёРЅР° - SIEB & MEYER 3000
 		setup_fmtunit@ 2,1
 		'mill mashine - metric
 		setup_fmtdigits@ 2,3,3
@@ -468,7 +468,7 @@ for drlay = 1 to drs
 		nc_exp_milltool_RPMs@ 1
 
 
-		'5. Собственно вывод фрезеровки
+		'5. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ С„СЂРµР·РµСЂРѕРІРєРё
 		millPCB_out@ drill,path$+drillname$+suffix$+"1.mk4"
 	'	mill_out@ mill,path$+name$+"1.frz"
 		Expmill_generate_Header@ 1
@@ -480,10 +480,10 @@ for drlay = 1 to drs
 		selected_layer = drill
 		GOSUB corecttool
 
-		'2. Настройка вывода drill mashine
+		'2. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° drill mashine
 
 		setup_fmtype@ 1,7
-		'дрилл машина - SIEB & MEYER 3000
+		'РґСЂРёР»Р» РјР°С€РёРЅР° - SIEB & MEYER 3000
 		setup_fmtunit@ 1,1
 		'drill mashine - metric
 		setup_fmtdigits@ 1,3,3
@@ -507,13 +507,13 @@ for drlay = 1 to drs
 		nc_exp_milltool_RPMs@ 1
 
 
-		'3. Собственно вывод сверловки
+		'3. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ СЃРІРµСЂР»РѕРІРєРё
 		drillPCB_out@ drill,path$+drillname$+suffix$+"1.mk2"
 	'	drill_out@ drill,path$+name$+"1.mk2"
 		Expdrl_generate_Header@ 1
 	end if
 
-	' экселон
+	' СЌРєСЃРµР»РѕРЅ
 	if drill <> -1 and ex2exist then
 			minimafr = 1
 			GOSUB corecttool
@@ -522,7 +522,7 @@ for drlay = 1 to drs
 		drext$="ex2"
 			''
 			setlayer@ drill
-			' вывод 
+			' РІС‹РІРѕРґ 
 			expdrl_generate_Header@ 1
 			export_XYmodal@ 1,0
 			nc_exp_drill_t00@ 0
@@ -551,15 +551,15 @@ for drlay = 1 to drs
 			nc_exp_milltool_RPMs@ 0
 			''
 			'drillPCB_out@ drill,path$+drillname$+"1.ex2"
-			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' для плат в металлизированной фрезеровкой'
+			mill_out@ drill,path$+drillname$+suffix$+"1."+drext$ ' РґР»СЏ РїР»Р°С‚ РІ РјРµС‚Р°Р»Р»РёР·РёСЂРѕРІР°РЅРЅРѕР№ С„СЂРµР·РµСЂРѕРІРєРѕР№'
 	end if
 
-	'6. дополнение файла сверловки
+	'6. РґРѕРїРѕР»РЅРµРЅРёРµ С„Р°Р№Р»Р° СЃРІРµСЂР»РѕРІРєРё
 	close_msg
-	print_msg "Идет корректировка файлов." + CR! + "Это долгий процесс." + CR! + "Ждите!!!"
+	print_msg "Correct files." + CR! + "It is so long." + CR! + "Wait!!!"
 
 	if drill <> -1 then
-		'Вернем коректировку к оригинальной'
+		'Р’РµСЂРЅРµРј РєРѕСЂРµРєС‚РёСЂРѕРІРєСѓ Рє РѕСЂРёРіРёРЅР°Р»СЊРЅРѕР№'
 		tablefile$ = tablepath$+"\tables4.lst"
 		selected_layer = drill
 		GOSUB corecttool
@@ -631,9 +631,9 @@ for drlay = 1 to drs
 				print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$+suffix$
 			close #2
 			if fileexists(schfile1$) then
-				STY#=70
+				STY#=10 ' 28-01-2020 РІРµР»РµР»Рё РїРѕСЃС‚Р°РІРёС‚СЊ 10, СЃРјРµРЅРёР»РёСЃСЊ СЃС‚Р°РЅРєРё, Р±С‹Р»Рѕ 70
 				if sz280x395 = 1 then
-					STY#=66
+					STY#=10 ' 28-01-2020 РІРµР»РµР»Рё РїРѕСЃС‚Р°РІРёС‚СЊ 10, СЃРјРµРЅРёР»РёСЃСЊ СЃС‚Р°РЅРєРё, Р±С‹Р»Рѕ 66
 				end if
 				exelonfile1$ = schfile1$
 				exelonfile$ = schfile$
@@ -643,8 +643,8 @@ for drlay = 1 to drs
 	end if
 	edit_removelyr@ dopdrill
 	
-	' это если ДПП
-	' удалить дополнительные отверстия'
+	' СЌС‚Рѕ РµСЃР»Рё Р”РџРџ
+	' СѓРґР°Р»РёС‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РѕС‚РІРµСЂСЃС‚РёСЏ'
 	if mpp = -1 then
 		setlayer@ drill
 		layer_alloff@ 1
@@ -665,7 +665,7 @@ for drlay = 1 to drs
 	end if
 next
 end if
-' конец сверловок '
+' РєРѕРЅРµС† СЃРІРµСЂР»РѕРІРѕРє '
 
 if mis>0 then
 	for frezlay=1 to mis
@@ -674,13 +674,13 @@ if mis>0 then
 				dop$ = "-" + str$(frezlay) 
 			end if
 			drillnamef$ = drillname$ + dop$
-			' выгнать'
+			' РІС‹РіРЅР°С‚СЊ'
 			tablefile$ = tablepath$+"\tables4.lst"
 			selected_layer = mi(frezlay)
 			GOSUB corecttool
-			'4. Настройка вывода mill mashine
+			'4. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° mill mashine
 			setup_fmtype@ 2,7
-			'mill машина - SIEB & MEYER 3000
+			'mill РјР°С€РёРЅР° - SIEB & MEYER 3000
 			setup_fmtunit@ 2,1
 			'mill mashine - metric
 			setup_fmtdigits@ 2,3,3
@@ -690,9 +690,9 @@ if mis>0 then
 			setup_fmtzero@ 2,2
 			'mill mashine - zero none
 			if sz485x585 =1 then
-				' 10-08-2012 Соковнин сказал что большие всегда на плите будут фрезероваться.'
+				' 10-08-2012 РЎРѕРєРѕРІРЅРёРЅ СЃРєР°Р·Р°Р» С‡С‚Рѕ Р±РѕР»СЊС€РёРµ РІСЃРµРіРґР° РЅР° РїР»РёС‚Рµ Р±СѓРґСѓС‚ С„СЂРµР·РµСЂРѕРІР°С‚СЊСЃСЏ.'
 				head$= path$ + "header4.hdr"
-				' 14-06-2018 выяснилось что когда-то для 4 поменялся заголовок, а фрезеровке то нужно старый, там дописал
+				' 14-06-2018 РІС‹СЏСЃРЅРёР»РѕСЃСЊ С‡С‚Рѕ РєРѕРіРґР°-С‚Рѕ РґР»СЏ 4 РїРѕРјРµРЅСЏР»СЃСЏ Р·Р°РіРѕР»РѕРІРѕРє, Р° С„СЂРµР·РµСЂРѕРІРєРµ С‚Рѕ РЅСѓР¶РЅРѕ СЃС‚Р°СЂС‹Р№, С‚Р°Рј РґРѕРїРёСЃР°Р»
 				head$= path$ + "headerf.hdr"
 			else
 				head$= path$ + "headerf.hdr"
@@ -707,12 +707,12 @@ if mis>0 then
 			nc_exp_milltool_retract@ 1
 			nc_exp_milltool_RPMs@ 1
 
-			'5. Собственно вывод фрезеровки
+			'5. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ С„СЂРµР·РµСЂРѕРІРєРё
 			millPCB_out@ mi(frezlay),path$+drillnamef$+"1.frz"
 		'	mill_out@ mill,path$+name$+"1.frz"
 			Expmill_generate_Header@ 1
 
-			'7. дополнение файла фрезеровки
+			'7. РґРѕРїРѕР»РЅРµРЅРёРµ С„Р°Р№Р»Р° С„СЂРµР·РµСЂРѕРІРєРё
 			open path$+drillnamef$+"1.frz" for input as #1
 			open path$+drillnamef$+".frz" for output as #2
 			first=0
@@ -731,7 +731,7 @@ if mis>0 then
 			
 			kill path$+drillnamef$+"1.frz"
 
-			' экселон фрезеровка
+			' СЌРєСЃРµР»РѕРЅ С„СЂРµР·РµСЂРѕРІРєР°
 			minimafr = 1
 			GOSUB corecttool
 			minimafr = -1
@@ -756,7 +756,7 @@ if mis>0 then
 			
 			mill_out@ mi(frezlay),path$+drillnamef$+"1.fx2"
 
-			'7.1 дополнение файла фрезеровки exelon
+			'7.1 РґРѕРїРѕР»РЅРµРЅРёРµ С„Р°Р№Р»Р° С„СЂРµР·РµСЂРѕРІРєРё exelon
 			if mpp <> -1 then
 				STX# = X%/2.0
 				STY# = 66.0
@@ -787,7 +787,7 @@ if mis>0 then
 	next
 end if
 
-'8. удаление лишних файлов
+'8. СѓРґР°Р»РµРЅРёРµ Р»РёС€РЅРёС… С„Р°Р№Р»РѕРІ
 head$= path$ + "header4.hdr"
 kill head$
 head$= path$ + "header2.hdr"
@@ -800,22 +800,22 @@ close_msg
 if drillnew <> -1 then edit_removelyr@ drillnew
 view_redraw@
 
-' создать файл копирования сверловки
+' СЃРѕР·РґР°С‚СЊ С„Р°Р№Р» РєРѕРїРёСЂРѕРІР°РЅРёСЏ СЃРІРµСЂР»РѕРІРєРё
 
-' записать данные в базу
+' Р·Р°РїРёСЃР°С‚СЊ РґР°РЅРЅС‹Рµ РІ Р±Р°Р·Сѓ
 dopurl$="mkrfrz"+"&customer="+customer$+"&board="+board$+"&drillname="+drillname$+"&mpp="+str$(mpp)+"&sizex="+str$(X%)+"&sizey="+str$(Y%)+"&path="+path$
 outfile$=chr$(34)+path$+"cx.bat"+chr$(34)
 
 !include "baseupdate.scr"
 
 
-' закончить, дальше идут подпрограммы '
-' закрыть текущий без сохранения'
+' Р·Р°РєРѕРЅС‡РёС‚СЊ, РґР°Р»СЊС€Рµ РёРґСѓС‚ РїРѕРґРїСЂРѕРіСЂР°РјРјС‹ '
+' Р·Р°РєСЂС‹С‚СЊ С‚РµРєСѓС‰РёР№ Р±РµР· СЃРѕС…СЂР°РЅРµРЅРёСЏ'
 if closefile% then 
 	if Version! > 7 then 
 		setquit@ 
 	else 
-	' в седьмом каме нет закрытия. Пришлось делать средствами системы. Закрывая с детьми taskkill /t убивал и бат файл, не давая удалить себя. Тасклист резал вывод по /v, пришлось вывод списком делать и фильстровать только имя файла.'
+	' РІ СЃРµРґСЊРјРѕРј РєР°РјРµ РЅРµС‚ Р·Р°РєСЂС‹С‚РёСЏ. РџСЂРёС€Р»РѕСЃСЊ РґРµР»Р°С‚СЊ СЃСЂРµРґСЃС‚РІР°РјРё СЃРёСЃС‚РµРјС‹. Р—Р°РєСЂС‹РІР°СЏ СЃ РґРµС‚СЊРјРё taskkill /t СѓР±РёРІР°Р» Рё Р±Р°С‚ С„Р°Р№Р», РЅРµ РґР°РІР°СЏ СѓРґР°Р»РёС‚СЊ СЃРµР±СЏ. РўР°СЃРєР»РёСЃС‚ СЂРµР·Р°Р» РІС‹РІРѕРґ РїРѕ /v, РїСЂРёС€Р»РѕСЃСЊ РІС‹РІРѕРґ СЃРїРёСЃРєРѕРј РґРµР»Р°С‚СЊ Рё С„РёР»СЊСЃС‚СЂРѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ РёРјСЏ С„Р°Р№Р»Р°.'
 		open path$+"closecam.bat" for output as #1
 			print #1,"chcp 1251"
 			print #1,"for /f "+chr$(34)+"usebackq tokens=2"+chr$(34)+" %%a in (`tasklist ^| find "+chr$(34)+"camnt95"+chr$(34)+"`) do ("
@@ -828,15 +828,15 @@ if closefile% then
 		WinExec s1$,MinimizedNoFocus
 	end if
 end if
-' тут конец, выйти (exit, break)
+' С‚СѓС‚ РєРѕРЅРµС†, РІС‹Р№С‚Рё (exit, break)
 goto mkrfrz_endscript
 
-' подпрограмма корекции параметров инструментов'
+' РїРѕРґРїСЂРѕРіСЂР°РјРјР° РєРѕСЂРµРєС†РёРё РїР°СЂР°РјРµС‚СЂРѕРІ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ'
 corecttool:
 lines%=0
 
 OPEN tablefile$ FOR INPUT as #1
-' тут бы не плохо условие linrs<200? а то выход за массив будет, но пусть лучше падает скрипт'
+' С‚СѓС‚ Р±С‹ РЅРµ РїР»РѕС…Рѕ СѓСЃР»РѕРІРёРµ linrs<200? Р° С‚Рѕ РІС‹С…РѕРґ Р·Р° РјР°СЃСЃРёРІ Р±СѓРґРµС‚, РЅРѕ РїСѓСЃС‚СЊ Р»СѓС‡С€Рµ РїР°РґР°РµС‚ СЃРєСЂРёРїС‚'
 DO WHILE NOT EOF (1) =1
 lines% = lines% + 1;
 INPUT #1, d#(lines%), if#(lines%), of#(lines%), r#(lines%)
@@ -844,7 +844,7 @@ frezy(lines%)=0
 LOOP
 CLOSE #1
 
-' пройти только по нужному слою'
+' РїСЂРѕР№С‚Рё С‚РѕР»СЊРєРѕ РїРѕ РЅСѓР¶РЅРѕРјСѓ СЃР»РѕСЋ'
 setlayer@ selected_layer
 table = tooltable!
 number = 1;
@@ -900,18 +900,18 @@ for i=1 to number
 	nc_set_tool_rpms@ table,toolref,r#(index)*1000
 	goto notoolintable
 freza:
-	'print_msg "Есть фреза!" + CR!
-	frezy(fre) = Toolnum! 'было i вместо Toolnum!'
+	'print_msg "Р•СЃС‚СЊ С„СЂРµР·Р°!" + CR!
+	frezy(fre) = Toolnum! 'Р±С‹Р»Рѕ i РІРјРµСЃС‚Рѕ Toolnum!'
 	fre = fre + 1
 	nc_set_tool_infeed@ table,toolref,8.3333
 	nc_set_tool_outfeed@ table,toolref,75
 	nc_set_tool_rpms@ table,toolref,30000
 	ts# = toolsize!
 	if ts# < 1 then
-		ts# = 1 ' проверка на маленькие фрезы'
+		ts# = 1 ' РїСЂРѕРІРµСЂРєР° РЅР° РјР°Р»РµРЅСЊРєРёРµ С„СЂРµР·С‹'
 	end if
-	nc_set_tool_feedrate@ table,toolref,ts#*10/6 'преобразование
-	'25-05-2016 корекция фидрейта для Плюритек и Минима'
+	nc_set_tool_feedrate@ table,toolref,ts#*10/6 'РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
+	'25-05-2016 РєРѕСЂРµРєС†РёСЏ С„РёРґСЂРµР№С‚Р° РґР»СЏ РџР»СЋСЂРёС‚РµРє Рё РњРёРЅРёРјР°'
 	if minimafr=1 then
 		if ts#=1 then
 			nc_set_tool_feedrate@ table,toolref,4 
@@ -928,12 +928,12 @@ next
 
 return
 
-' подпрограмма создания заголовка для zieb und mayer'
+' РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЃРѕР·РґР°РЅРёСЏ Р·Р°РіРѕР»РѕРІРєР° РґР»СЏ zieb und mayer'
 createheader:
 
 open head$ for output as #1
 print #1,"%%3000"
-' двусторонние вычисление высоты первой кнопки для фрезеровки кратной 10'
+' РґРІСѓСЃС‚РѕСЂРѕРЅРЅРёРµ РІС‹С‡РёСЃР»РµРЅРёРµ РІС‹СЃРѕС‚С‹ РїРµСЂРІРѕР№ РєРЅРѕРїРєРё РґР»СЏ С„СЂРµР·РµСЂРѕРІРєРё РєСЂР°С‚РЅРѕР№ 10'
 if mpp = -1 then
 	zz%=((Y%-180)/2)/10
 	Z#=zz%*10
@@ -949,7 +949,7 @@ end if
 
 print #1, USING "M47, ###*###  ##";X%;Y%;Z#
 
-' сверловки для многослоек'
+' СЃРІРµСЂР»РѕРІРєРё РґР»СЏ РјРЅРѕРіРѕСЃР»РѕРµРє'
 if fr <> 1 then
 	if hh = 2 then
 		ny#=-6.25
@@ -968,9 +968,9 @@ if fr <> 1 then
 		end if
 	end if
 	if hh=4 then
-		'07-04-2017 двусторонние будут делаться на штифтах'
-		ny# = 100.75 ' это высилялось как y координата нижнего штифта минус 6.25
-		nx# = 270-X%/2.0 ' это x координата штифта
+		'07-04-2017 РґРІСѓСЃС‚РѕСЂРѕРЅРЅРёРµ Р±СѓРґСѓС‚ РґРµР»Р°С‚СЊСЃСЏ РЅР° С€С‚РёС„С‚Р°С…'
+		ny# = 100.75 ' СЌС‚Рѕ РІС‹СЃРёР»СЏР»РѕСЃСЊ РєР°Рє y РєРѕРѕСЂРґРёРЅР°С‚Р° РЅРёР¶РЅРµРіРѕ С€С‚РёС„С‚Р° РјРёРЅСѓСЃ 6.25
+		nx# = 270-X%/2.0 ' СЌС‚Рѕ x РєРѕРѕСЂРґРёРЅР°С‚Р° С€С‚РёС„С‚Р°
 		if sz230x395 = 1 then
 			nx#=150
 			ny#=203.0
@@ -985,7 +985,7 @@ if fr <> 1 then
 		end if
 	end if
 else
-	'Фрезеровка'
+	'Р¤СЂРµР·РµСЂРѕРІРєР°'
 	nullx# = 99.375
 	nully# = 277.375
 	nx# = nullx#-xprob#
@@ -997,7 +997,7 @@ close #1
 
 return
 
-' подпрограмма редактирования exelon'
+' РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ exelon'
 editexelon:
 open exelonfile1$ for input as #1
 open exelonfile$ for output as #2
