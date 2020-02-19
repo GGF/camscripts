@@ -8,9 +8,9 @@ for lay=Activelayer! to Highestlayer!
 	wide$ = str$(Dcodesizex!)
 	gap$ = str$(min_spacing_size!)
 	coord$ = "("+str$(min_spacing_loc1_x!)+","+str$(min_spacing_loc1_y!)+")-("+str$(min_spacing_loc2_x!)+","+str$(min_spacing_loc2_y!)+")"
-	OpenForm #1,70,3,"Минимальный проводник, зазор и координаты (с) Sch'arapoff 2005", character, okcancel
-	AddForm #1, 0, 0, "Проводник",input,wide$,10
-	AddForm #1, 25, 0, "Зазор",input,gap$,10
+	OpenForm #1,70,3,"Wide, gap and two coords (c) Sch'arapoff 2005", character, okcancel
+	AddForm #1, 0, 0, "wide",input,wide$,10
+	AddForm #1, 25, 0, "gap",input,gap$,10
 	AddForm #1, 0, 1, "",input,coord$,50
 	DisplayForm #1
 	Canceled% = formcancel(1)

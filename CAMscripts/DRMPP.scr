@@ -1,5 +1,5 @@
-'23-04-2012 Ïîïûòêà ñäåëàòü ìàêðîñ íàäåâàíèÿ ðàìêè íà ìíîãîñëîéíóþ ïëàòó'
-' Ïëàòà äîëæíû áûòü ïîëíîñòüþ ãîòîâà, êîëè÷åñòâî âíóòðåííèõ ñëîåâ ÷åòíîå'
+'23-04-2012 ÐŸÐ¾Ð¿Ñ‹Ñ‚ÐºÐ° ÑÐ´ÐµÐ»Ð°Ñ‚ÑŒ Ð¼Ð°ÐºÑ€Ð¾Ñ Ð½Ð°Ð´ÐµÐ²Ð°Ð½Ð¸Ñ Ñ€Ð°Ð¼ÐºÐ¸ Ð½Ð° Ð¼Ð½Ð¾Ð³Ð¾ÑÐ»Ð¾Ð¹Ð½ÑƒÑŽ Ð¿Ð»Ð°Ñ‚Ñƒ'
+' ÐŸÐ»Ð°Ñ‚Ð° Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð¿Ð¾Ð»Ð½Ð¾ÑÑ‚ÑŒÑŽ Ð³Ð¾Ñ‚Ð¾Ð²Ð°, ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð²Ð½ÑƒÑ‚Ñ€ÐµÐ½Ð½Ð¸Ñ… ÑÐ»Ð¾ÐµÐ² Ñ‡ÐµÑ‚Ð½Ð¾Ðµ'
 
 10
 util_camed@
@@ -37,7 +37,7 @@ elseif solder > -1 then
 	xpl# = vismaxx! - visminx! - 0.5
 	ypl# = vismaxy! - visminy! - 0.5
 else
-	MessageBox "Íåò ñëîåâ comp è solder"
+	MessageBox "No comp or solder :(" 
 	goto 550
 end if
 
@@ -58,7 +58,7 @@ elseif ms > -1 then
 	ypl# = vismaxy! - visminy!
 end if
 
-' îêðóãëèòü äî äåñÿòûõ'
+' Ð¾ÐºÑ€ÑƒÐ³Ð»Ð¸Ñ‚ÑŒ Ð´Ð¾ Ð´ÐµÑÑÑ‚Ñ‹Ñ…'
 xpl% = xpl#*10.0
 ypl% = ypl#*10.0
 xpl# = xpl%/10.0
@@ -75,26 +75,26 @@ mins%=1
 spx% = 0
 spy% = 0
 
-OpenForm #1,70,7,"Ðàìêà íà ÌÏÏ (ñ) Sch'arapoff 2012", character, okcancel
-AddForm #1, 0, 0, "Ýòîò Ìàêðîñ Äåëàåò ðàìêó äëÿ ÌÏÏ!",Print
-AddForm #1, 0, 1, "Ãàáàðèò",print
+OpenForm #1,70,7,"MLPCB Frame (c) Sch'arapoff 2012", character, okcancel
+AddForm #1, 0, 0, "It make frame to MLPCB!",Print
+AddForm #1, 0, 1, "Size",print
 AddForm #1, 10, 1, "x:",input,xpl#
 AddForm #1, 35, 1, "y:",input,ypl#
-AddForm #1, 0, 2, "Øàã :",input,step#
-AddForm #1, 35, 2, "Òåõí. ïîëÿ:",input,techfield#
-AddForm #1, 0, 3, "øòóê ïî x:",input,spx%
-AddForm #1, 35, 3, "øòóê ïî y:",input,spy%
-AddForm #1, 0, 4, "Èìÿ ",input,name$
-AddForm #1, 0, 5, "Äàòà (ìåñÿö.ãîä)",input,date$
-AddForm #1, 56, 4, "Øèðèíà:",Choice,widezag%,"230","280","485","280+"
-AddForm #1, 0, 6, "Ñ÷èòàòü ìèíèìàëüíûå ðàçìåðû (äîëãî)",check,mins%
+AddForm #1, 0, 2, "Step :",input,step#
+AddForm #1, 35, 2, "Tech field:",input,techfield#
+AddForm #1, 0, 3, "Number by x:",input,spx%
+AddForm #1, 35, 3, "Numbers y:",input,spy%
+AddForm #1, 0, 4, "Filename",input,name$
+AddForm #1, 0, 5, "Date",input,date$
+AddForm #1, 56, 4, "Wide:",Choice,widezag%,"230","280","485","280+"
+AddForm #1, 0, 6, "Wide'n'gaps (may be long time)",check,mins%
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
 
 if Canceled% = 1 then goto 550
 
-'óáåðåì ãðàôèêó'
+'ÑƒÐ±ÐµÑ€ÐµÐ¼ Ð³Ñ€Ð°Ñ„Ð¸ÐºÑƒ'
 view_SuppressGrphcs@ 1
 view_close@
 
@@ -113,7 +113,7 @@ else
 	wideplus%=1
 end if
 
-' ïîñ÷èòàåì êîëè÷åñòâî íà çàãîòîâêå'
+' Ð¿Ð¾ÑÑ‡Ð¸Ñ‚Ð°ÐµÐ¼ ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð½Ð° Ð·Ð°Ð³Ð¾Ñ‚Ð¾Ð²ÐºÐµ'
 if spx% = 0 or spy% = 0 then
 	spx% = (widezag%-techfield#*2.0) / xpl#
 	if spx% > 1 then
@@ -143,7 +143,7 @@ if mins% = 1 then
 end if
 
 filename$ = path$ + name$ + "_cam_full.pcb"
-'çàïèñü òåêóùåãî ôàéëà
+'Ð·Ð°Ð¿Ð¸ÑÑŒ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ Ñ„Ð°Ð¹Ð»Ð°
 setsaveasfile@ filename$
 
 
@@ -181,9 +181,9 @@ set_panel_dimensions@ widezag%,heightzag%
 
 'techfieldl# = (widezag%*1.0 - spx%*xpl# - (step#*(spx%-1)))*0.5 - 1.0 
 techfieldl# = (widezag%*1.0 - spx%*(xpl# + step#))*0.5 - 1.0 
-' 1 ìì â êîíöå íà âñÿêèé ïîæàðíûé '
+' 1 Ð¼Ð¼ Ð² ÐºÐ¾Ð½Ñ†Ðµ Ð½Ð° Ð²ÑÑÐºÐ¸Ð¹ Ð¿Ð¾Ð¶Ð°Ñ€Ð½Ñ‹Ð¹ '
 techfieldt# = (heightzag%*1.0 - spy%*(ypl# + step#))*0.5 - 1.0 
-' 1 ìì â êîíöå íà âñÿêèé ïîæàðíûé '
+' 1 Ð¼Ð¼ Ð² ÐºÐ¾Ð½Ñ†Ðµ Ð½Ð° Ð²ÑÑÐºÐ¸Ð¹ Ð¿Ð¾Ð¶Ð°Ñ€Ð½Ñ‹Ð¹ '
 techfieldr# = techfieldl#
 techfieldb# = techfieldt#
 'MessageBox str$(techfieldl#)
@@ -217,12 +217,12 @@ util_camed@
 setsnap@ 0
 'view_all@
 
-'çàïèñü òåêóùåãî ôàéëà
+'Ð·Ð°Ð¿Ð¸ÑÑŒ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ Ñ„Ð°Ð¹Ð»Ð°
 setsaveasfile@ filename$
 
-' çàìåíà ïëàòû è äàòû'
-' òî ÷òî íèæå äîëæíî áûëî ðàáîòàòü â ðåäàêòîðå ïàíåëåé, íî íå ðàáîòåò'
-' ïîòîìó ïðèäåòñÿ äåëàòü äðóãèìè ñðåäñòâàìè '
+' Ð·Ð°Ð¼ÐµÐ½Ð° Ð¿Ð»Ð°Ñ‚Ñ‹ Ð¸ Ð´Ð°Ñ‚Ñ‹'
+' Ñ‚Ð¾ Ñ‡Ñ‚Ð¾ Ð½Ð¸Ð¶Ðµ Ð´Ð¾Ð»Ð¶Ð½Ð¾ Ð±Ñ‹Ð»Ð¾ Ñ€Ð°Ð±Ð¾Ñ‚Ð°Ñ‚ÑŒ Ð² Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¾Ñ€Ðµ Ð¿Ð°Ð½ÐµÐ»ÐµÐ¹, Ð½Ð¾ Ð½Ðµ Ñ€Ð°Ð±Ð¾Ñ‚ÐµÑ‚'
+' Ð¿Ð¾Ñ‚Ð¾Ð¼Ñƒ Ð¿Ñ€Ð¸Ð´ÐµÑ‚ÑÑ Ð´ÐµÐ»Ð°Ñ‚ÑŒ Ð´Ñ€ÑƒÐ³Ð¸Ð¼Ð¸ ÑÑ€ÐµÐ´ÑÑ‚Ð²Ð°Ð¼Ð¸ '
 
 'edit_variabletext_tab@ "DATA"
 'change_variabletext_tab@ "111"
@@ -231,7 +231,7 @@ setsaveasfile@ filename$
 'change_variabletext_tab@ "222"
 'chr$(34) + board$ + chr$(34)
 
-' óñòàíîâêè øðèôòîâ'
+' ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¸ ÑˆÑ€Ð¸Ñ„Ñ‚Ð¾Ð²'
 setsnap@ 1
 
 setsectorize@ 0,1000
@@ -445,7 +445,7 @@ for i=1 to mpp
 	if  chet > 0 then
 		setlayer@ int(i)
 		layer_alloff@ 1
-		' óäàëèòü'
+		' ÑƒÐ´Ð°Ð»Ð¸Ñ‚ÑŒ'
 		change_text@
 		axy@ (widezag%-17.5),heightzag%-133.750
 		textfont@ "SIMPLE.EFN"
@@ -453,7 +453,7 @@ for i=1 to mpp
 		textjust@ 34
 		edit_chgtext@ date$
 		back@
-		' ïîìåíÿòü'
+		' Ð¿Ð¾Ð¼ÐµÐ½ÑÑ‚ÑŒ'
 		change_text@
 		axy@ (widezag%-17.5),heightzag%-36.250
 		textfont@ "SIMPLE.EFN"
@@ -464,7 +464,7 @@ for i=1 to mpp
 	else
 		setlayer@ int(i)
 		layer_alloff@ 1
-		' óäàëèòü'
+		' ÑƒÐ´Ð°Ð»Ð¸Ñ‚ÑŒ'
 		change_text@
 		axy@ (widezag%-17.5),heightzag%-36.25
 		textfont@ "SIMPLE.EFN"
@@ -472,7 +472,7 @@ for i=1 to mpp
 		textjust@ 34
 		edit_chgtext@ date$
 		back@
-		' ïîìåíÿòü'
+		' Ð¿Ð¾Ð¼ÐµÐ½ÑÑ‚ÑŒ'
 		change_text@
 		axy@ (widezag%-17.5),heightzag%-133.75
 		textfont@ "SIMPLE.EFN"
@@ -508,10 +508,10 @@ else
 	dtx# = 130.00
 	dty# = 365.0000
 end if
-nc_add_drilled_text@ dtx#,dty#,drill,drillref,0,name$ ' bigtechfield#+6-÷òîáû íå çàäåòü øëÿïêè øòèôòîâ è íå íàåõàòü íà òåêñò (COMP,SOLDER etc.)
+nc_add_drilled_text@ dtx#,dty#,drill,drillref,0,name$ ' bigtechfield#+6-Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð½Ðµ Ð·Ð°Ð´ÐµÑ‚ÑŒ ÑˆÐ»ÑÐ¿ÐºÐ¸ ÑˆÑ‚Ð¸Ñ„Ñ‚Ð¾Ð² Ð¸ Ð½Ðµ Ð½Ð°ÐµÑ…Ð°Ñ‚ÑŒ Ð½Ð° Ñ‚ÐµÐºÑÑ‚ (COMP,SOLDER etc.)
 back@
 
-'êîïèðîâàòü îòâåðñòèÿ íà îñíîâíûå ñëîè
+'ÐºÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð¾Ñ‚Ð²ÐµÑ€ÑÑ‚Ð¸Ñ Ð½Ð° Ð¾ÑÐ½Ð¾Ð²Ð½Ñ‹Ðµ ÑÐ»Ð¾Ð¸
 edit_copy@
 axy@ dtx#,dty#
 setcoplayer@ rcn,1
@@ -555,7 +555,7 @@ layer_renumber@
 
 layer_alloff@ 0
 
-' delete ëèøíèå îòâåðñòèÿ ñ ôðåçåðîâêè'
+' delete Ð»Ð¸ÑˆÐ½Ð¸Ðµ Ð¾Ñ‚Ð²ÐµÑ€ÑÑ‚Ð¸Ñ Ñ Ñ„Ñ€ÐµÐ·ÐµÑ€Ð¾Ð²ÐºÐ¸'
 'setlayer@ mill
 'layer_alloff@ 1
 'edit_delete@
@@ -567,7 +567,7 @@ layer_alloff@ 0
 'back@
 'delete_edits@ 4,1
 'back@
-' ðåïåðû
+' Ñ€ÐµÐ¿ÐµÑ€Ñ‹
 setlayer@ mill
 layer_alloff@ 1
 edit_delete@
@@ -608,7 +608,7 @@ elseif widezag%>230 then
 	axy@ 50.0,25.0
 	axy@ 230.0,370.0
 	axy@ 230.0,25.0
-	' òåñòêóïîí'
+	' Ñ‚ÐµÑÑ‚ÐºÑƒÐ¿Ð¾Ð½'
 	axy@ 12.5000,21.2500
 	axy@ 12.5000,26.2500
 	
@@ -632,11 +632,11 @@ elseif widezag%>230 then
 
 	axy@ 232.5000,11.2500
 	axy@ 237.5000,11.2500
-' ìàðêèðîâî÷íûå'
+' Ð¼Ð°Ñ€ÐºÐ¸Ñ€Ð¾Ð²Ð¾Ñ‡Ð½Ñ‹Ðµ'
 	axy@ 271.0,82.5
 	axy@ 271.0,312.5
 else
-	' òåñòêóïîí 230x395'
+	' Ñ‚ÐµÑÑ‚ÐºÑƒÐ¿Ð¾Ð½ 230x395'
 	axy@ 10.0000,35.0000
 	axy@ 10.0000,40.0000
 	
@@ -661,11 +661,11 @@ else
 	axy@ 182.5000,11.2500
 	axy@ 187.5000,11.2500
 	
-' ìàðêèðîâî÷íûå'
+' Ð¼Ð°Ñ€ÐºÐ¸Ñ€Ð¾Ð²Ð¾Ñ‡Ð½Ñ‹Ðµ'
 	axy@ 221.0,82.5
 	axy@ 221.0,312.5
 end if
-' ôðåçåðîâî÷íûå'
+' Ñ„Ñ€ÐµÐ·ÐµÑ€Ð¾Ð²Ð¾Ñ‡Ð½Ñ‹Ðµ'
 axy@ 10,107.5
 axy@ 10,152.5
 axy@ 10,242.5
@@ -685,7 +685,7 @@ customer$ = ruscustomer$
 board$=rusboard$
 !include "createcoppers.scr"
 
-' êîíòðîëüíûå îòâåðñòèÿ íå ïîïàäóò â ñòàòèñòèêó ñâåðëîâêè, íî è íå èñïîðòÿò ðàçìåðû ïëàò, à òî createcoppers íå òî ïèøåò'
+' ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð»ÑŒÐ½Ñ‹Ðµ Ð¾Ñ‚Ð²ÐµÑ€ÑÑ‚Ð¸Ñ Ð½Ðµ Ð¿Ð¾Ð¿Ð°Ð´ÑƒÑ‚ Ð² ÑÑ‚Ð°Ñ‚Ð¸ÑÑ‚Ð¸ÐºÑƒ ÑÐ²ÐµÑ€Ð»Ð¾Ð²ÐºÐ¸, Ð½Ð¾ Ð¸ Ð½Ðµ Ð¸ÑÐ¿Ð¾Ñ€Ñ‚ÑÑ‚ Ñ€Ð°Ð·Ð¼ÐµÑ€Ñ‹ Ð¿Ð»Ð°Ñ‚, Ð° Ñ‚Ð¾ createcoppers Ð½Ðµ Ñ‚Ð¾ Ð¿Ð¸ÑˆÐµÑ‚'
 noform=1
 !include "sortdrill.scr"
 
@@ -737,7 +737,7 @@ edit_chgtext@ "S="+ FMTUSING$("###.##",ss#)
 
 
 
-' íîìåðà ñëîåâ'
+' Ð½Ð¾Ð¼ÐµÑ€Ð° ÑÐ»Ð¾ÐµÐ²'
 newapr = Blankdcode!
 set_aperture@ newapr,"Round d:0.300"
 update_dcodebar@ 
@@ -771,7 +771,7 @@ else
 	dtx# = (widezag%-15)
 end if
 setlayer@ comp
-' óæå åñòü'
+' ÑƒÐ¶Ðµ ÐµÑÑ‚ÑŒ'
 lay = 2
 trulay = 1
 for i=1 to mpp
@@ -784,7 +784,7 @@ for i=1 to mpp
 		textmirror@ 0
 	end if
 	ln$=Layername!
-	if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"à")>0 or instr(1,ln$,"À")>0 then
+	if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"Ð°")>0 or instr(1,ln$,"Ð")>0 then
 		if chet=0 then
 			layname$ = str$(trulay+1)+"A"
 		else 

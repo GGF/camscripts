@@ -1,20 +1,20 @@
 if layersset <> 1 then 
 	dim int(50)
-	' ��������� - ����������'
+	' сверловок - фрезеровок'
 	dim dr(10)
 	dim mi(10)
 	dim dr$(10)
 	dim mi$(10)
-	' �������� ��� ���� �������
+	' указание что файл включен
 	layersset = 1;
 
-	' ��������� - ����������'
+	' сверловок - фрезеровок'
 	drs=0
 	mis=0
-	mill = -1
-	drill = -1
-	drill  = drilllayer!
-	mill   = milllayer!
+	'mill = -1
+	'drill = -1
+	drill  = drilllayer! ' Этот запрос минус один в отсутствие возвращает
+	mill   = milllayer! ' Этот запрос минус один в отсутствие возвращает
 	if mill = -1 then mill = drilllayer_unplated!
 	comp   = -1
 	solder = -1
@@ -72,23 +72,25 @@ if layersset <> 1 then
 				end if
 			end if
 			if layertype! = 21 then 
-				if instr(layername!,"mkr") > 0 OR instr(layername!,"MKR") > 0 OR instr(layername!,"mk4") > 0 OR instr(layername!,"mk2") > 0 OR instr(layername!,"drill")>0 OR (instr(layername!,"drl")>0 AND NOT (instr(layername!,"n.drl")>0 AND customer$="�������")) then
-					drill = lay
+				if instr(layername!,"mkr") > 0 OR instr(layername!,"MKR") > 0 OR instr(layername!,"mk4") > 0 OR instr(layername!,"mk2") > 0 OR instr(layername!,"drill")>0 OR (instr(layername!,"drl")>0 AND NOT (instr(layername!,"n.drl")>0 AND customer$="Импульс")) then
+					' закоментировал, потому как запросом из базы назначится одна  верхняя, а остльны чтоб не сортироались
+					' drill = lay
 					drs = drs + 1
 					dr(drs) = lay
 					dr$(drs) = layername!
-				elseif instr(layername!,"fr") > 0 OR instr(layername!,"FR") > 0 OR instr(layername!,"mill")>0 OR (instr(layername!,"n.drl")>0 AND customer$="�������") or lay = mill then
-					mill = lay
+				elseif instr(layername!,"fr") > 0 OR instr(layername!,"FR") > 0 OR instr(layername!,"mill")>0 OR (instr(layername!,"n.drl")>0 AND customer$="Импульс") or lay = mill then
+					' закоментировал, потому как запросом из базы назначится одна  верхняя, а остльны чтоб не сортироались
+					' mill = lay
 					mis = mis+1
 					mi(mis) = lay
 					mi$(mis) = layername!
 				else 
-					drill = lay
+					' закоментировал, потому как запросом из базы назначится одна  верхняя, а остльны чтоб не сортироались
+					' drill = lay
 					drs = drs + 1
 					dr(drs) = lay
 					dr$(drs) = layername!
 				end if
-			 'AND mill = -1 AND  lay <> drill then mill = lay
 			end if
 	next
 
@@ -106,7 +108,7 @@ if layersset <> 1 then
 	end if
 	layer_renumber@
 	
-	' �������� layer stackup '
+	' создадим layer stackup '
 	layerset_add@ 1,3,"LyrSet_1"
 	i=0
 	For lay = Nextlay to Highestlayer!

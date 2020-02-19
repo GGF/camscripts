@@ -1,8 +1,8 @@
-' Сместить всё в точку 0,0 без учета фрезеровки - удобно для скрипта одевания рамки на двусторонние
+' РЎРјРµСЃС‚РёС‚СЊ РІСЃС‘ РІ С‚РѕС‡РєСѓ 0,0 Р±РµР· СѓС‡РµС‚Р° С„СЂРµР·РµСЂРѕРІРєРё - СѓРґРѕР±РЅРѕ РґР»СЏ СЃРєСЂРёРїС‚Р° РѕРґРµРІР°РЅРёСЏ СЂР°РјРєРё РЅР° РґРІСѓСЃС‚РѕСЂРѕРЅРЅРёРµ
 !include "layersset.scr"
 
 'MessageBox "Move it all to ZERO? Mua-ha-ha!","Go to Hell",YESNO,MacroEnd%
-OpenForm #1,50,2,"Go to Hell! (с) Sch'arapoff 2019", character, okcancel
+OpenForm #1,50,2,"Go to Hell! (СЃ) Sch'arapoff 2019", character, okcancel
 AddForm #1, 0, 0, "Move it all to ZERO? Mua-ha-ha!!!!",Print
 AddForm #1, 0, 1, "x:",input,xpl#
 AddForm #1, 25, 1, "y:",input,ypl#
@@ -13,7 +13,7 @@ DeleteForm #1
 if Canceled% = 1 then end
 
 util_camed@
-' ноль определим по контуру'
+' РЅРѕР»СЊ РѕРїСЂРµРґРµР»РёРј РїРѕ РєРѕРЅС‚СѓСЂСѓ'
 if brd <> -1 then
 	setlayer@ brd
 else

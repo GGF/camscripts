@@ -16,12 +16,12 @@ textxscale@ 100
 textvertical@ 0
 textfont@ "SIMPLE.EFN"
 dim int(16)
-'Получение пути файла
+'РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё С„Р°Р№Р»Р°
 !include "getpathandname.scr"
 
-'запрос имени файла
-OpenForm #1,70,7,"Sch'arapoff", character, okcancel
-AddForm #1, 0, 3, "Имя (для сверловки)",input,name$
+'Р·Р°РїСЂРѕСЃ РёРјРµРЅРё С„Р°Р№Р»Р°
+OpenForm #1,70,7,"(c) Sch'arapoff", character, okcancel
+AddForm #1, 0, 3, "Drill filename",input,name$
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -30,7 +30,7 @@ if Canceled% = 1 then goto 550
 
 
 
-'ввод пик файлов
+'РІРІРѕРґ РїРёРє С„Р°Р№Р»РѕРІ
 setup_fmtype@ 0,1
 rc1 = blanklayer!
 edit_layer@ rc1,15,15,7,0,"rc.gbx"

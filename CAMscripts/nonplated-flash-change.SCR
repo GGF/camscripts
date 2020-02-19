@@ -9,10 +9,10 @@ if MacroEnd% <> 6 then end
 !include "layersset.scr"
 
 if mis>0 then
-	' выгнать'
-	'4. Настройка вывода mill mashine
+	' РІС‹РіРЅР°С‚СЊ'
+	'4. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° mill mashine
 	setup_fmtype@ 2,7
-	'mill машина - SIEB & MEYER 3000
+	'mill РјР°С€РёРЅР° - SIEB & MEYER 3000
 	setup_fmtunit@ 2,1
 	'mill mashine - metric
 	setup_fmtdigits@ 2,3,3
@@ -32,12 +32,12 @@ if mis>0 then
 	nc_exp_milltool_retract@ 1
 	nc_exp_milltool_RPMs@ 1
 
-	'5. Собственно вывод фрезеровки
+	'5. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ С„СЂРµР·РµСЂРѕРІРєРё
 	millPCB_out@ mill,path$+"nonplate.coords"
 end if
 
 
-' включить только сигнальные слои'
+' РІРєР»СЋС‡РёС‚СЊ С‚РѕР»СЊРєРѕ СЃРёРіРЅР°Р»СЊРЅС‹Рµ СЃР»РѕРё'
 
 
 if comp<>-1 then
@@ -46,7 +46,7 @@ else
 	if solder <>-1 then
 		setlayer@ solder
 	else
-		' чо за хрень? Где все?'
+		' С‡Рѕ Р·Р° С…СЂРµРЅСЊ? Р“РґРµ РІСЃРµ?'
 		goto mkrfrz_endscript
 	end if
 end if
@@ -59,7 +59,7 @@ if mpp <> -1 then
 	next
 end if
 
-' если до того не включили нижний'
+' РµСЃР»Рё РґРѕ С‚РѕРіРѕ РЅРµ РІРєР»СЋС‡РёР»Рё РЅРёР¶РЅРёР№'
 if solder <>-1 then
 	setlayer@ solder
 end if
@@ -69,12 +69,12 @@ do
 	line input #1,s$
 	
 	if left$(s$,1) = "X" then
-		' получить обе координаты'
+		' РїРѕР»СѓС‡РёС‚СЊ РѕР±Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹'
 		posyinstr% = instr(1,s$,"Y")
 		x# = val(mid$(s$,2,posyinstr%-1))
 		y# = val(mid$(s$,posyinstr%+1))
 		' MessageBox	s$+"---"+str$(x#)+"---"+str$(y#)+"---"+mid$(s$,posyinstr%+1)+"---"+str$(instr(1,s$,"Y"))
-		' поменять
+		' РїРѕРјРµРЅСЏС‚СЊ
 		change_dcode@
 		setsnap@ 1
 		seteditflash@ 1

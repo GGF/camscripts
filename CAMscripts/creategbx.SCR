@@ -1,8 +1,8 @@
-' вывод герберов '
+' РІС‹РІРѕРґ РіРµСЂР±РµСЂРѕРІ '
 util_camed@
 setgridsnap@ 0
 setsnap@ 0
-'Получение пути файла
+'РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё С„Р°Р№Р»Р°
 filename$=dbname!
 for n%=len(filename$)-1 to 0 step -1
 s$=mid$(filename$,n%,1)
@@ -14,8 +14,8 @@ pathgbx$ = pathgbx$+"gerber"
 mkdir pathgbx$
 pathgbx$ = pathgbx$+"\" 
 
-'9. Вывод герберов
-print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
+'9. Р’С‹РІРѕРґ РіРµСЂР±РµСЂРѕРІ
+print_msg "Exporting gerber files." + CR! + "Wait!!!"
 setup_fmtype@ 0,1
 setup_fmtunit@ 0,0
 setup_fmtdigits@ 0,2,4
@@ -71,11 +71,11 @@ for lay = Nextlay to Highestlayer!
 		end if
 	elseif layertype! = 19 then 'PASTE TOP
 		set_layermirrorstate@ lay,0 '0-not 1-yes
-		layer_setimagepolarity@ lay,0 'пзитив
+		layer_setimagepolarity@ lay,0 'РїР·РёС‚РёРІ
 		exportgbrfile@ lay,-1,pathgbx$+"pos_c1.gbx"
 	elseif layertype! = 20 then 'PASTE TOP
 		set_layermirrorstate@ lay,0 '1 '0-not 1-yes
-		layer_setimagepolarity@ lay,0 'пзитив
+		layer_setimagepolarity@ lay,0 'РїР·РёС‚РёРІ
 		exportgbrfile@ lay,-1,pathgbx$+"pos_s1.gbx"
 	elseif layertype! = 1 then 'internal
 		delta = internal - (internal / 2)*2)

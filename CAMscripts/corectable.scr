@@ -26,11 +26,11 @@ CLOSE #1
 
 for lay = Nextlay to Highestlayer!
 	setlayer@ lay
-	' если слой не сверловка фрезеровка идем к следующему
+	' РµСЃР»Рё СЃР»РѕР№ РЅРµ СЃРІРµСЂР»РѕРІРєР° С„СЂРµР·РµСЂРѕРІРєР° РёРґРµРј Рє СЃР»РµРґСѓСЋС‰РµРјСѓ
 	if layertype! <> 21 then goto graphlayer
-	' опеределим таблицу привязанную к слою
+	' РѕРїРµСЂРµРґРµР»РёРј С‚Р°Р±Р»РёС†Сѓ РїСЂРёРІСЏР·Р°РЅРЅСѓСЋ Рє СЃР»РѕСЋ
 	table = tooltable!
-	' пройдем по инструментам
+	' РїСЂРѕР№РґРµРј РїРѕ РёРЅСЃС‚СЂСѓРјРµРЅС‚Р°Рј
 	number = 1;
 	for i=1 to Highesttoolref! 
 		set_current_toolref@ i
@@ -66,16 +66,16 @@ for lay = Nextlay to Highestlayer!
 	for i=1 to number 
 		toolref = numbers(i)
 		set_current_toolref@ toolref
-		' если фреза - ставим параметры для фрезы
+		' РµСЃР»Рё С„СЂРµР·Р° - СЃС‚Р°РІРёРј РїР°СЂР°РјРµС‚СЂС‹ РґР»СЏ С„СЂРµР·С‹
 		if tooltype! = 2 then goto freza
-		' для сверла ищем размер в таблице
+		' РґР»СЏ СЃРІРµСЂР»Р° РёС‰РµРј СЂР°Р·РјРµСЂ РІ С‚Р°Р±Р»РёС†Рµ
 		for index=1 to lines%
-			' нашли - вываливаемся
+			' РЅР°С€Р»Рё - РІС‹РІР°Р»РёРІР°РµРјСЃСЏ
 			if d#(index)=toolsize! then exit for
 		next
-		' не нашли - игнорируем
+		' РЅРµ РЅР°С€Р»Рё - РёРіРЅРѕСЂРёСЂСѓРµРј
 		if index>lines% then goto notoolintable
-		' в зависимости от единиц измерения устанавливаем параметры
+		' РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РµРґРёРЅРёС† РёР·РјРµСЂРµРЅРёСЏ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїР°СЂР°РјРµС‚СЂС‹
 		if units! = 1 then
 			nc_set_tool_infeed@ table,toolref,if#(index)*10/6
 			nc_set_tool_outfeed@ table,toolref,of#(index)*10/6
@@ -83,7 +83,7 @@ for lay = Nextlay to Highestlayer!
 			nc_set_tool_infeed@ table,toolref,if#(index)*10/6
 			nc_set_tool_outfeed@ table,toolref,of#(index)*10/6
 		end if
-		' этот не зависит от текущих единиц измерения
+		' СЌС‚РѕС‚ РЅРµ Р·Р°РІРёСЃРёС‚ РѕС‚ С‚РµРєСѓС‰РёС… РµРґРёРЅРёС† РёР·РјРµСЂРµРЅРёСЏ
 		nc_set_tool_rpms@ table,toolref,r#(index)*1000
 		goto notoolintable
 freza:
@@ -92,10 +92,10 @@ freza:
 		nc_set_tool_rpms@ table,toolref,30000
 		ts# = toolsize!
 		if ts# < 1 then
-			ts# = 1 ' проверка на маленькие фрезы'
+			ts# = 1 ' РїСЂРѕРІРµСЂРєР° РЅР° РјР°Р»РµРЅСЊРєРёРµ С„СЂРµР·С‹'
 		end if
 		feedrate# = ts#*10/6
-		nc_set_tool_feedrate@ table,toolref,feedrate# 'преобразование
+		nc_set_tool_feedrate@ table,toolref,feedrate# 'РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
 notoolintable:
 	next
 graphlayer:

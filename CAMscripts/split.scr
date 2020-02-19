@@ -1,6 +1,6 @@
-' ñêðèïò äëÿ ñëèâàíèÿ â îäíî íåñêîëüêèõ ÄÂÓÑÒÎÐÎÍÍÈÕ ïëàò â áëîêå'
+' ÑÐºÑ€Ð¸Ð¿Ñ‚ Ð´Ð»Ñ ÑÐ»Ð¸Ð²Ð°Ð½Ð¸Ñ Ð² Ð¾Ð´Ð½Ð¾ Ð½ÐµÑÐºÐ¾Ð»ÑŒÐºÐ¸Ñ… Ð”Ð’Ð£Ð¡Ð¢ÐžÐ ÐžÐÐÐ˜Ð¥ Ð¿Ð»Ð°Ñ‚ Ð² Ð±Ð»Ð¾ÐºÐµ'
 
-' Äëÿ ñëî¸â ìåñòî'
+' Ð”Ð»Ñ ÑÐ»Ð¾Ñ‘Ð² Ð¼ÐµÑÑ‚Ð¾'
 dim comp(10)
 dim sold(10)
 dim masc(10)
@@ -27,10 +27,10 @@ next
 
 
 
-' íîìåðà ïî ïîðÿäêó '
+' Ð½Ð¾Ð¼ÐµÑ€Ð° Ð¿Ð¾ Ð¿Ð¾Ñ€ÑÐ´ÐºÑƒ '
 'layer_renumber@
 
-' Ïóñòûå ñëîè óáðàòü'
+' ÐŸÑƒÑÑ‚Ñ‹Ðµ ÑÐ»Ð¾Ð¸ ÑƒÐ±Ñ€Ð°Ñ‚ÑŒ'
 'For lay = Nextlay to Highestlayer!
 '	setlayer@ lay
 '	if Layerblank! then 
@@ -38,12 +38,12 @@ next
 '	end if
 'next
 
-' è îïÿòü ïî ïîðÿäêó
+' Ð¸ Ð¾Ð¿ÑÑ‚ÑŒ Ð¿Ð¾ Ð¿Ð¾Ñ€ÑÐ´ÐºÑƒ
 'layer_renumber@
 
 For lay = Nextlay to Highestlayer!
 	setlayer@ lay
-	' âåðõíèå ñëîè'
+	' Ð²ÐµÑ€Ñ…Ð½Ð¸Ðµ ÑÐ»Ð¾Ð¸'
 	if layertype! = 0 then 
 		comp(icomp) = lay
 		icomp = icomp + 1
@@ -116,10 +116,10 @@ For lay = Nextlay to Highestlayer!
 	end if
 next
 
-' è îïÿòü ïî ïîðÿäêó'
+' Ð¸ Ð¾Ð¿ÑÑ‚ÑŒ Ð¿Ð¾ Ð¿Ð¾Ñ€ÑÐ´ÐºÑƒ'
 layer_renumber@
 
-' òåïåðü ñëèâàåì internal'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ internal'
 if iinternal > 0 then
 	for i=1 to 14
 		'break
@@ -137,7 +137,7 @@ if iinternal > 0 then
 				end if
 			next
 			lay = blanklayer!
-			edit_layer@ lay,12,12,1,1,inames$(i) ' íîìåð,öâåò,öâåò,òèï,onoff,name '
+			edit_layer@ lay,12,12,1,1,inames$(i) ' Ð½Ð¾Ð¼ÐµÑ€,Ñ†Ð²ÐµÑ‚,Ñ†Ð²ÐµÑ‚,Ñ‚Ð¸Ð¿,onoff,name '
 			edit_move@
 			edit_selectall2@ 
 			movetolayer@ lay
@@ -148,7 +148,7 @@ if iinternal > 0 then
 	next
 end if
 
-' òåïåðü ñëèâàåì comp'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ comp'
 if icomp > 0 then
 	setlayer@ comp(0)
 	layer_alloff@ 1
@@ -156,14 +156,14 @@ if icomp > 0 then
 		setlayer@ comp(lay)
 	next
 	lay = blanklayer!
-	edit_layer@ lay,12,12,0,0,"c" ' íîìåð,öâåò,öâåò,òèï,onoff,name '
+	edit_layer@ lay,12,12,0,0,"c" ' Ð½Ð¾Ð¼ÐµÑ€,Ñ†Ð²ÐµÑ‚,Ñ†Ð²ÐµÑ‚,Ñ‚Ð¸Ð¿,onoff,name '
 	edit_move@
 	edit_selectall2@ 
 	movetolayer@ lay
 	MessageBox "comp"
 end if
 
-' òåïåðü ñëèâàåì sold'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ sold'
 if isold > 0 then
 	setlayer@ sold(0)
 	layer_alloff@ 1
@@ -171,14 +171,14 @@ if isold > 0 then
 		setlayer@ sold(lay)
 	next
 	lay = blanklayer!
-	edit_layer@ lay,12,12,3,0,"s" ' íîìåð,öâåò,öâåò,òèï,onoff,name '
+	edit_layer@ lay,12,12,3,0,"s" ' Ð½Ð¾Ð¼ÐµÑ€,Ñ†Ð²ÐµÑ‚,Ñ†Ð²ÐµÑ‚,Ñ‚Ð¸Ð¿,onoff,name '
 	edit_move@
 	edit_selectall2@ 
 	movetolayer@ lay
 	MessageBox "sold"
 end if
 
-' òåïåðü ñëèâàåì masc'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ masc'
 if imasc > 0 then
 	setlayer@ masc(0)
 	layer_alloff@ 1
@@ -186,14 +186,14 @@ if imasc > 0 then
 		setlayer@ masc(lay)
 	next
 	lay = blanklayer!
-	edit_layer@ lay,12,12,11,0,"mc" ' íîìåð,öâåò,öâåò,òèï,onoff,name '
+	edit_layer@ lay,12,12,11,0,"mc" ' Ð½Ð¾Ð¼ÐµÑ€,Ñ†Ð²ÐµÑ‚,Ñ†Ð²ÐµÑ‚,Ñ‚Ð¸Ð¿,onoff,name '
 	edit_move@
 	edit_selectall2@ 
 	movetolayer@ lay
 	MessageBox "masc"
 end if
 
-' òåïåðü ñëèâàåì mass'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ mass'
 if imass > 0 then
 	setlayer@ mass(0)
 	layer_alloff@ 1
@@ -201,14 +201,14 @@ if imass > 0 then
 		setlayer@ mass(lay)
 	next
 	lay = blanklayer!
-	edit_layer@ lay,12,12,12,0,"ms" ' íîìåð,öâåò,öâåò,òèï,onoff,name '
+	edit_layer@ lay,12,12,12,0,"ms" ' Ð½Ð¾Ð¼ÐµÑ€,Ñ†Ð²ÐµÑ‚,Ñ†Ð²ÐµÑ‚,Ñ‚Ð¸Ð¿,onoff,name '
 	edit_move@
 	edit_selectall2@ 
 	movetolayer@ lay
 	MessageBox "mass"
 end if
 
-' òåïåðü ñëèâàåì drill'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ drill'
 if idril > 0 then
 	setlayer@ dril(0)
 	layer_alloff@ 1
@@ -222,7 +222,7 @@ if idril > 0 then
 	MessageBox "drill"
 end if
 
-' òåïåðü ñëèâàåì mill'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ mill'
 if imill > 0 then
 	setlayer@ mill(0)
 	layer_alloff@ 1
@@ -236,7 +236,7 @@ if imill > 0 then
 	MessageBox "mill"
 end if
 
-' òåïåðü ñëèâàåì brd'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ brd'
 if ibrd > 0 then
 	setlayer@ brd(0)
 	layer_alloff@ 1
@@ -250,7 +250,7 @@ if ibrd > 0 then
 	MessageBox "brd"
 end if
 
-' òåïåðü ñëèâàåì silc'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ silc'
 if isilc > 0 then
 	setlayer@ silc(0)
 	layer_alloff@ 1
@@ -264,7 +264,7 @@ if isilc > 0 then
 	MessageBox "silc"
 end if
 
-' òåïåðü ñëèâàåì sils'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ sils'
 if isils > 0 then
 	setlayer@ sils(0)
 	layer_alloff@ 1
@@ -278,7 +278,7 @@ if isils > 0 then
 	MessageBox "sils"
 end if
 
-' òåïåðü ñëèâàåì viac'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ viac'
 if iviac > 0 then
 	setlayer@ viac(0)
 	layer_alloff@ 1
@@ -292,7 +292,7 @@ if iviac > 0 then
 	MessageBox "viac"
 end if
 
-' òåïåðü ñëèâàåì vias'
+' Ñ‚ÐµÐ¿ÐµÑ€ÑŒ ÑÐ»Ð¸Ð²Ð°ÐµÐ¼ vias'
 if ivias > 0 then
 	setlayer@ vias(0)
 	layer_alloff@ 1

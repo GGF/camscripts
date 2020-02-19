@@ -17,7 +17,7 @@ textxscale@ 100
 textvertical@ 0
 textfont@ "SIMPLE.EFN"
 
-'Получение пути файла
+'РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё С„Р°Р№Р»Р°
 filename$=dbname!
 for n%=len(filename$)-1 to 0 step -1
 s$=mid$(filename$,n%,1)
@@ -26,9 +26,9 @@ next
 path:
 path$ = left$(filename$,n%)
 
-'запрос имени файла
-OpenForm #1,70,7,"Sch'arapoff", character, okcancel
-AddForm #1, 0, 3, "Имя (для сверловки)",input,name$
+'Р·Р°РїСЂРѕСЃ РёРјРµРЅРё С„Р°Р№Р»Р°
+OpenForm #1,70,7,"(c) Sch'arapoff", character, okcancel
+AddForm #1, 0, 3, "Drill filename",input,name$
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -47,7 +47,7 @@ drill=8
 mill=9
 
 
-'ввод пик файлов
+'РІРІРѕРґ РїРёРє С„Р°Р№Р»РѕРІ
 setup_fmtype@ 0,1
 edit_layer@ mc,3,3,11,0,"mc.gbr"
 importgbrfile@ mc,0.0000,0.0000,path$+"mcomp.gbr"
@@ -82,7 +82,7 @@ view_all@
 axy@ 137.5000,131.2500
 back@
 
-'перемещение 
+'РїРµСЂРµРјРµС‰РµРЅРёРµ 
 setlayer@ comp
 layer_alloff@ 1
 setlayer@ mc
@@ -99,7 +99,7 @@ axy@ 0,0
 back@
 end@
 
-'перемещение SOLDER
+'РїРµСЂРµРјРµС‰РµРЅРёРµ SOLDER
 setlayer@ solder
 layer_alloff@ 1
 setlayer@ ms
@@ -119,12 +119,12 @@ end@
 
 MACRO_PLAY "createcoppers.scr"
 
-'правка файлов сверловки
+'РїСЂР°РІРєР° С„Р°Р№Р»РѕРІ СЃРІРµСЂР»РѕРІРєРё
 open path$+name$+".mkr" for input as #1
 open path$+name$+"1.mkr" for output as #2
 first=0
 
-'меняем первые строки
+'РјРµРЅСЏРµРј РїРµСЂРІС‹Рµ СЃС‚СЂРѕРєРё
 print #2,"%%3000"
 input #1,s$
 input #1,s$
@@ -146,12 +146,12 @@ loop until EOF(1) = 1
 close #1
 close #2
 
-'правка файлов фрезеровки
+'РїСЂР°РІРєР° С„Р°Р№Р»РѕРІ С„СЂРµР·РµСЂРѕРІРєРё
 open path$+name$+".frz" for input as #1
 open path$+name$+"1.frz" for output as #2
 first=0
 
-'меняем первые строки
+'РјРµРЅСЏРµРј РїРµСЂРІС‹Рµ СЃС‚СЂРѕРєРё
 print #2,"%%3000"
 input #1,s$
 input #1,s$
@@ -173,7 +173,7 @@ loop until EOF(1) = 1
 close #1
 close #2
 
-'возврат старых
+'РІРѕР·РІСЂР°С‚ СЃС‚Р°СЂС‹С…
 open path$+name$+"1.frz" for input as #1
 open path$+name$+".frz" for output as #2
 do
@@ -198,10 +198,10 @@ nc_add_table@ 2
 nc_import_mill@ mill,2,path$+name$+".frz"
 
 
-'удаление лишних файлов
+'СѓРґР°Р»РµРЅРёРµ Р»РёС€РЅРёС… С„Р°Р№Р»РѕРІ
 kill path$+name$+"1.frz"
 kill path$+name$+"1.mkr"
-' и импортированые чтоб не мешались
+' Рё РёРјРїРѕСЂС‚РёСЂРѕРІР°РЅС‹Рµ С‡С‚РѕР± РЅРµ РјРµС€Р°Р»РёСЃСЊ
 kill path$+name$+".mkr"
 kill path$+name$+".frz"
 kill path$+"comp"+".gbr"

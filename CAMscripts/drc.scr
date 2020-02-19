@@ -2,8 +2,8 @@
 ' CAM350 V7.0 (Build 187) Date:  Fri Nov 02 10:53:54 2018
 util_camed@
 gap# = 0.200
-OpenForm #1,70,3,"Проверка DRC (с) Sch'arapoff 2018", character, okcancel
-AddForm #1, 0, 1, "Зазор :",input,gap#
+OpenForm #1,70,3,"Check DRC (c) Sch'arapoff 2018", character, okcancel
+AddForm #1, 0, 1, "Gap :",input,gap#
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1

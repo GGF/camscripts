@@ -13,7 +13,7 @@ layer_alloff@ 0
 X# = vismaxx! - visminx!
 Y# = vismaxy! - visminy!
 
-' 16-01-2015 когда добавились в двусторонних 5мм  с каждой стороны нужно правильно считать размер заготовки'
+' 16-01-2015 РєРѕРіРґР° РґРѕР±Р°РІРёР»РёСЃСЊ РІ РґРІСѓСЃС‚РѕСЂРѕРЅРЅРёС… 5РјРј  СЃ РєР°Р¶РґРѕР№ СЃС‚РѕСЂРѕРЅС‹ РЅСѓР¶РЅРѕ РїСЂР°РІРёР»СЊРЅРѕ СЃС‡РёС‚Р°С‚СЊ СЂР°Р·РјРµСЂ Р·Р°РіРѕС‚РѕРІРєРё'
 if dbminx!=-5 then
 	X#=X#-10
 	Y#=Y#-10
@@ -25,8 +25,8 @@ util_copper@
 copper@ 0.1,161,1,1.0
 sc#=copperarea!
 if mpp =-1 then 
-	' двустороняя плата - вычесть лишнюю площадь
-	lc#=(2*X#+2*Y#)*7.5 ' периметр на 2.5 мм
+	' РґРІСѓСЃС‚РѕСЂРѕРЅСЏСЏ РїР»Р°С‚Р° - РІС‹С‡РµСЃС‚СЊ Р»РёС€РЅСЋСЋ РїР»РѕС‰Р°РґСЊ
+	lc#=(2*X#+2*Y#)*7.5 ' РїРµСЂРёРјРµС‚СЂ РЅР° 2.5 РјРј
 	sc# = sc#-lc#
 end if
 
@@ -36,12 +36,12 @@ util_copper@
 copper@ 0.1,161,1,1.0
 ss#=copperarea!
 if mpp =-1 then 
-	' двустороняя плата - вычесть лишнюю площадь
-	c#=(2*X#+2*Y#)*7.5 ' периметр на 2.5 мм
+	' РґРІСѓСЃС‚РѕСЂРѕРЅСЏСЏ РїР»Р°С‚Р° - РІС‹С‡РµСЃС‚СЊ Р»РёС€РЅСЋСЋ РїР»РѕС‰Р°РґСЊ
+	c#=(2*X#+2*Y#)*7.5 ' РїРµСЂРёРјРµС‚СЂ РЅР° 2.5 РјРј
 	ss# = ss#-lc#
 end if
 
-' вычисление площади золочения'
+' РІС‹С‡РёСЃР»РµРЅРёРµ РїР»РѕС‰Р°РґРё Р·РѕР»РѕС‡РµРЅРёСЏ'
 if X#>Y# then
 	minsize# = Y#
 	bigsize# = X#
@@ -50,7 +50,7 @@ else
 	bigsize# = Y#
 end if
 
-' отнимаем еще 2.5 периметра и прямоугольники'
+' РѕС‚РЅРёРјР°РµРј РµС‰Рµ 2.5 РїРµСЂРёРјРµС‚СЂР° Рё РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРё'
 if mpp=-1 then
 	minsize#=minsize#-25-17
 	bigsize#=bigsize#-35
@@ -63,14 +63,14 @@ else
 	else
 		auarea# = ss#+sc#-57800
 	end if
-	' числа получены имперически на CAM350'
+	' С‡РёСЃР»Р° РїРѕР»СѓС‡РµРЅС‹ РёРјРїРµСЂРёС‡РµСЃРєРё РЅР° CAM350'
 	'-(minsize#*20.0*2+(bigsize#-40.0)*20.0)*2
 end if
 'auarea% = auarea#/100
 auarea# = auarea#/100.0/100.0
 
 
-' вычисление количества отверстий'
+' РІС‹С‡РёСЃР»РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° РѕС‚РІРµСЂСЃС‚РёР№'
 drillsostav$ = ""
 if drill <> -1 then
 	setlayer@ drill
@@ -79,7 +79,7 @@ if drill <> -1 then
 		set_current_toolref@ i
 		frezcomment$ = ""
 		if tooltype! = 2 then
-			frezcomment$ = "-фреза"
+			frezcomment$ = "-С„СЂРµР·Р°"
 		end if
 		if toolused! then
 			drillsostav$ = drillsostav$ + FMTUSING$("##.##",toolsize!) + "|" + str$(Lyrdrillcount!)+frezcomment$+"x"
@@ -109,7 +109,7 @@ if mill <> -1 then
 	next
 	back@
 end if
-' состав шаблона'
+' СЃРѕСЃС‚Р°РІ С€Р°Р±Р»РѕРЅР°'
 if comp <> -1 then
 	sostav$ = sostav$ + "comp"
 end if
@@ -144,7 +144,7 @@ if msv <> -1 then
 	sostav$ = sostav$ + ", maska-sold-via"
 end if
 
-'Сохранение площадей в текстовом файле
+'РЎРѕС…СЂР°РЅРµРЅРёРµ РїР»РѕС‰Р°РґРµР№ РІ С‚РµРєСЃС‚РѕРІРѕРј С„Р°Р№Р»Рµ
 if tempdrlname$ <> "" then 
 	name$=tempdrlname$
 end if
@@ -170,14 +170,14 @@ print #1, USING "###.###"; ypl#
 
 close #1
 
-' записать файл приложения с площадями'
+' Р·Р°РїРёСЃР°С‚СЊ С„Р°Р№Р» РїСЂРёР»РѕР¶РµРЅРёСЏ СЃ РїР»РѕС‰Р°РґСЏРјРё'
 Command$="copy /Y X:\TOOL\CAMscripts\coppers.xls "+ chr$(34)+ path$ +chr$(34)
 Command$="cmd /C "+  chr$(34) + Command$ +  chr$(34)
 'messagebox Command$
 wincall Command$
 
-' записать данные в базу
-' длинный dopurl "мажет память"'
+' Р·Р°РїРёСЃР°С‚СЊ РґР°РЅРЅС‹Рµ РІ Р±Р°Р·Сѓ
+' РґР»РёРЅРЅС‹Р№ dopurl "РјР°Р¶РµС‚ РїР°РјСЏС‚СЊ"'
 dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&sizex="+str$(X#)+"&sizey="+str$(Y#)+"&smalldrill="+str$(smalldrill)+"&mpp="+str$(mpp)+"&bigdrill="+str$(bigdrill)+"&auarea="+str$(auarea#)+"&drillsostav="+drillsostav$
 '+"&sostav="+sostav$
 outfile$="cx.bat"

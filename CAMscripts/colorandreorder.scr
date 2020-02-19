@@ -32,9 +32,9 @@ edit_layer@ mill,4,4,-2,-2
 
 BREAK
 
-' сделаем наборы слоёв'
-' Первый сигнальные по кнопке 2'
-layerset_add@ 2,2,"Signals" ' этот есть всегда
+' СЃРґРµР»Р°РµРј РЅР°Р±РѕСЂС‹ СЃР»РѕС‘РІ'
+' РџРµСЂРІС‹Р№ СЃРёРіРЅР°Р»СЊРЅС‹Рµ РїРѕ РєРЅРѕРїРєРµ 2'
+layerset_add@ 2,2,"Signals" ' СЌС‚РѕС‚ РµСЃС‚СЊ РІСЃРµРіРґР°
 layerset_setdrill@ 2,-1
 layerset_setlyr@ 2,1,comp
 pos=2
@@ -45,7 +45,7 @@ if mpp>0 then
 	next
 end if
 layerset_setlyr@ 2,pos,solder
-layerset_add@ 3,2,"Masks" ' второй параметр всегда 2 - users layers set  '
+layerset_add@ 3,2,"Masks" ' РІС‚РѕСЂРѕР№ РїР°СЂР°РјРµС‚СЂ РІСЃРµРіРґР° 2 - users layers set  '
 layerset_setdrill@ 3,-1
 layerset_setlyr@ 3,1,mc
 layerset_setlyr@ 3,2,ms

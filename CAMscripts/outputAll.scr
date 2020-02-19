@@ -1,4 +1,4 @@
-' выгнать всё, чтб загнать '
+' РІС‹РіРЅР°С‚СЊ РІСЃС‘, С‡С‚Р± Р·Р°РіРЅР°С‚СЊ '
 
 macro_play "creategbx.scr"
 
@@ -11,12 +11,12 @@ dim d#(200)'diametr
 dim if#(200)'in feed
 dim of#(200)'out feed
 dim r#(200)'rpms
-dim numbers(200) ' использованые номера сверел
+dim numbers(200) ' РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹Рµ РЅРѕРјРµСЂР° СЃРІРµСЂРµР»
 dim frezy(200)
 dim drr(10)
 dim mir(10)
 
-' определение имени
+' РѕРїСЂРµРґРµР»РµРЅРёРµ РёРјРµРЅРё
 if fileexists(path$+"copper.rpt") then 
 	open path$+"copper.rpt" for input as #1
 		input #1,drillname$
@@ -34,9 +34,9 @@ if drill <> -1 then
 	tablefile$ = tablepath$+"\tables4.lst"
 	selected_layer = drill
 	GOSUB corecttool
-'4. Настройка вывода mill mashine
+'4. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° mill mashine
 	setup_fmtype@ 2,7
-	'mill машина - SIEB & MEYER 3000
+	'mill РјР°С€РёРЅР° - SIEB & MEYER 3000
 	setup_fmtunit@ 2,1
 	'mill mashine - metric
 	setup_fmtdigits@ 2,3,3
@@ -59,14 +59,14 @@ if drill <> -1 then
 	nc_exp_milltool_RPMs@ 1
 
 
-	'5. Собственно вывод фрезеровки
+	'5. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ С„СЂРµР·РµСЂРѕРІРєРё
 	millPCB_out@ drill,path$+drillname$+".mk4"
 end if
 
 if mill<> -1 then
-			'4. Настройка вывода mill mashine
+			'4. РќР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° mill mashine
 			setup_fmtype@ 2,7
-			'mill машина - SIEB & MEYER 3000
+			'mill РјР°С€РёРЅР° - SIEB & MEYER 3000
 			setup_fmtunit@ 2,1
 			'mill mashine - metric
 			setup_fmtdigits@ 2,3,3
@@ -84,19 +84,19 @@ if mill<> -1 then
 			nc_exp_milltool_retract@ 1
 			nc_exp_milltool_RPMs@ 1
 
-			'5. Собственно вывод фрезеровки
+			'5. РЎРѕР±СЃС‚РІРµРЅРЅРѕ РІС‹РІРѕРґ С„СЂРµР·РµСЂРѕРІРєРё
 			millPCB_out@ mill,path$+drillname$+".frz"
 
 end if
 
 end
-' подпрограмма корекции параметров инструментов'
+' РїРѕРґРїСЂРѕРіСЂР°РјРјР° РєРѕСЂРµРєС†РёРё РїР°СЂР°РјРµС‚СЂРѕРІ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ'
 corecttool:
 
 lines%=0
 
 OPEN tablefile$ FOR INPUT as #1
-' тут бы не плохо условие linrs<200? а то выход за массив будет, но пусть лучше падает скрипт'
+' С‚СѓС‚ Р±С‹ РЅРµ РїР»РѕС…Рѕ СѓСЃР»РѕРІРёРµ linrs<200? Р° С‚Рѕ РІС‹С…РѕРґ Р·Р° РјР°СЃСЃРёРІ Р±СѓРґРµС‚, РЅРѕ РїСѓСЃС‚СЊ Р»СѓС‡С€Рµ РїР°РґР°РµС‚ СЃРєСЂРёРїС‚'
 DO WHILE NOT EOF (1) =1
 lines% = lines% + 1;
 INPUT #1, d#(lines%), if#(lines%), of#(lines%), r#(lines%)
@@ -104,17 +104,17 @@ frezy(lines%)=0
 LOOP
 CLOSE #1
 
-' пройти только по нужному слою'
+' РїСЂРѕР№С‚Рё С‚РѕР»СЊРєРѕ РїРѕ РЅСѓР¶РЅРѕРјСѓ СЃР»РѕСЋ'
 setlayer@ selected_layer
 table = tooltable!
 number = 0;
 fre=1;
 for i=1 to Highesttoolref! 
 	set_current_toolref@ i
-	' проверка на повторяемость номеров
+	' РїСЂРѕРІРµСЂРєР° РЅР° РїРѕРІС‚РѕСЂСЏРµРјРѕСЃС‚СЊ РЅРѕРјРµСЂРѕРІ
 	for j=0 to number
 		if Toolnum! = numbers(j) AND Toolnum! <> 0 then
-			MessageBox "Повторяются номера в таблице сверл!","Ошибка!!!",ERROR
+			MessageBox "РџРѕРІС‚РѕСЂСЏСЋС‚СЃСЏ РЅРѕРјРµСЂР° РІ С‚Р°Р±Р»РёС†Рµ СЃРІРµСЂР»!","РћС€РёР±РєР°!!!",ERROR
 			goto mkrfrz_endscript
 		end if
 	next
@@ -137,17 +137,17 @@ for i=1 to Highesttoolref!
 	nc_set_tool_rpms@ table,i,r#(index)*1000
 	goto notoolintable
 freza:
-	'print_msg "Есть фреза!" + CR!
-	frezy(fre) = Toolnum! 'было i вместо Toolnum!'
+	'print_msg "Р•СЃС‚СЊ С„СЂРµР·Р°!" + CR!
+	frezy(fre) = Toolnum! 'Р±С‹Р»Рѕ i РІРјРµСЃС‚Рѕ Toolnum!'
 	fre = fre + 1
 	nc_set_tool_infeed@ table,i,8.3333
 	nc_set_tool_outfeed@ table,i,75
 	nc_set_tool_rpms@ table,i,30000
 	ts# = toolsize!
 	if ts# < 1 then
-		ts# = 1 ' проверка на маленькие фрезы'
+		ts# = 1 ' РїСЂРѕРІРµСЂРєР° РЅР° РјР°Р»РµРЅСЊРєРёРµ С„СЂРµР·С‹'
 	end if
-	nc_set_tool_feedrate@ table,i,ts#*10/6 'преобразование
+	nc_set_tool_feedrate@ table,i,ts#*10/6 'РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
 notoolintable:
 next
 

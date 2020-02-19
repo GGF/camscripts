@@ -17,7 +17,8 @@ if pathandname<>1 then
 	
 
 	if i>5 then 
-		MessageBox "Ну нельзя же так глубоко запихивать плату","Ошибка глубины", ERROR
+		' нельзя же так глубоко пихать плату то
+		MessageBox "You must not do this!","Deep error", ERROR
 	else 
 		board$ = mid$(filename$,p(i-1)+1,p(i)-p(i-1)-1)
 		if INSTR(board$,":") then

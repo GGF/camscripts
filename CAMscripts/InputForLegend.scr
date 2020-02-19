@@ -16,10 +16,10 @@ textxscale@ 100
 textvertical@ 0
 textfont@ "SIMPLE.EFN"
 dim int(16)
-'��������� ���� �����
+
 !include "getpathandname.scr"
 
-'���� ��� ������
+
 setup_fmtype@ 0,1
 rc = blanklayer!
 edit_layer@ rc,15,15,7,0,"rc.gbx"

@@ -5,7 +5,7 @@ X#=XX%
 YY%=dbmaxy!+10
 Y#=YY%
 break
-' Для координат контрольных отверстий
+' Р”Р»СЏ РєРѕРѕСЂРґРёРЅР°С‚ РєРѕРЅС‚СЂРѕР»СЊРЅС‹С… РѕС‚РІРµСЂСЃС‚РёР№
 dim xc#(100)
 dim yc#(100)
 dim dc#(100)
@@ -16,9 +16,19 @@ if X# = 495 and Y# = 595 then tc = 1
 
 if noform=1 then goto sd_noform
 
-OpenForm #1,45,5,"Сортировка отверстий за поле платы (с)Sch'arapoff 2011", character, okcancel
-AddForm #1, 0, 0, "Этот Макрос сортирует отверстия и создает контрольные отверстия!",Print
-AddForm #1, 0, 2, "Добавлять минимальные в тесткупон",check,tc
+utf2chr$ = "РЎРѕСЂС‚РёСЂРѕРІРєР° РѕС‚РІРµСЂСЃС‚РёР№ Р·Р° РїРѕР»Рµ РїР»Р°С‚С‹ (СЃ) Sch'arapoff 2011"
+GOSUB utf2chr
+title$=utf2chr$
+OpenForm #1,45,5,title$, character, okcancel
+utf2chr$ = "Р­С‚РѕС‚ РњР°РєСЂРѕСЃ СЃРѕСЂС‚РёСЂСѓРµС‚ РѕС‚РІРµСЂСЃС‚РёСЏ Рё СЃРѕР·РґР°РµС‚ РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ РѕС‚РІРµСЂСЃС‚РёСЏ!"
+GOSUB utf2chr
+description$=utf2chr$
+AddForm #1, 0, 0, description$,Print
+utf2chr$ = "Р”РѕР±Р°РІР»СЏС‚СЊ РјРёРЅРёРјР°Р»СЊРЅС‹Рµ РІ С‚РµСЃС‚РєСѓРїРѕРЅ"
+GOSUB utf2chr
+question$=utf2chr$
+
+AddForm #1, 0, 2, question$,check,tc
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -27,8 +37,8 @@ if Canceled% = 1 then end
 
 sd_noform:
 
-'Добавление контрольных сверловок
-' слой сверловки
+'Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»СЊРЅС‹С… СЃРІРµСЂР»РѕРІРѕРє
+' СЃР»РѕР№ СЃРІРµСЂР»РѕРІРєРё
 
 if drill <> -1 then
 	setlayer@ drill
@@ -45,7 +55,7 @@ if drill <> -1 then
 			oldoff# = off#
 			off#=drillsize!/2
 			if mindrill# > drillsize! then
-				' запомним номер минимального сверла'
+				' Р·Р°РїРѕРјРЅРёРј РЅРѕРјРµСЂ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЃРІРµСЂР»Р°'
 				mindrill# = drillsize!
 				imindrill = i
 			end if
@@ -57,32 +67,32 @@ if drill <> -1 then
 		end if
 	next
 	back@
-	' Сортировка отверстий
+	' РЎРѕСЂС‚РёСЂРѕРІРєР° РѕС‚РІРµСЂСЃС‚РёР№
 	for i=1 to Highesttoolref!
 		set_current_toolref@ i
 		if toolused! and tooltype! <> 2 then
-			' Добавить отверстие в нуле
+			' Р”РѕР±Р°РІРёС‚СЊ РѕС‚РІРµСЂСЃС‚РёРµ РІ РЅСѓР»Рµ
 			nc_add_drill_hit@
 			set_nc_plated_add_drill@ 1
 			axy@ 0,0
 			end@
-			' Отсортировать
+			' РћС‚СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ
 			drill_firstlast@ 1
 			drill_sort_set@ 2,0,1.2700,drill
 			drill_sort@ 0,0,xc#(i),yc#(i)
 			end@
-			' Удалить отверстие в нуле
+			' РЈРґР°Р»РёС‚СЊ РѕС‚РІРµСЂСЃС‚РёРµ РІ РЅСѓР»Рµ
 			edit_delete@
 			axy@ 0,0
 			back@
 			end@
 		end if
 	next
-	' если многослойка 230 на 395 добавим контрольные минимальным'
+	' РµСЃР»Рё РјРЅРѕРіРѕСЃР»РѕР№РєР° 230 РЅР° 395 РґРѕР±Р°РІРёРј РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ РјРёРЅРёРјР°Р»СЊРЅС‹Рј'
 	if X# = 240 and Y# = 405 and tc = 1 then
-		' ну вы помните чот Х и У на десятку больше
-		' еще неизвестно что произойдет на двусторонней с такими габаритами, но этот скрипт там практически 
-		' не вызывается
+		' РЅСѓ РІС‹ РїРѕРјРЅРёС‚Рµ С‡РѕС‚ РҐ Рё РЈ РЅР° РґРµСЃСЏС‚РєСѓ Р±РѕР»СЊС€Рµ
+		' РµС‰Рµ РЅРµРёР·РІРµСЃС‚РЅРѕ С‡С‚Рѕ РїСЂРѕРёР·РѕР№РґРµС‚ РЅР° РґРІСѓСЃС‚РѕСЂРѕРЅРЅРµР№ СЃ С‚Р°РєРёРјРё РіР°Р±Р°СЂРёС‚Р°РјРё, РЅРѕ СЌС‚РѕС‚ СЃРєСЂРёРїС‚ С‚Р°Рј РїСЂР°РєС‚РёС‡РµСЃРєРё 
+		' РЅРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ
 		set_current_toolref@ imindrill
 		nc_add_drill_hit@
 		set_nc_plated_add_drill@ 1
@@ -105,9 +115,9 @@ if drill <> -1 then
 		axy@ 197.5000,11.2500
 	end if
 	if X# = 290 and Y# = 405 and tc = 1 then
-		' ну вы помните чот Х и У на десятку больше
-		' еще неизвестно что произойдет на двусторонней с такими габаритами, но этот скрипт там практически 
-		' не вызывается
+		' РЅСѓ РІС‹ РїРѕРјРЅРёС‚Рµ С‡РѕС‚ РҐ Рё РЈ РЅР° РґРµСЃСЏС‚РєСѓ Р±РѕР»СЊС€Рµ
+		' РµС‰Рµ РЅРµРёР·РІРµСЃС‚РЅРѕ С‡С‚Рѕ РїСЂРѕРёР·РѕР№РґРµС‚ РЅР° РґРІСѓСЃС‚РѕСЂРѕРЅРЅРµР№ СЃ С‚Р°РєРёРјРё РіР°Р±Р°СЂРёС‚Р°РјРё, РЅРѕ СЌС‚РѕС‚ СЃРєСЂРёРїС‚ С‚Р°Рј РїСЂР°РєС‚РёС‡РµСЃРєРё 
+		' РЅРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ
 		set_current_toolref@ imindrill
 		nc_add_drill_hit@
 		set_nc_plated_add_drill@ 1
@@ -132,8 +142,8 @@ if drill <> -1 then
 	end if
 
 end if
-'Добавление контрольных сверловок
-' слой сверловки
+'Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»СЊРЅС‹С… СЃРІРµСЂР»РѕРІРѕРє
+' СЃР»РѕР№ СЃРІРµСЂР»РѕРІРєРё
 
 if mill <> -1 then
 	setlayer@ mill
@@ -155,27 +165,27 @@ if mill <> -1 then
 		end if
 	next
 	back@
-	' Сортировка отверстий
+	' РЎРѕСЂС‚РёСЂРѕРІРєР° РѕС‚РІРµСЂСЃС‚РёР№
 	for i=1 to Highesttoolref!
 		set_current_toolref@ i
 		if toolused! and tooltype! <> 2 then
-			' Добавить отверстие в нуле
+			' Р”РѕР±Р°РІРёС‚СЊ РѕС‚РІРµСЂСЃС‚РёРµ РІ РЅСѓР»Рµ
 			nc_add_drill_hit@
 			set_nc_plated_add_drill@ 1
 			axy@ 0,0
 			end@
-			' Отсортировать
+			' РћС‚СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ
 			drill_firstlast@ 1
 			drill_sort_set@ 2,0,1.2700,lay
 			drill_sort@ 0,0,xc#(i),yc#(i)
 			end@
-			' Удалить отверстие в нуле
+			' РЈРґР°Р»РёС‚СЊ РѕС‚РІРµСЂСЃС‚РёРµ РІ РЅСѓР»Рµ
 			edit_delete@
 			axy@ 0,0
 			back@
 			end@
 		end if
-		' Удалить отверстие в конце
+		' РЈРґР°Р»РёС‚СЊ РѕС‚РІРµСЂСЃС‚РёРµ РІ РєРѕРЅС†Рµ
 		edit_delete@
 		axy@ xc#(i),yc#(i)
 		back@
@@ -184,7 +194,7 @@ if mill <> -1 then
 
 end if
 
-' теперь снова получим сверла сверловочного слоя
+' С‚РµРїРµСЂСЊ СЃРЅРѕРІР° РїРѕР»СѓС‡РёРј СЃРІРµСЂР»Р° СЃРІРµСЂР»РѕРІРѕС‡РЅРѕРіРѕ СЃР»РѕСЏ
 offset#=0
 off#=0
 setlayer@ drill
@@ -204,7 +214,7 @@ next
 For lay = Nextlay to Highestlayer!
 	setlayer@ lay
 	if layertype! = 0 OR layertype! = 1 OR layertype! = 3 then 
-	' если слой тор internal or bottom
+	' РµСЃР»Рё СЃР»РѕР№ С‚РѕСЂ internal or bottom
 		for i=1 to md
 			bd = Blankdcode!
 			edit_aperture@ bd,1,dc#(i)+0.5,dc#(i)+0.5,bd,"" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
@@ -216,7 +226,7 @@ For lay = Nextlay to Highestlayer!
 		next
 	end if
 	if layertype! = 11 OR layertype! = 12  then 
-	' если слой маска
+	' РµСЃР»Рё СЃР»РѕР№ РјР°СЃРєР°
 		for i=1 to md
 			bd = Blankdcode!
 			edit_aperture@ bd,1,dc#(i)+0.7,dc#(i)+0.7,bd,"" ' Dcode #, Shape, Size, Swap, Custom name (if its a custom).
@@ -229,3 +239,7 @@ For lay = Nextlay to Highestlayer!
 	end if
 
 next
+
+end
+
+!include "utf2chr1251.sub"

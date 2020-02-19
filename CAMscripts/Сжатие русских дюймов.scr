@@ -1,7 +1,7 @@
 layer_renumber@
 setlayer@ 0
 dim sel(Numlayers!+1)
-OpenForm #1,40,Numlayers!,"Сжатие слоев из русских дюймов (с) Sch'arapoff", character, okcancel
+OpenForm #1,40,Numlayers!,"Zip russian inches (СЃ) Sch'arapoff", character, okcancel
 for lay=netxlay to highestlayer!
 	setlayer@ lay
 	sel(lay+1) = 1
@@ -18,14 +18,14 @@ for lay=netxlay to highestlayer!
 		setlayer@ lay
 		nlay = blanklayer!
 		edit_scale@ lay,nlay,98425193,98425193
-' удаление
+' СѓРґР°Р»РµРЅРёРµ
 		setlayer@ lay
 		layer_alloff@ 1
 		edit_delete@
 		setsnap@ 1
 		edit_selectall2@ 
 		delete_edits@ 4,1
-' копирование
+' РєРѕРїРёСЂРѕРІР°РЅРёРµ
 		setlayer@ nlay
 		layer_alloff@ 1
 		edit_copy@
@@ -33,7 +33,7 @@ for lay=netxlay to highestlayer!
 		setcoplayer@ lay,nlay
 		copy_to_layer@
 		back@
-' удаление доп слоя
+' СѓРґР°Р»РµРЅРёРµ РґРѕРї СЃР»РѕСЏ
 		edit_removelyr@ nlay	
 	end if
 next
