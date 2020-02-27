@@ -199,28 +199,47 @@ else
 		tochnovert% = 0
 	end if
 	if tochnovert%<9 then
-		AddForm #1, 0, 0, "Vertical?",check,vert%
+		utf2chr$ = "Вертикально?"
+		GOSUB utf2chr
+		msg$ = utf2chr$	
+		AddForm #1, 0, 0, msg$,check,vert%
 	end if
 end if
 
-AddForm #1, 50, 0, "Close after end?",check,closefile%
+utf2chr$ = "Закрыть по окончании?"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 40, 0, msg$,check,closefile%
 
-
-AddForm #1, 0, 1, "Drills:",print
+utf2chr$ = "Сверловки:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 1, msg$,print
 for i = 1 to drs
 	shiftx = 13+(i-1)*(55/drs)
 	drr(i) = 1
 	AddForm #1, shiftx, 1, dr$(i),check,drr(i)
 next
-AddForm #1, 0, 2, "Mills:",print
+
+utf2chr$ = "Фрезеровки:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 2, msg$,print
 for i = 1 to mis
 	shiftx = 20+(i-1)*20
 	mir(i) = 1
 	AddForm #1, shiftx, 2, mi$(i),check,mir(i)
 next
-AddForm #1, 0, 3, "Name (for drill)",input,drillname$
-AddForm #1,0, 5, "scale X", input,scalex#
-AddForm #1,35, 5, "scale Y", input,scaley#
+
+utf2chr$ = "Имя файла:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 3, msg$,input,drillname$
+utf2chr$ = "Сжатие по"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1,0, 5, msg$+" X", input,scalex#
+AddForm #1,35, 5, msg$+" Y", input,scaley#
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
@@ -228,7 +247,10 @@ DeleteForm #1
 if Canceled% = 1 then goto mkrfrz_endscript
 
 noform:
-print_msg "I am working... wait!!!"
+utf2chr$ = "Идет обработка... Ждите!"
+GOSUB utf2chr
+msg$ = utf2chr$
+print_msg msg$
 
 ' развернуть если вертикальное
 if vert% <> 1 then
