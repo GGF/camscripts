@@ -242,6 +242,6 @@ next
 
 goto end_sorrtdrill
 
-!include "utf2chr1251.sub"
+!include "utf2chr1251.inc"
 
 end_sorrtdrill:
