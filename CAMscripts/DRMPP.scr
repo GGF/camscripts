@@ -813,4 +813,4 @@ view_SuppressGrphcs@ 0
 550
 end
 
-!include "translit.sub" 
+!include "translit.inc" 

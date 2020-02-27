@@ -754,5 +754,5 @@ update_dcodebar@
 return
 '---------------------
 
-!include "translit.sub" 
+!include "translit.inc" 
 

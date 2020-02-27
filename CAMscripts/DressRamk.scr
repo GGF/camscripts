@@ -1104,4 +1104,4 @@ end@
 550
 end
 
-!include "translit.sub" 
+!include "translit.inc" 

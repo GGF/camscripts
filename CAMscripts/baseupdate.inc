@@ -42,6 +42,6 @@ kill path$+"dbq.bat"
 
 goto bu_endscript
 
-!INCLUDE "urlencode.sub"
+!INCLUDE "urlencode.inc"
 
 bu_endscript:
