@@ -157,12 +157,24 @@ if mpp <> -1 then
 end if
 
 if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
-	messagebox "Couriosity scale koeff X="+str$(scalex#)+", Y="+str$(scaley#),"Are you shure?",OKCANCEL,MacroEnd%
+	utf2chr$ = "Странные коэффициэнты сжвтия Х="
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	utf2chr$ = "Вы уверенны?"
+	GOSUB utf2chr
+	title$ = utf2chr$
+	messagebox msg$+str$(scalex#)+", Y="+str$(scaley#),title$,OKCANCEL,MacroEnd%
 	if MacroEnd% = 2 then end
 end if
 
 if scalex#>1.001 or scalex# < 0.998 or scaley#>1.001 or scaley#<0.998 then
-	messagebox "I shell not scaling!!!","Must be only one!",OKCANCEL,MacroEnd%
+	utf2chr$ = "Я не буду это сжимать, поставлю единицу"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	utf2chr$ = "Оооочень странные коэффициэнты"
+	GOSUB utf2chr
+	title$ = utf2chr$
+	messagebox msg$,title$,OKCANCEL,MacroEnd%
 	if MacroEnd% = 2 then end
 	scalex#=1
 	scaley#=1
@@ -172,7 +184,12 @@ frr = 0
 closefile% = 1
 
 DPP:
-OpenForm #1,70,7,"Mill and drill (c) Sch'arapoff", character, okcancel
+
+utf2chr$ = "Сверловка и фрезеровка"
+GOSUB utf2chr
+title$ = utf2chr$
+
+OpenForm #1,70,7,title$+" (c) Sch'arapoff", character, okcancel
 if mpp <> -1 then
 	frr=0
 	vert% = 1
@@ -826,8 +843,10 @@ goto mkrfrz_endscript
 
 !include "correcttool.inc"
 
-!include "znmheader.inc"
+!include "snmheader.inc"
 
-!include "eitexelon.inc"
+!include "editexelon.inc"
+
+!include "utf2chr1251.inc"
 
 mkrfrz_endscript:
