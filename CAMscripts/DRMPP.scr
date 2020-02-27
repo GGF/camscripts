@@ -784,7 +784,7 @@ for i=1 to mpp
 		textmirror@ 0
 	end if
 	ln$=Layername!
-	if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0 or instr(1,ln$,"а")>0 or instr(1,ln$,"А")>0 then
+	if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0  then
 		if chet=0 then
 			layname$ = str$(trulay+1)+"A"
 		else 

@@ -71,4 +71,4 @@ name oldname$ as newname$
 ' записать данные в базу
 dopurl$="wideandgap"+"&wideandgaps="+wideandgaps$
 outfile$="NUL:"
-!include "baseupdate.scr"
+!include "baseupdate.inc"

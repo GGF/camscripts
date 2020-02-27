@@ -240,6 +240,8 @@ For lay = Nextlay to Highestlayer!
 
 next
 
-end
+goto end_sorrtdrill
 
 !include "utf2chr1251.sub"
+
+end_sorrtdrill:

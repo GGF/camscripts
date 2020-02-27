@@ -182,4 +182,4 @@ dopurl$="copper"+"&comp="+str$(sc#)+"&solder="+str$(ss#)+"&drillname="+name$+"&s
 '+"&sostav="+sostav$
 outfile$="cx.bat"
 
-!include "baseupdate.scr"
+!include "baseupdate.inc"

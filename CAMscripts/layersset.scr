@@ -74,13 +74,14 @@ if layersset <> 1 then
 			if layertype! = 21 then 
 				if instr(layername!,"mkr") > 0 OR instr(layername!,"MKR") > 0 OR instr(layername!,"mk4") > 0 OR instr(layername!,"mk2") > 0 OR instr(layername!,"drill")>0 OR (instr(layername!,"drl")>0 AND NOT (instr(layername!,"n.drl")>0 AND customer$="Импульс")) then
 					' закоментировал, потому как запросом из базы назначится одна  верхняя, а остльны чтоб не сортироались
-					' drill = lay
+					' плохо сработало, нужно еще посмотреть как влияет обозначение здесь.
+					drill = lay
 					drs = drs + 1
 					dr(drs) = lay
 					dr$(drs) = layername!
 				elseif instr(layername!,"fr") > 0 OR instr(layername!,"FR") > 0 OR instr(layername!,"mill")>0 OR (instr(layername!,"n.drl")>0 AND customer$="Импульс") or lay = mill then
 					' закоментировал, потому как запросом из базы назначится одна  верхняя, а остльны чтоб не сортироались
-					' mill = lay
+					mill = lay
 					mis = mis+1
 					mi(mis) = lay
 					mi$(mis) = layername!
