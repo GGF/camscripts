@@ -26,7 +26,7 @@ tablepath$="x:\tool\camscripts"
 
 if mpp <> -1 then 
 	macro_play "DRMPP.scr"
-	goto 550
+	goto end_of_dress_dpp
 end if
 
 
@@ -41,8 +41,11 @@ elseif solder > -1 then
 	xpl# = vismaxx! - visminx! - 0.5
 	ypl# = vismaxy! - visminy! - 0.5
 else
+	utf2chr$ = "Ширина:"
+	GOSUB utf2chr
+	msg$ = utf2chr$
 	MessageBox "Нет слоев comp и solder"
-	goto 550
+	goto end_of_dress_dpp
 end if
 
 if brd > -1 then
@@ -85,29 +88,74 @@ mins%=1
 aliquottwenty% = 0 ' катность размеров рамки 20
 
 25
-OpenForm #1,70,9,"Frame (c) Sch'arapoff 2005", character, okcancel
-AddForm #1, 0, 0, "You must move project to (0,0)!!!",Print
-AddForm #1, 0, 1, "Other files",input,tablepath$
-AddForm #1, 0, 2, "wide'n'gaps? (maybe long time)",check,mins%
+utf2chr$ = "Рамка для ДПП"
+GOSUB utf2chr
+msg$ = utf2chr$
+OpenForm #1,70,9,msg$+" (c) Sch'arapoff 2005", character, okcancel
+utf2chr$ = "Переместите проект в точку 0,0 !!!"
+GOSUB utf2chr
+msg$ = utf2chr$
 
-AddForm #1, 0, 3, "Minimum?",check,mr%
+AddForm #1, 0, 0, msg$,print
+utf2chr$ = "Путь к другим файлам:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 1, msg$,input,tablepath$
+
+AddForm #1, 0, 0, msg$,print
+utf2chr$ = "Считать минимальные зазоры (может быть долго)"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 2, msg$,check,mins%
+
+utf2chr$ = "Минимальная рамка?"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 3, msg$,check,mr%
 AddForm #1, 25, 3, "230x305?",check,mrr%
-AddForm #1, 50, 3, "Mult of 20?",check,aliquottwenty%
 
-AddForm #1, 0, 4, "Size",print
-AddForm #1, 10, 4, "x:",input,xpl#
-AddForm #1, 35, 4, "y:",input,ypl#
-AddForm #1, 0, 5, "Step :",input,step#
-AddForm #1, 35, 5, "Tech field:",input,techfield#
-AddForm #1, 0, 6, "File name (for drill)",input,name$
-AddForm #1, 0, 7, "Date",input,date$
-AddForm #1, 0, 8, "Numbers by X:",input,xX%
-AddForm #1, 35, 8, "Numbers by Y:",input,YY%
+utf2chr$ = "Стороны кратны двадцати"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 40, 3, msg$,check,aliquottwenty%
+
+utf2chr$ = "Размеры"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 4, msg$,print
+AddForm #1, 15, 4, "x:",input,xpl#
+AddForm #1, 40, 4, "y:",input,ypl#
+
+utf2chr$ = "Шаг:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 5, msg$,input,step#
+
+utf2chr$ = "Поля"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 35, 5, msg$,input,techfield#
+
+utf2chr$ = "Имя файла:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 6, msg$,input,name$
+
+utf2chr$ = "Дата:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 7, msg$,input,date$
+
+utf2chr$ = "Количество по"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 8, msg$+" X:",input,xX%
+AddForm #1, 35, 8, msg$+" Y:",input,YY%
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
 
-if Canceled% = 1 then goto 550
+if Canceled% = 1 then goto end_of_dress_dpp
 
 layer_alloff@ 1
 view_SuppressGrphcs@ 1
@@ -170,8 +218,11 @@ end if
 
 ' проверка на влезаемость в рамку, актуально только для рамок с заданным размером'
 if (mr%=1 or mrr%=1) and (mY# > (Y#-techfield#-bigtechfield#) or mX# > (X#-techfield#*2.0)) then 
-	MessageBox "Not in range. x="+str$(mX#)+" y="+str$(my#)
-	goto 550
+	utf2chr$ = "Не влезает в рамку"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	MessageBox msg$+" x="+str$(mX#)+" y="+str$(my#)
+	goto end_of_dress_dpp
 end if
 
 
@@ -1101,7 +1152,8 @@ view_redraw@
 end@
 
 
-550
+end_of_dress_dpp:
 end
 
 !include "translit.inc" 
+!include "utf2chr1251.inc"

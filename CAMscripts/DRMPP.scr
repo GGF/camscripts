@@ -37,8 +37,11 @@ elseif solder > -1 then
 	xpl# = vismaxx! - visminx! - 0.5
 	ypl# = vismaxy! - visminy! - 0.5
 else
-	MessageBox "No comp or solder :(" 
-	goto 550
+	utf2chr$ = "Нет сигнальных слоёв, нечего одевать!"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	MessageBox msg$
+	goto end_of_drmpp
 end if
 
 if brd > -1 then
@@ -64,6 +67,7 @@ ypl% = ypl#*10.0
 xpl# = xpl%/10.0
 ypl# = ypl%/10.0
 
+' получить дату
 !include "getdate.scr"
 
 techfield#=22
@@ -75,24 +79,54 @@ mins%=1
 spx% = 0
 spy% = 0
 
-OpenForm #1,70,7,"MLPCB Frame (c) Sch'arapoff 2012", character, okcancel
-AddForm #1, 0, 0, "It make frame to MLPCB!",Print
-AddForm #1, 0, 1, "Size",print
+utf2chr$ = "Рамка для многослойной платы"
+GOSUB utf2chr
+msg$ = utf2chr$
+OpenForm #1,70,7,msg$+" (c) Sch'arapoff 2012", character, okcancel
+utf2chr$ = "Этот скрипт делает рамку для многослойной платы!"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 0, msg$,print
+utf2chr$ = "Размеры"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 1, msg$,print
 AddForm #1, 10, 1, "x:",input,xpl#
 AddForm #1, 35, 1, "y:",input,ypl#
-AddForm #1, 0, 2, "Step :",input,step#
-AddForm #1, 35, 2, "Tech field:",input,techfield#
-AddForm #1, 0, 3, "Number by x:",input,spx%
-AddForm #1, 35, 3, "Numbers y:",input,spy%
-AddForm #1, 0, 4, "Filename",input,name$
-AddForm #1, 0, 5, "Date",input,date$
-AddForm #1, 56, 4, "Wide:",Choice,widezag%,"230","280","485","280+"
-AddForm #1, 0, 6, "Wide'n'gaps (may be long time)",check,mins%
+utf2chr$ = "Шаг :"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 2, msg$,input,step#
+utf2chr$ = "Технические поля:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 35, 2, msg$,input,techfield#
+utf2chr$ = "Количество по"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 3, msg$+" x:",input,spx%
+AddForm #1, 35, 3, msg$+" y:",input,spy%
+utf2chr$ = "Имя файла:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 4, msg$,input,name$
+utf2chr$ = "Дата:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 5, msg$,input,date$
+utf2chr$ = "Ширина:"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 56, 4, msg$,Choice,widezag%,"230","280","485","280+"
+utf2chr$ = "Зазоры считать? (может занять много времени)"
+GOSUB utf2chr
+msg$ = utf2chr$
+AddForm #1, 0, 6, msg$,check,mins%
 DisplayForm #1
 Canceled% = formcancel(1)
 DeleteForm #1
 
-if Canceled% = 1 then goto 550
+if Canceled% = 1 then goto end_of_drmpp
 
 'уберем графику'
 view_SuppressGrphcs@ 1
@@ -810,7 +844,7 @@ setsaveasfile@ filename$
 
 view_SuppressGrphcs@ 0
 
-550
+end_of_drmpp:
 end
 
 !include "translit.inc" 
