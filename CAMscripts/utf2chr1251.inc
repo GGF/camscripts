@@ -10,11 +10,17 @@ utf2chr:
     'messagebox str$(byte)
     ' от А до п
     if byte = -48 then russian = 304
+    ' от А до п не в седьмом каме
+    if Version! > 7 and byte = 208 then russian = 48
     ' от р
     if byte = -47 then russian = 368
+    ' от p не в седьмом каме
+    if Version! > 7 and byte = 209 then russian = 112
     ' отдельными потому что выход из под end if может вызвать проблемы
     if byte = -48  then goto nextbyte
     if byte = -47  then goto nextbyte
+    if Version! > 7 and byte = 208 then goto nextbyte
+    if Version! > 7 and byte = 209 then goto nextbyte
     'messagebox str$(byte)
     if russian then 
       byte = byte + russian
