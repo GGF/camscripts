@@ -95,14 +95,13 @@ OpenForm #1,70,9,msg$+" (c) Sch'arapoff 2005", character, okcancel
 utf2chr$ = "Переместите проект в точку 0,0 !!!"
 GOSUB utf2chr
 msg$ = utf2chr$
-
 AddForm #1, 0, 0, msg$,print
+
 utf2chr$ = "Путь к другим файлам:"
 GOSUB utf2chr
 msg$ = utf2chr$
 AddForm #1, 0, 1, msg$,input,tablepath$
 
-AddForm #1, 0, 0, msg$,print
 utf2chr$ = "Считать минимальные зазоры (может быть долго)"
 GOSUB utf2chr
 msg$ = utf2chr$
