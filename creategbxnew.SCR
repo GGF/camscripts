@@ -23,7 +23,7 @@ util_camed@
 
 spacing# = 10
 
-plenka% = 1 ' 1 - AGFA 2-KODAK
+plenka% = 2 ' 1 - AGFA 2-KODAK
 
 layer_alloff@ 0
 view_close@
@@ -72,9 +72,6 @@ else
 	' ןכוםךא AGFA 20 םא 24 ה‏ילא (508 םא 609.6 לל)
 	fsizex# = 508.0
 	fsizey# = 609.6
-	' הכÿ Miva
-	fsizex# = 609.0
-	fsizey# = 508.6
 	prefix$ = "_AGFA"
 end if
 

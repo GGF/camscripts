@@ -1,5 +1,6 @@
 10
 util_camed@
+setup_fmtype@ 1,5 ' выбор экселона по умолчанию, у него сверловка текста приятнее
 textfont@ "arial.ttf"
 setgridsnap@ 0
 setsnap@ 0

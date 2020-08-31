@@ -1,5 +1,18 @@
-@echo off
+rem @echo off
+setlocal enableextensions enabledelayedexpansion
 chcp 1251>nul 
+
+rem переименовать neg & pos в n1.. & p1..
+for %%f in (pos*.gbx) do (
+	for /f "delims=_ tokens=1,2,3* " %%i in ("%%f") do (
+		ren %%i_%%j_%%k p%%j.gbx 
+	)
+)
+for %%f in (neg*.gbx) do (
+	for /f "delims=_ tokens=1,2,3* " %%i in ("%%f") do (
+		ren %%i_%%j_%%k n%%j.gbx 
+	)
+)
 
 set nname=%1
 
@@ -60,11 +73,12 @@ SET "ccd=%ccd:я=ja%"
 
 rem Собираем имя для подстановки вначале из 2 первых букв заказчика и 4 последних блока
 for /f "delims=\; tokens=3" %%i in ("%ccd%") do set name=%%i
-set nname=%name:~0,2%
+set nname=%name:~0,1%
 for /f "delims=\; tokens=4" %%i in ("%ccd%") do set name=%%i
 set nname=%nname%%name:~-4%
 
 :existpar
+
 
 set n=0
 echo %CD% >dbq.bat

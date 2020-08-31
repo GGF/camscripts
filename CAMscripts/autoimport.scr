@@ -1,0 +1,4 @@
+' Autoimport for cam 12 - 
+util_camed@
+!INCLUDE "getpathandname.scr"
+Auto_Import@ path$
