@@ -97,8 +97,8 @@ if 1=1 then
 		end if
 	end if
 
-	dim xscal#(30)
-	dim yscal#(30)
+	dim xscal#(100)
+	dim yscal#(100)
 	xmin# = 1000
 	Ymin# = 1000
 	xmax# = 0

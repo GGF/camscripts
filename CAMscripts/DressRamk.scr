@@ -932,12 +932,14 @@ setopenfile@ path$+"dpp.pcb"
 view_SuppressGrphcs@ 1
 
 'перемещение
-
 layer_alloff@ 0
+view_all@
+'MessageBox str$(X#)+" "+str$(Y#)+" "+str$(mX#)+" "+str$(mY#)+" "+str$(minx#)+" "+str$(miny#)
+'MessageBox str$((Y#-techfield#-bigtechfield#-mY#)/2.0+bigtechfield#)
+'MessageBox str$((X#-techfield#-techfield#-mX#)/2.0+techfield#)
 edit_move@
 edit_selectall2@
 axy@ xmin#,ymin#
-'MessageBox str$(X#)+" "+str$(Y#)+" "+str$(mX#)+" "+str$(mY#)
 if vert%=1 then 
 	axy@ (Y#-techfield#-bigtechfield#-mY#)/2.0+bigtechfield#,(X#-techfield#-techfield#-mX#)/2.0+techfield#
 else 
