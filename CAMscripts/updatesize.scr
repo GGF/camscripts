@@ -1,0 +1,60 @@
+if drillname$ <> "" then 
+	tempdrlname$=drillname$
+end if
+
+!INCLUDE "getpathandname.scr"
+
+!include "layersset.scr"
+
+
+' определение размеров платы
+
+if brd > -1 then
+	setlayer@ brd
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif mc > -1 then
+	setlayer@ mc
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif ms > -1 then
+	setlayer@ ms
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx!
+	ypl# = vismaxy! - visminy!
+elseif comp > -1 then
+	setlayer@ comp
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+elseif solder > -1 then
+	setlayer@ solder
+	layer_alloff@ 1
+	xpl# = vismaxx! - visminx! - 0.5
+	ypl# = vismaxy! - visminy! - 0.5
+else
+	MessageBox "Not exist comp-solder"
+	goto end_of_updatesize
+end if
+' округлить до десятых'
+xpl% = xpl#*10.0
+ypl% = ypl#*10.0
+xpl# = xpl%/10.0
+ypl# = ypl%/10.0
+
+break 
+' записать данные в базу
+' длинный dopurl "мажет память"'
+dopurl$="updatesize"+"&sizex="+str$(xpl#)+"&sizey="+str$(ypl#)
+'+"&sostav="+sostav$
+outfile$="cx.bat"
+
+!include "baseupdate-dev.inc"
+kill path$+outfile$
+
+end_of_updatesize:
+closefile%=1
+!include "closecam.inc"
+
