@@ -4,3 +4,6 @@ CAMscripts/basic.err
 CAMscripts/errors.drc
 Symbols — копия.smb
 basic.err
+source/fork/fork.exe
+source/getpcbtype/getpcbtype.exe
+source/getpcbtype/main.o
