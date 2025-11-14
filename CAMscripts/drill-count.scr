@@ -1,0 +1,51 @@
+if drillname$ <> "" then 
+	tempdrlname$=drillname$
+end if
+
+!INCLUDE "getpathandname.scr"
+
+!include "layersset.scr"
+
+' вычисление количества отверстий'
+drillsostav$ = ""
+if drill <> -1 then
+	setlayer@ drill
+	layer_alloff@ 1
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		frezcomment$ = ""
+		if tooltype! = 2 then
+			frezcomment$ = "-"
+		end if
+		if toolused! then
+			drillsostav$ = drillsostav$ + frezcomment$ + FMTUSING$("#.##",toolsize!) + "|" + str$(Lyrdrillcount!) + "x"
+		end if
+	next
+	back@
+end if
+if mill <> -1 then
+	setlayer@ mill
+	layer_alloff@ 1
+	for i=1 to Highesttoolref!
+		set_current_toolref@ i
+		frezcomment$ = ""
+		if tooltype! = 2 then
+			frezcomment$ = "-"
+		end if
+		if toolused! then
+			drillsostav$ = drillsostav$ + frezcomment$ + FMTUSING$("#.##",toolsize!) + "|" + str$(Lyrdrillcount!) + "x"
+		end if
+	next
+	back@
+end if
+
+' записать данные в базу
+' длинный dopurl "мажет память"'
+dopurl$="drillcount"+"&drillsostav="+drillsostav$
+outfile$="111"
+
+!include "basedevupdate.inc"
+
+' закрыть проект
+closefile% = 1
+!include "closecam.inc"

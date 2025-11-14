@@ -100,66 +100,79 @@ pos = 0
 init_layer_reorder@
 if rc<>-1 then
 	change_layer_position@ pos,rc,pos
+	rc = pos
 	pos=pos+1
 end if
 if rcn<>-1 then
 	change_layer_position@ pos,rcn,pos
+	rcn = pos
 	pos=pos+1
 end if
 if mc<>-1 then
 	change_layer_position@ pos,mc,pos
+	mc = pos
 	pos=pos+1
 end if
 if mcv<>-1 then
 	change_layer_position@ pos,mcv,pos
+	mcv = pos
 	pos=pos+1
 end if
 if comp<>-1 then
 	change_layer_position@ pos,comp,pos
+	comp = pos
 	pos=pos+1
 end if
 
 if mpp>0 then
 	for i=1 to mpp
 		change_layer_position@ pos,int(i),pos
+		int(i) = pos
 		pos = pos+1
 	next
 end if
 
 if solder<>-1 then
 	change_layer_position@ pos,solder,pos
+	solder = pos
 	pos=pos+1
 end if
 if msv<>-1 then
 	change_layer_position@ pos,msv,pos
+	mcv = pos
 	pos=pos+1
 end if
 if ms<>-1 then
 	change_layer_position@ pos,ms,pos
+	ms = pos
 	pos=pos+1
 end if
 if rsn<>-1 then
 	change_layer_position@ pos,rsn,pos
+	psn = pos
 	pos=pos+1
 end if
 if rs<>-1 then
 	change_layer_position@ pos,rs,pos
+	ps = pos
 	pos=pos+1
 end if
 if brd<>-1 then
 	change_layer_position@ pos,brd,pos
+	brd = pos
 	pos=pos+1
 end if
 if drill<>-1 then
 	change_layer_position@ pos,drill,pos
+	drill = pos
 	pos=pos+1
 end if
 if mill<>-1 then
 	change_layer_position@ pos,mill,pos
+	mill = pos
 	pos=pos+1
 end if
 
 apply_layer_order@
 layer_renumber@
 close_msg
-

@@ -40,17 +40,18 @@ sizex=(vismaxx_tshape!-visminx_tshape!)
 sizey=(vismaxy_tshape!-visminy_tshape!)
 
 closefile% = 1
+if noFormCreateGBX <> 1  then 
+	OpenForm #1,45,5,"вывод герберов на всю пленку (с) Sch'arapoff 2011", character, okcancel
+	AddForm #1, 0, 0, "Этот Макрос вывод герберы на всю пленку!",Print
+	AddForm #1, 33, 1, "Закрыть?",check,closefile%
+	AddForm #1, 0, 1, "Пленка",choice,plenka%,"AGFA 20x26", "KODAK 20x24"
+	AddForm #1, 0, 4, "Промежуток",input,spacing#
+	DisplayForm #1
+	Canceled% = formcancel(1)
+	DeleteForm #1
 
-OpenForm #1,45,5,"вывод герберов на всю пленку (с) Sch'arapoff 2011", character, okcancel
-AddForm #1, 0, 0, "Этот Макрос вывод герберы на всю пленку!",Print
-AddForm #1, 33, 1, "Закрыть?",check,closefile%
-AddForm #1, 0, 1, "Пленка",choice,plenka%,"AGFA 20x26", "KODAK 20x24"
-AddForm #1, 0, 4, "Промежуток",input,spacing#
-DisplayForm #1
-Canceled% = formcancel(1)
-DeleteForm #1
-
-if Canceled% = 1 then end
+	if Canceled% = 1 then end
+end if
 
 if plenka% = 2 then
 	' пленка KODAK 20 на 24 дюйма (508 на 609.6 мм)
@@ -77,6 +78,7 @@ else
 	fsizey# = 508.6
 	prefix$ = "_AGFA"
 end if
+
 
 'messagebox str$(fsizex#)
 
@@ -129,7 +131,7 @@ break
 print_msg "Идет вывод gerber файлов." + CR! + "Ждите!!!"
 setup_fmtype@ 0,1
 setup_fmtunit@ 0,0
-setup_fmtdigits@ 0,2,4
+setup_fmtdigits@ 0,2,6
 setup_fmtmode@ 0,0
 setup_fmtzero@ 0,0
 internal = 1;
@@ -457,7 +459,11 @@ for ii=1 to i step num
 	set_layermirrorstate@ panlay,1 '0-not 1-yes
 
 	layer_setimagepolarity@ panlay,0 'positiv
-	exportgbrfile@ panlay,-1,pathgbx$+"pos_"+str$(lay)+prefix$+".gbx"
+	if lay > 9 then
+		exportgbrfile@ panlay,-1,pathgbx$+"pos_"+str$(lay)+prefix$+".gbx"
+	else 
+		exportgbrfile@ panlay,-1,pathgbx$+"pos_0"+str$(lay)+prefix$+".gbx"
+	end if
 ' 18-07-2012 - Перестали рисоать негативы наружных слоев'
 '	if lay=1 and mpp<>-1 then
 '		set_layermirrorstate@ panlay,0 '0-not 1-yes
@@ -481,7 +487,11 @@ if neg <> -1 then
 		set_layermirrorstate@ panlay,1 '0-not 1-yes - зеркало делается непосредственным поворотом
 		'layer_setimagepolarity@ panlay,0 'negative исправлено на позитив для нормального рисования
 		layer_setimagepolarity@ panlay,1 'negative for Miva
-		exportgbrfile@ panlay,-1,pathgbx$+"neg_"+str$(lay)+prefix$+".gbx"
+		if lay > 9 then
+			exportgbrfile@ panlay,-1,pathgbx$+"neg_"+str$(lay)+prefix$+".gbx"
+		else 
+			exportgbrfile@ panlay,-1,pathgbx$+"neg_0"+str$(lay)+prefix$+".gbx"
+		end if
 		lay = lay+1
 	next
 end if

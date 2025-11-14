@@ -36,7 +36,10 @@ editexelon:
 			else
 				' писать строку
 				' почему f042 я уже не помню
-				if s$<>"" and s$<>"F042" then print #2,s$
+				'if s$<>"" and s$<>"F042" then print #2,s$
+				'19-11-2020 убираю все строки задания скорости подачи фрезы, потому что станки сильно умные и сами вычисляют
+				if s$<>"" and left$(s$,1) <> "F" then print #2,s$
+				
 			end if	
 			if s$="%" and first=0 then 
 				if sz485x585 = 1 then

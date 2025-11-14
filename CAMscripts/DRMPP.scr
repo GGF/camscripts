@@ -117,7 +117,7 @@ AddForm #1, 0, 5, msg$,input,date$
 utf2chr$ = "Ширина:"
 GOSUB utf2chr
 msg$ = utf2chr$
-AddForm #1, 56, 4, msg$,Choice,widezag%,"230","280","485","280+"
+AddForm #1, 56, 4, msg$,Choice,widezag%,"230","280","485" ',"280+"
 utf2chr$ = "Зазоры считать? (может занять много времени)"
 GOSUB utf2chr
 msg$ = utf2chr$
@@ -296,15 +296,28 @@ textvertical@ 0
 setlayer@ comp
 layer_alloff@ 1
 
+' тут для текста используются смещения по вертикали
+if widezag%>280 then
+' это для большой платы
+	dty1# =  87
+	dty2# =  174
+elseif widezag%>230 then
+	dty1# =  36.25
+	dty2# =  133.75
+else
+	dty1# =  36.25
+	dty2# =  133.75
+end if
+
 change_text@
 textmirror@ 0
 textjust@ 34
-axy@ (widezag%-17.5),heightzag%-36.25
+axy@ (widezag%-17.5),heightzag%-dty1#
 textfont@ "SIMPLE.EFN"
 edit_chgtext@ "COMP "+date$
 textmirror@ 0
 textjust@ 33
-axy@ (widezag%-17.5),heightzag%-133.75
+axy@ (widezag%-17.5),heightzag%-dty2#
 textfont@ "SIMPLE.EFN"
 edit_chgtext@ board$
 
@@ -314,14 +327,14 @@ if rc <> -1 then
 	change_text@
 	textmirror@ 0
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-36.25
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MARK COMP "+date$
 	
 	change_text@
 	textmirror@ 0
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-133.75
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -333,14 +346,14 @@ if rcn <> -1 then
 	change_text@
 	textmirror@ 0
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-36.25
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MARK COMP "+date$
 	
 	change_text@
 	textmirror@ 0
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-133.75
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -352,14 +365,14 @@ if mc <> -1 then
 	change_text@
 	textmirror@ 0
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-36.25
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MASK COMP "+date$
 	
 	change_text@
 	textmirror@ 0
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-133.75
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -371,14 +384,14 @@ if mcv <> -1 then
 	change_text@
 	textmirror@ 0
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-36.25
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MASK COMP VIA "+date$
 	
 	change_text@
 	textmirror@ 0
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-133.75
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -389,12 +402,12 @@ layer_alloff@ 1
 change_text@
 textmirror@ 1
 textjust@ 34
-axy@ (widezag%-17.5),heightzag%-133.750
+axy@ (widezag%-17.5),heightzag%-dty2#
 textfont@ "SIMPLE.EFN"
 edit_chgtext@ "SOLDER "+date$
 textmirror@ 1
 textjust@ 33
-axy@ (widezag%-17.5),heightzag%-36.250
+axy@ (widezag%-17.5),heightzag%-dty1#
 textfont@ "SIMPLE.EFN"
 edit_chgtext@ board$
 
@@ -405,14 +418,14 @@ if rs <> -1 then
 	change_text@
 	textmirror@ 1
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-133.750
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MARK SOLDER "+date$
 
 	change_text@
 	textmirror@ 1
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-36.250
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -424,14 +437,14 @@ if rsn <> -1 then
 	change_text@
 	textmirror@ 1
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-133.750
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MARK SOLDER "+date$
 
 	change_text@
 	textmirror@ 1
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-36.250
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -443,14 +456,14 @@ if ms <> -1 then
 	change_text@
 	textmirror@ 1
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-133.750
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MASK SOLDER "+date$
 
 	change_text@
 	textmirror@ 1
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-36.250
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -462,14 +475,14 @@ if msv <> -1 then
 	change_text@
 	textmirror@ 1
 	textjust@ 34
-	axy@ (widezag%-17.5),heightzag%-133.750
+	axy@ (widezag%-17.5),heightzag%-dty2#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ "MASK SOLDER VIA " + date$ 
 
 	change_text@
 	textmirror@ 1
 	textjust@ 33
-	axy@ (widezag%-17.5),heightzag%-36.250
+	axy@ (widezag%-17.5),heightzag%-dty1#
 	textfont@ "SIMPLE.EFN"
 	edit_chgtext@ board$
 end if
@@ -481,7 +494,7 @@ for i=1 to mpp
 		layer_alloff@ 1
 		' удалить'
 		change_text@
-		axy@ (widezag%-17.5),heightzag%-133.750
+		axy@ (widezag%-17.5),heightzag%-dty2#
 		textfont@ "SIMPLE.EFN"
 		textmirror@ 1
 		textjust@ 34
@@ -489,7 +502,7 @@ for i=1 to mpp
 		back@
 		' поменять'
 		change_text@
-		axy@ (widezag%-17.5),heightzag%-36.250
+		axy@ (widezag%-17.5),heightzag%-dty1#
 		textfont@ "SIMPLE.EFN"
 		textmirror@ 1
 		textjust@ 33
@@ -500,7 +513,7 @@ for i=1 to mpp
 		layer_alloff@ 1
 		' удалить'
 		change_text@
-		axy@ (widezag%-17.5),heightzag%-36.25
+		axy@ (widezag%-17.5),heightzag%-dty1#
 		textfont@ "SIMPLE.EFN"
 		textmirror@ 0
 		textjust@ 34
@@ -508,7 +521,7 @@ for i=1 to mpp
 		back@
 		' поменять'
 		change_text@
-		axy@ (widezag%-17.5),heightzag%-133.75
+		axy@ (widezag%-17.5),heightzag%-dty2#
 		textfont@ "SIMPLE.EFN"
 		textmirror@ 0
 		textjust@ 33
@@ -673,8 +686,9 @@ if mill <> -1 then
 		axy@ 232.5000,11.2500
 		axy@ 237.5000,11.2500
 	' маркировочные'
-		axy@ 271.0,82.5
-		axy@ 271.0,312.5
+	' 06-06-2025 забылось зачем, пока удалю
+		'axy@ 271.0,82.5
+		'axy@ 271.0,312.5
 	else
 		' тесткупон 230x395'
 		axy@ 10.0000,35.0000
@@ -702,8 +716,9 @@ if mill <> -1 then
 		axy@ 187.5000,11.2500
 		
 	' маркировочные'
-		axy@ 221.0,82.5
-		axy@ 221.0,312.5
+	' 06-06-2025 забылось зачем, пока удалю
+		'axy@ 221.0,82.5
+		'axy@ 221.0,312.5
 	end if
 end if
 
@@ -795,7 +810,9 @@ setgridsnap@ 1
 
 
 if widezag%>280 then
-	dty# =  35
+' это для большой платы
+	'dty# =  35
+	dty# =  90 '20-05-2025 поменял рамку
 	dtx# = (widezag%-13.75)
 elseif widezag%>230 then
 	dty# =  42.5
@@ -824,9 +841,77 @@ for i=1 to mpp
 		else 
 			layname$ = str$(trulay)+"A"
 		end if
+		' здесь вставить удаление лишних реперов на лошади
+		if widezag%>280 then
+			edit_delete@
+			axy@ 22.55,16.3
+			axy@ 462.55,16.3
+			axy@ 22.55,568.8
+			axy@ 462.55,568.8
+			back@
+		elseif widezag%>230 then
+			' это 280
+			edit_delete@
+			axy@ 32.5,377.5
+			axy@ 32.5,17.5
+			axy@ 247.5,17.5
+			axy@ 247.5,377.5
+			back@		
+		else
+			' это 230
+			edit_delete@
+			axy@ 32.5,377.5
+			axy@ 32.5,17.5
+			axy@ 197.5,17.5
+			axy@ 197.5,377.5
+			back@			
+		end if
 	else 
 		trulay=trulay+1
 		layname$ = str$(trulay)
+		' а здесь нужно ставить концентрические круги для лошади
+		if widezag%>280 then
+			setdcode@ 12
+			update_dcodebar@ 
+			add_circle@
+			axy@ 62.0,15.0
+			axy@ 62.0,15.0+trulay*0.4
+			axy@ 427.0,15.0
+			axy@ 427.0,15.0+trulay*0.4
+			axy@ 62.0,570.0
+			axy@ 62.0,570.0+trulay*0.4
+			axy@ 427.0,570.0
+			axy@ 427.0,570.0+trulay*0.4
+			back@
+		elseif widezag%>230 then
+			' 280
+			setdcode@ 12
+			update_dcodebar@ 
+			add_circle@
+			axy@ 62.0,15.0
+			axy@ 62.0,15.0+trulay*0.4
+			axy@ 217.5,15.0
+			axy@ 217.5,15.0+trulay*0.4
+			axy@ 62.0,395.0-15.0
+			axy@ 62.0,395.0-15.0+trulay*0.4
+			axy@ 217.5,395.0-15.0
+			axy@ 217.5,395.0-15.0+trulay*0.4
+			back@
+		else
+			' это 230
+			setdcode@ 12
+			update_dcodebar@ 
+			add_circle@
+			axy@ 62.0,15.0
+			axy@ 62.0,15.0+trulay*0.4
+			axy@ 167.5,15.0
+			axy@ 167.5,15.0+trulay*0.4
+			axy@ 62.0,395.0-15.0
+			axy@ 62.0,395.0-15.0+trulay*0.4
+			axy@ 167.5,395.0-15.0
+			axy@ 167.5,395.0-15.0+trulay*0.4
+			back@
+		end if
 	end if
 	addtext@ dtx#,dty#+5*(lay-2),210,dty#+5+5*(lay-2),layname$
 	lay=lay+1

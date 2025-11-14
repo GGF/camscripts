@@ -69,6 +69,7 @@ corecttool:
 		
 		freza:
 		'print_msg "Есть фреза!" + CR!
+		'messagebox "frzexist!","frzexist",OK
 		frezy(fre) = Toolnum! 'было i вместо Toolnum!'
 		fre = fre + 1
 		nc_set_tool_infeed@ table,toolref,8.3333

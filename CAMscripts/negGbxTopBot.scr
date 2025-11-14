@@ -1,0 +1,93 @@
+' CAM350 V7.0 (Build 187) Date:  Wed Jul 12 09:40:40 2023
+' Скрипт для создания негативных герберов для наружных слоев
+util_camed@
+setdcode@ 5
+
+typeRefdesTop = 16
+typeRefdesBot = 17
+
+
+!include "colorandreorder.scr"
+
+setlayer@ drill
+
+layer_alloff@ 0
+
+edit_layer@ comp,-2,-2,-2,1
+edit_layer@ solder,-2,-2,-2,1
+
+edit_delete@
+setsnap@ 1
+edit_selectall2@ 
+delete_edits@ 4,1
+end@
+
+setsnap@ 1
+edit_layer@ comp,2,0,typeRefdesTop,1,"comp-neg"
+edit_layer@ solder,8,10,typeRefdesBot,1,"solder-neg"
+
+setlayer@ 2
+layer_alloff@ 1
+setlayer@ 17
+
+
+setgridvis@ 1
+setgridsnap@ 1
+
+' сжать дкоды
+aptable_compress@ 
+update_dcodebar@ 
+
+' сжал выше потому что команда дает пустой от 10 до 999
+dc = blankdcode!
+
+edit_lmapdefaults@ 
+set_aperture@ dc,"Custom nm:RZMneg a:0.000000"
+update_dcodebar@ 
+
+setdcode@ dc
+update_dcodebar@ 
+
+'посмотреть окошко, необязательно  - при отладке осталось'
+view_window@
+setsnap@ 0
+axy@ 0,40
+axy@ 40,0
+view_redraw@
+
+' сетку так для красивости установил'
+setgridvis@ 0
+setgrid@ 2,1.2500,1.2500
+setgridvis@ 1
+
+if 1 then
+	layer_renumber@
+	For lay = Nextlay to Highestlayer!
+		setlayer@ lay
+		if Layerblank! then 
+			edit_removelyr@ lay
+		end if
+		int(lay)=-1
+	next
+	layer_renumber@
+end if
+view_redraw@
+
+' тут уже включены нужные слои, а не получалось преобразование
+
+util_draw2flash1@
+setd2foptparm1@ 0.0508,1,0,""
+axy@ 21.2500,28.7500
+axy@ 28.7500,21.2500
+setd2fparm@ 0,0.0000,0.0000,0,dc
+
+break
+'  выгнать и закрыть'
+' слои перенумеровались потому нужно заново обозначить'
+mpp = -1
+c = -1
+s = -1
+rc = 0
+rs = 1
+noFormCreateGBX = 1
+!include "creategbxnew.SCR"

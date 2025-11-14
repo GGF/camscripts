@@ -36,9 +36,12 @@ yprob# = (Y%-180)/2.0
 mk2exist = 0 ' 18-02-2020 больше нет ' есть двухшпиндельная сверловка
 mk4exist = 0 ' 18-02-2020 больше нет ' есть четырехшпиндельная сверловка
 ex2exist = 1 ' есть сверловка для экселона специально ниже перехода мимо формы чтобы правильно работало формирование s32 в надевании рамки// 07-04-2017 удрвл вывод в надевании
+sch_exist = 1 ' 29-05-2025 непонятно нужен ли
+prl_need = 0 ' 29-05-2025 это тоже от старых станков осталось
 frzexist = 0 ' 18-02-2020 больше нет
 mx1exist = 0 ' 18-02-2020 больше нет
 fx2exist = 1 ' добавил чтоб однообразно, раньше всегда была
+drill_base%=1
 
 if drillname$ <> "" then goto noform
 
@@ -103,6 +106,8 @@ if 1=1 then
 	Ymin# = 1000
 	xmax# = 0
 	ymax# = 0
+	measure$ = ""
+	
 
 	if fileexists(path$+s32name$) then 
 		open path$+S32name$ for input as #1
@@ -110,17 +115,23 @@ if 1=1 then
 			input #1,hhh$
 			if left$(hhh$,1) = "A" then
 				num# = val(MID$(hhh$,2))
+				ix% = num#
 				input #1,hhh$
-				xscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
+				xscal#(ix%) = val(MID$(hhh$,INSTR(1,hhh$," ")))
 			end if
 			if left$(hhh$,1) = "B" then
 				num# = val(MID$(hhh$,2))
+				iy% = num#
 				input #1,hhh$
-				yscal#(num#) = val(MID$(hhh$,INSTR(1,hhh$," ")))
+				yscal#(iy%) = val(MID$(hhh$,INSTR(1,hhh$," ")))
 			end if
 			LOOP
 		close #1
 		for num%=2 to layers%+1
+			if (xscal#(num%)>0) then
+				measure$ = measure$ + "X" + FMTUSING$("#",num%-1) + "=" + FMTUSING$("#.###",xscal#(num%)) + "|"
+				measure$ = measure$ + "Y" + FMTUSING$("#",num%-1) + "=" + FMTUSING$("#.###",yscal#(num%)) +"|"
+			end if
 			if ymin# > yscal#(num%) AND yscal#(num%)>0 then
 				ymin# = yscal#(num%)
 			end if
@@ -141,6 +152,7 @@ end if
 ' Конец вычисления коэффициэнтов'
 
 ' самая новая пробивка
+' 29-05-2025 уже не самая :)
 if mpp <> -1 then
 	if X% = 280 and Y% = 395 then
 		sz280x395 = 1
@@ -156,6 +168,7 @@ if mpp <> -1 then
 	end if
 end if
 
+' странные коэфы
 if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
 	utf2chr$ = "Странные коэффициэнты сжвтия Х="
 	GOSUB utf2chr
@@ -167,6 +180,7 @@ if scalex#>1.0005 or scalex# < 0.9995 or scaley#>1.0005 or scaley#<0.9995 then
 	if MacroEnd% = 2 then end
 end if
 
+' ну очень странные
 if scalex#>1.001 or scalex# < 0.998 or scaley#>1.001 or scaley#<0.998 then
 	utf2chr$ = "Я не буду это сжимать, поставлю единицу"
 	GOSUB utf2chr
@@ -185,66 +199,73 @@ closefile% = 1
 
 DPP:
 
-utf2chr$ = "Сверловка и фрезеровка"
-GOSUB utf2chr
-title$ = utf2chr$
+' форма 
+if 1=1 then
+	utf2chr$ = "Сверловка и фрезеровка"
+	GOSUB utf2chr
+	title$ = utf2chr$
 
-OpenForm #1,70,7,title$+" (c) Sch'arapoff", character, okcancel
-if mpp <> -1 then
-	frr=0
-	vert% = 1
-else
-	' На кондукторах нужно выбирать
-	if (comp% = -1 AND solder% = -1) then
-		tochnovert% = 0
+	OpenForm #1,70,7,title$+" (c) Sch'arapoff", character, okcancel
+	if mpp <> -1 then
+		frr=0
+		vert% = 1
+	else
+		' На кондукторах нужно выбирать
+		if (comp% = -1 AND solder% = -1) then
+			tochnovert% = 0
+		end if
+		if tochnovert%<9 then
+			utf2chr$ = "Вертикально?"
+			GOSUB utf2chr
+			msg$ = utf2chr$	
+			AddForm #1, 0, 0, msg$,check,vert%
+		end if
 	end if
-	if tochnovert%<9 then
-		utf2chr$ = "Вертикально?"
-		GOSUB utf2chr
-		msg$ = utf2chr$	
-		AddForm #1, 0, 0, msg$,check,vert%
-	end if
+
+	utf2chr$ = "Закрыть?"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1, 40, 0, msg$,check,closefile%
+	utf2chr$ = "Базовые?"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1, 55, 0, msg$,check,drill_base%
+
+	utf2chr$ = "Сверловки:"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1, 0, 1, msg$,print
+	for i = 1 to drs
+		shiftx = 13+(i-1)*(55/drs)
+		drr(i) = 1
+		AddForm #1, shiftx, 1, dr$(i),check,drr(i)
+	next
+
+	utf2chr$ = "Фрезеровки:"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1, 0, 2, msg$,print
+	for i = 1 to mis
+		shiftx = 20+(i-1)*20
+		mir(i) = 1
+		AddForm #1, shiftx, 2, mi$(i),check,mir(i)
+	next
+
+	utf2chr$ = "Имя файла:"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1, 0, 3, msg$,input,drillname$
+	utf2chr$ = "Сжатие по"
+	GOSUB utf2chr
+	msg$ = utf2chr$
+	AddForm #1,0, 5, msg$+" X", input,scalex#
+	AddForm #1,35, 5, msg$+" Y", input,scaley#
+	DisplayForm #1
+	Canceled% = formcancel(1)
+	DeleteForm #1
+
+	if Canceled% = 1 then goto mkrfrz_endscript
 end if
-
-utf2chr$ = "Закрыть по окончании?"
-GOSUB utf2chr
-msg$ = utf2chr$
-AddForm #1, 40, 0, msg$,check,closefile%
-
-utf2chr$ = "Сверловки:"
-GOSUB utf2chr
-msg$ = utf2chr$
-AddForm #1, 0, 1, msg$,print
-for i = 1 to drs
-	shiftx = 13+(i-1)*(55/drs)
-	drr(i) = 1
-	AddForm #1, shiftx, 1, dr$(i),check,drr(i)
-next
-
-utf2chr$ = "Фрезеровки:"
-GOSUB utf2chr
-msg$ = utf2chr$
-AddForm #1, 0, 2, msg$,print
-for i = 1 to mis
-	shiftx = 20+(i-1)*20
-	mir(i) = 1
-	AddForm #1, shiftx, 2, mi$(i),check,mir(i)
-next
-
-utf2chr$ = "Имя файла:"
-GOSUB utf2chr
-msg$ = utf2chr$
-AddForm #1, 0, 3, msg$,input,drillname$
-utf2chr$ = "Сжатие по"
-GOSUB utf2chr
-msg$ = utf2chr$
-AddForm #1,0, 5, msg$+" X", input,scalex#
-AddForm #1,35, 5, msg$+" Y", input,scaley#
-DisplayForm #1
-Canceled% = formcancel(1)
-DeleteForm #1
-
-if Canceled% = 1 then goto mkrfrz_endscript
 
 noform:
 utf2chr$ = "Идет обработка... Ждите!"
@@ -301,6 +322,7 @@ if 1=1 then
 end if
 ' -- конец файлов заголовка -- '
 
+' сверловки
 if drs > 0 then
 	for drlay = 1 to drs
 		if drr(drlay) = 0 then
@@ -334,22 +356,9 @@ if drs > 0 then
 				back@
 			end if
 
-			if mk2exist then
-				open path$+drillname$+".mk2.old" for APPEND as #1
-					print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
-					print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
-				close #1
-			end if
-			if mk4exist then
-				open path$+drillname$+".mk4.old" for APPEND  as #1
-					print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
-					print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
-				close #1
-			end if
-			if ex2exist then
-				open path$+drillname$+".ex2.old" for APPEND  as #1
-					print #1,"Этот файлы были сжаты САМ средствами. Обязательно вывести новый!!!"
-					print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#)
+			if mk2exist or mk4exist or ex2exist then
+				open path$+drillname$+".drill.old" for APPEND as #1
+					print #1,Time!+"   "+str$(scalex#)+"   "+str$(scaley#) + " measurement " + measure$
 				close #1
 			end if
 		end if ' drill <> -1
@@ -395,7 +404,10 @@ if drs > 0 then
 		
 		' это если многослойка
 		' удалить отверстия, ведь они уже сжаты'
-		if mpp <> -1 then
+		' 29-05-2025 это место вызвало проблемы при смещении сверловки в ноль для станка с прицелами
+		' это артефакт - не надо ставить эти отверстия чтоб не сжимались, надо бы его удалить
+		' но пока привяжу это к галке "делать базовые"
+		if mpp <> -1 and drill_base% = 1 then
 			setlayer@ drill
 			layer_alloff@ 1
 			edit_delete@
@@ -450,27 +462,35 @@ if drs > 0 then
 
 		' теперь если это excelon или многослойка поставим отверстия в 10 мм от края для фрезеровки'
 		'7-04-2017 теперь добавляем для всех видов сверловки потому, что все сверлятся на двух штифтах'
-		setlayer@ dopdrill
-		layer_alloff@ 1
-		nc_add_drill_hit@
-		setsnap@ 0
-		if Z# < Y% then
-			axy@ 10.0000,Z#
+		if drill_base% then
+			setlayer@ dopdrill
+			layer_alloff@ 1
+			nc_add_drill_hit@
+			setsnap@ 0
+			if Z# < Y% then
+				axy@ 10.0000,Z#
+			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45
+			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45+25
+			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45+25+40
+			end if
+			if Z#+45+90 < Y% then
+				axy@ 10.0000,Z#+45+90
+			end if
+			if Z#+45+90+45 < Y% then
+				axy@ 10.0000,Z#+45+90+45
+			end if
+			back@
+			edit_move@
+			edit_selectall2@ 
+			movetolayer@ drill
+			back@
 		end if
-		if Z#+45 < Y% then
-			axy@ 10.0000,Z#+45
-		end if
-		if Z#+45+90 < Y% then
-			axy@ 10.0000,Z#+45+90
-		end if
-		if Z#+45+90+45 < Y% then
-			axy@ 10.0000,Z#+45+90+45
-		end if
-		back@
-		edit_move@
-		edit_selectall2@ 
-		movetolayer@ drill
-		back@
 		' конец сверления отв под фрезеровку '
 
 
@@ -652,24 +672,29 @@ if drs > 0 then
 						STY# = 66.0
 						'wincall "copy "+exelonfile1$+" "+schfile1$
 					end if
-					open exelonfile1$ for input as #1
-					open schfile1$ for output as #2
-					do
-						line input #1,s$
-						print #2,s$
-					loop until EOF(1) = 1
-					close #1
-					close #2
+					' 29-05-2025 нужен ли sch файл не понятно
+					if sch_exist then
+						open exelonfile1$ for input as #1
+						open schfile1$ for output as #2
+						do
+							line input #1,s$
+							print #2,s$
+						loop until EOF(1) = 1
+						close #1
+						close #2
+					end if 
 				else
 					STX# = X%/2.0
 					STY# = -6.25
 				end if
 				
 				gosub editexelon
-				open path$+drillname$+suffix$+".prl" for output as #2
-					print #2,"T,O"
-					print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$+suffix$
-				close #2
+				if prl_need = 1 then
+					open path$+drillname$+suffix$+".prl" for output as #2
+						print #2,"T,O"
+						print #2,USING "N1,A0,F##_,X:&.ex2"; Y%; drillname$+suffix$
+					close #2
+				end if
 				if fileexists(schfile1$) then
 					STY#=10 ' 28-01-2020 велели поставить 10, сменились станки, было 70
 					if sz280x395 = 1 then
@@ -695,6 +720,12 @@ if drs > 0 then
 			if Z#+45 < Y% then
 				axy@ 10.0000,Z#+45
 			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45+25
+			end if
+			if Z#+45 < Y% then
+				axy@ 10.0000,Z#+45+25+40
+			end if
 			if Z#+45+90 < Y% then
 				axy@ 10.0000,Z#+45+90
 			end if
@@ -707,6 +738,7 @@ if drs > 0 then
 end if ' drills bigger zero
 ' конец сверловок '
 
+' фрезеровки
 if mis>0 then
 	for frezlay=1 to mis
 		if mir(frezlay)=1 then
@@ -797,7 +829,7 @@ if mis>0 then
 				nc_exp_drilltool_RPMs@ 0
 				nc_exp_drilltool_MaxHits@ 0
 				' mill 
-				nc_exp_milltool_infeed@ 1 ' добавил чтоб не вводили вручную.
+				nc_exp_milltool_infeed@ 0 ' добавил чтоб не вводили вручную.
 				nc_exp_milltool_retract@ 0
 				nc_exp_milltool_RPMs@ 0
 				

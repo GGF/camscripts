@@ -1,0 +1,128 @@
+' вывод герберов '
+util_camed@
+setgridsnap@ 0
+setsnap@ 0
+'Получение пути файла
+filename$=dbname!
+for n%=len(filename$)-1 to 0 step -1
+s$=mid$(filename$,n%,1)
+if s$="\" then goto gbxpath
+next
+gbxpath:
+
+shortfilename$ = mid$ (filename$,n%)
+pathgbx$ = left$(filename$,n%)
+
+l = len(shortfilename$);
+t = INSTR(1,shortfilename$,"_")
+if t = 0 then
+	t = INSTR(1,shortfilename$,"cam")
+	if t = 0 then
+		name$ = left$(shortfilename$,INSTR(1,shortfilename$,".")-1)
+	else
+		name$ = left$(shortfilename$,t-1)
+	end if
+else
+	name$ = left$(shortfilename$,t-1)
+end if
+
+
+
+pathgbx$ = pathgbx$+name$
+mkdir pathgbx$
+pathgbx$ = pathgbx$+"\" 
+
+
+'9. Вывод герберов
+print_msg "Exporting gerber files." + CR! + "Wait!!!"
+setup_fmtype@ 0,1
+setup_fmtunit@ 0,0
+setup_fmtdigits@ 0,2,4
+setup_fmtmode@ 0,0
+setup_fmtzero@ 0,0
+internal = 2 ' чтобы нумеровались со второго, как написано на слое'
+for lay = Nextlay to Highestlayer!
+	setlayer@ lay
+	if layertype! = 6 then 
+		'border
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		'exportgbrfile@ lay,-1,pathgbx$+"brd.brd"
+	elseif layertype! = 0 then 'comp
+		set_layermirrorstate@ lay,0 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+name$+"_c.gbx"
+	elseif layertype! = 3 then 'solder
+		set_layermirrorstate@ lay,0 '1 '0-not 1-yes
+		layer_setimagepolarity@ lay,0 'negative
+		exportgbrfile@ lay,-1,pathgbx$+name$+"_s.gbx"
+	elseif layertype! = 1 then 'internal
+		ln$=Layername!
+		if instr(1,ln$,"a")>0 or instr(1,ln$,"A")>0  then
+		' do nothing'
+		else 
+			layer_setimagepolarity@ lay,0 'negative
+			exportgbrfile@ lay,-1,pathgbx$+name$+"_i"+str$(internal)+".gbx"
+			internal = internal+1
+		end if
+	end if
+next
+close_msg
+
+' выврд сверловки'
+if 1 then
+
+	drext$=".drl"
+	''
+	setlayer@ drilllayer!
+	' вывод 
+	expdrl_generate_Header@ 1
+	export_XYmodal@ 1,0
+	nc_exp_drill_t00@ 0
+	expdrl_generate_Tools@ 1
+	setup_fmtype@ 1,5
+	setup_fmtunit@ 1,1
+	setup_fmtdigits@ 1,3,3
+	setup_fmtmode@ 1,0
+	nc_exp_drilltool_infeed@ 0
+	nc_exp_drilltool_retract@ 0
+	nc_exp_drilltool_RPMs@ 0
+	nc_exp_drilltool_MaxHits@ 0
+	nc_exp_drill_Exc_decimals@ 1
+	nc_exp_drill_Exc_toolingoffset@ 1
+	''
+	setup_fmtype@ 2,5
+	setup_fmtunit@ 2,1
+	setup_fmtdigits@ 2,3,3
+	setup_fmtmode@ 2,0
+	setup_fmtzero@ 2,2
+	nc_exp_mill_IncludeDrills@ 1
+	nc_exp_mill_Exc_decimals@ 1
+	nc_exp_mill_Exc_toolingoffset@ 1
+	nc_exp_milltool_infeed@ 0
+	nc_exp_milltool_retract@ 0
+	nc_exp_milltool_RPMs@ 0
+	''
+	drillPCB_out@ drilllayer!,pathgbx$+name$+drext$ ' для плат в металлизированной фрезеровкой'
+end if ' drill <> -1 and ex2exist
+
+
+' закрыть текущий без сохранения'
+if 1 then 
+	if Version! > 7 then 
+		setquit@ 
+	else 
+	' в седьмом каме нет закрытия. Пришлось делать средствами системы. Закрывая с детьми taskkill /t убивал и бат файл, не давая удалить себя. Тасклист резал вывод по /v, пришлось вывод списком делать и фильстровать только имя файла.'
+		open path$+"closecam.bat" for output as #1
+			print #1,"chcp 1251"
+			print #1,"for /f "+chr$(34)+"usebackq tokens=2"+chr$(34)+" %%a in (`tasklist ^| find "+chr$(34)+"camnt95"+chr$(34)+"`) do ("
+			print #1,"tasklist /v /fi "+chr$(34)+"PID eq %%a"+chr$(34)+" /fo list | find "+chr$(34)+"pcb"+chr$(34)+" | find "+chr$(34)+"\"+shortfilename$+chr$(34)+" /c >nul && taskkill /PID %%a /F"
+			print #1,")"
+			print #1,"erase /f /q "+chr$(34)+path$+"closecam.bat"+chr$(34)
+		close #1
+
+		s1$ = chr$(34)+path$+"closecam.bat"+chr$(34)
+		WinExec s1$,MinimizedNoFocus
+	end if
+end if
+' тут конец, выйти (exit, break)
