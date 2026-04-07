@@ -870,8 +870,10 @@ for i=1 to mpp
 		trulay=trulay+1
 		layname$ = str$(trulay)
 		' а здесь нужно ставить концентрические круги для лошади
+		ringDCode = Blankdcode!
+		edit_aperture@ ringDCode,1,0.2000,0.2000,10,""
 		if widezag%>280 then
-			setdcode@ 12
+			setdcode@ ringDCode
 			update_dcodebar@ 
 			add_circle@
 			axy@ 62.0,15.0
@@ -885,7 +887,7 @@ for i=1 to mpp
 			back@
 		elseif widezag%>230 then
 			' 280
-			setdcode@ 12
+			setdcode@ ringDCode
 			update_dcodebar@ 
 			add_circle@
 			axy@ 62.0,15.0
@@ -899,7 +901,7 @@ for i=1 to mpp
 			back@
 		else
 			' это 230
-			setdcode@ 12
+			setdcode@ ringDCode
 			update_dcodebar@ 
 			add_circle@
 			axy@ 62.0,15.0

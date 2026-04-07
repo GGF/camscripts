@@ -21,6 +21,8 @@
 
 util_camed@
 
+debug = -1
+
 spacing# = 10
 
 plenka% = 1 ' 1 - AGFA 2-KODAK
@@ -40,6 +42,7 @@ sizex=(vismaxx_tshape!-visminx_tshape!)
 sizey=(vismaxy_tshape!-visminy_tshape!)
 
 closefile% = 1
+break
 if noFormCreateGBX <> 1  then 
 	OpenForm #1,45,5,"вывод герберов на всю пленку (с) Sch'arapoff 2011", character, okcancel
 	AddForm #1, 0, 0, "Ётот ћакрос вывод герберы на всю пленку!",Print
@@ -255,9 +258,9 @@ for lay = Nextlay to Highestlayer!
 	 	if layername! = "mcv" then
 	 		nlaytype(j) = 1
 	 		mcv=lay
-	 	neg = 1
-	 	nlay(j)=lay
-	 	j=j+1
+			neg = 1
+			nlay(j)=lay
+			j=j+1
 	 	else
 	 		nlaytype(j) = 4
 	 		rcn=lay
@@ -273,25 +276,27 @@ for lay = Nextlay to Highestlayer!
 			nlay(j)=lay
 			j=j+1
 		 	gosub mirror
- 	else
+ 		else
 	 		rsn=lay
 	 		nlaytype(j) = 4
-				neg = 1
-				nlay(j)=lay
-				j=j+1
-			 	gosub mirror
+			neg = 1
+			nlay(j)=lay
+			j=j+1
+			gosub mirror
 	 	end if
 	elseif layertype! = 19 then 'PASTE TOP
-		play(i)=lay
-		playtype(i) = 5
-		i=i+1
-		c1=lay
-	elseif layertype! = 20 then 'PASTE TOP
-		play(i)=lay
-		playtype(i) = 5
-		i=i+1
+		c1 = lay
+		neg = 1
+		nlay(j)=lay
+		nlaytype(j) = 5
+		j=j+1
+	elseif layertype! = 20 then 'PASTE BOT
+		s1 = lay
+		neg = 1
+		nlay(j)=lay
+		nlaytype(j) = 5
+		j=j+1
 		gosub mirror
-		s1=lay
 	elseif layertype! = 1 then 'internal
 		ln$=Layername!
 		mpp = 1 ' есть внутренние слои
@@ -346,15 +351,17 @@ j=j-1
 lay = 1
 
 ' вывести данные'
-'open path$+"gbx.rpt" for output as #1
-'for rep=1 to j
-'	print #1,nlay(rep),"-",nlaytype(rep)
-'next
-'print #1,"-------------------"
-'for rep=1 to i
-'	print #1,play(rep),"-",playtype(rep)
-'next
-'close #1
+if debug = 1 then
+	open path$+"gbx.rpt" for output as #1
+	for rep=1 to j
+		print #1,nlay(rep),"-",nlaytype(rep)
+	next
+	print #1,"-------------------"
+	for rep=1 to i
+		print #1,play(rep),"-",playtype(rep)
+	next
+	close #1
+end if
 ' конец вывода'
 
 BREAK
@@ -428,15 +435,17 @@ endsortn:
 
 
 ' вывести данные'
-'open path$+"gbx1.rpt" for output as #1
-'for rep=1 to j'
-'	print #1,nlay(rep),"-",nlaytype(rep)
-'next
-'print #1,"-------------------"
-'for rep=1 to i
-'	print #1,play(rep),"-",playtype(rep)
-'next
-'close #1
+if debug = 1 then
+	open path$+"gbx1.rpt" for output as #1
+	for rep=1 to j'
+		print #1,nlay(rep),"-",nlaytype(rep)
+	next
+	print #1,"-------------------"
+	for rep=1 to i
+		print #1,play(rep),"-",playtype(rep)
+	next
+	close #1
+end if
 ' конец вывода'
 
 ' изза добавенных 5мм нужно на первом дл€ многослоек уменьшить рассто€ние между'

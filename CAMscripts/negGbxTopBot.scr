@@ -40,13 +40,22 @@ update_dcodebar@
 
 ' сжал выше потому что команда дает пустой от 10 до 999
 dc = blankdcode!
-
 edit_lmapdefaults@ 
-set_aperture@ dc,"Custom nm:RZMneg a:0.000000"
-update_dcodebar@ 
+
+if mpp=-1 then
+	lib_setextlib@ 1,1,0,"x:\tool\pp1.clb"
+	set_aperture@ dc,"Custom nm:AAA a:0.000000"
+	update_dcodebar@ 
+else 
+	set_aperture@ dc,"Custom nm:RZMneg a:0.000000"
+	update_dcodebar@ 
+end if
 
 setdcode@ dc
 update_dcodebar@ 
+
+
+break
 
 'посмотреть окошко, необязательно  - при отладке осталось'
 view_window@
@@ -77,8 +86,14 @@ view_redraw@
 
 util_draw2flash1@
 setd2foptparm1@ 0.0508,1,0,""
-axy@ 21.2500,28.7500
-axy@ 28.7500,21.2500
+if mpp = -1 then
+	axy@ 8,17
+	axy@ 17,8
+else
+	axy@ 21.2500,28.7500
+	axy@ 28.7500,21.2500
+end if	
+
 setd2fparm@ 0,0.0000,0.0000,0,dc
 
 break
